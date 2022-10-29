@@ -1,0 +1,8 @@
+fuzzywuzzy
+python-Levenshtein
+beautifulsoup4
+requests
+Pillow
+youtube-dl
+
+-r git_requirements.txt
