@@ -1,0 +1,12 @@
+-r requirements.txt
+
+black
+flake8
+isort
+mypy
+pylint
+pytest
+pytest-randomly
+pytest-timeout
+pytest-cov
+mock
