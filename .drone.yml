@@ -1,14 +1,3 @@
-kind: pipeline
-type: docker
-name: pytest-check
- 
-steps:
-- name: pytest
-  image: python:3.10
-  commands:
-  - pip install -r dev_requirements.txt
-  - pytest
-
 ---
 kind: pipeline
 type: docker
@@ -26,6 +15,15 @@ steps:
       from_secret: registry_user
     password:
       from_secret: registry_secret
+  when:
+    branch:
+    - main
+    event:
+      include:
+      - push
+      exclude:
+      - pull_request
+
 ---
 kind: pipeline
 type: docker
@@ -41,6 +39,12 @@ steps:
       from_secret: dockerhub_secret
     repo: jasonjerome/jjmumblebotreworked
     tags: ["${DRONE_COMMIT_SHA:0:8}", "latest"]
+  when:
+    event:
+      include:
+      - push
+      exclude:
+      - pull_request
 - name: discord-notification-dockerhub
   image: appleboy/drone-discord
   settings:
@@ -51,3 +55,11 @@ steps:
     message: "New Commit Build - ${DRONE_COMMIT_SHA:0:8}\nPull: `docker pull jasonjerome/jjmumblebotreworked:${DRONE_COMMIT_SHA:0:8}`"
   depends_on:
   - dockerhub-registry
+  when:
+    branch:
+    - main
+    event:
+      include:
+      - push
+      exclude:
+      - pull_request
