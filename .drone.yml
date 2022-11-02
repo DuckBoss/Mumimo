@@ -4,16 +4,33 @@ name: pytest-check
  
 steps:
 - name: pytest
-  image: python:${PY_VERSION}
+  image: python:3.8
+  commands:
+  - pip install -r dev_requirements.txt
+  - pytest
+---
+kind: pipeline
+type: docker
+name: pytest-check
+ 
+steps:
+- name: pytest
+  image: python:3.9
+  commands:
+  - pip install -r dev_requirements.txt
+  - pytest
+---
+kind: pipeline
+type: docker
+name: pytest-check
+ 
+steps:
+- name: pytest
+  image: python:3.10
   commands:
   - pip install -r dev_requirements.txt
   - pytest
 
-matrix:
-  PY_VERSION:
-    - 3.8
-    - 3.9
-    - 3.10
 
 ---
 kind: pipeline
