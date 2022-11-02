@@ -1,37 +1,3 @@
-kind: pipeline
-type: docker
-name: pytest-check
- 
-steps:
-- name: pytest
-  image: python:3.8
-  commands:
-  - pip install -r dev_requirements.txt
-  - pytest
----
-kind: pipeline
-type: docker
-name: pytest-check
- 
-steps:
-- name: pytest
-  image: python:3.9
-  commands:
-  - pip install -r dev_requirements.txt
-  - pytest
----
-kind: pipeline
-type: docker
-name: pytest-check
- 
-steps:
-- name: pytest
-  image: python:3.10
-  commands:
-  - pip install -r dev_requirements.txt
-  - pytest
-
-
 ---
 kind: pipeline
 type: docker
@@ -50,11 +16,13 @@ steps:
     password:
       from_secret: registry_secret
   when:
+    branch:
+    - main
     event:
       include:
-        - push
+      - push
       exclude:
-        - pull_request
+      - pull_request
 
 ---
 kind: pipeline
@@ -74,9 +42,9 @@ steps:
   when:
     event:
       include:
-        - push
+      - push
       exclude:
-        - pull_request
+      - pull_request
 - name: discord-notification-dockerhub
   image: appleboy/drone-discord
   settings:
@@ -88,8 +56,10 @@ steps:
   depends_on:
   - dockerhub-registry
   when:
+    branch:
+    - main
     event:
       include:
-        - push
+      - push
       exclude:
-        - pull_request
+      - pull_request
