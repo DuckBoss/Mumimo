@@ -39,18 +39,6 @@ steps:
       from_secret: dockerhub_secret
     repo: jasonjerome/jjmumblebotreworked
     tags: ["${DRONE_BUILD_CREATED}-${DRONE_COMMIT_SHA:0:8}", "latest"]
-
-- name: discord-notification-dockerhub
-  image: appleboy/drone-discord
-  settings:
-    webhook_id:
-      from secret: discord_hook_id
-    webhook_token:
-      from_secret: discord_hook_token
-    message: "New Commit Build - [${DRONE_BUILD_CREATED}-${DRONE_COMMIT_SHA:0:8}]\nPull: `docker pull jasonjerome/jjmumblebotreworked:${DRONE_BUILD_CREATED}-${DRONE_COMMIT_SHA:0:8}`"
-  depends_on:
-  - dockerhub-registry
-
 trigger:
   branch:
   - main
