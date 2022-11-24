@@ -3,7 +3,7 @@ name: quality-checks
 on: [pull_request]
 
 jobs:
-  pylint-flake8-black-isort-mypy:
+  pylint-flake8-black-isort:
     runs-on: ubuntu-latest
     strategy:
       matrix:
