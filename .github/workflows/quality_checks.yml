@@ -17,10 +17,10 @@ jobs:
     - name: Install requirements
       run: pip install -r dev_requirements.txt
     - name: Analysing the code with pylint
-      run: pylint $(git ls-files '*.py')
+      run: pylint $(git ls-files '**/*.py')
     - name: Analysing the code with black
-      run: black --check $(git ls-files '*.py')
+      run: black --check $(git ls-files '**/*.py')
     - name: Analysing the code with flake8
-      run: flake8 $(git ls-files '*.py')
+      run: flake8 $(git ls-files '**/*.py')
     - name: Analysing the code with isort
-      run: isort --check $(git ls-files '*.py')
+      run: isort --check $(git ls-files '**/*.py')
