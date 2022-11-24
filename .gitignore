@@ -115,6 +115,9 @@ dmypy.json
 # PyCharm
 .idea/
 
+# VSCode
+.vscode/
+
 # Custom
 PermMediaDirectory/
 TempImageDirectory/
@@ -128,6 +131,7 @@ config.ini
 *.py.save
 *.db
 *.dll
+*.env
 cookies.txt
 JJMumbleBot/cfg/global_aliases.csv
 JJMumbleBot/cfg/custom_aliases.csv
