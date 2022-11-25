@@ -118,6 +118,10 @@ dmypy.json
 # VSCode
 .vscode/
 
+# Env Files
+*.env
+!tests/**/*.env
+
 # Custom
 PermMediaDirectory/
 TempImageDirectory/
@@ -131,7 +135,6 @@ config.ini
 *.py.save
 *.db
 *.dll
-*.env
 cookies.txt
 JJMumbleBot/cfg/global_aliases.csv
 JJMumbleBot/cfg/custom_aliases.csv
