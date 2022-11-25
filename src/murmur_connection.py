@@ -44,12 +44,12 @@ class MurmurConnection:
             host=self._connection_params.get(SYS_HOST),
             port=int(self._connection_params.get(SYS_PORT, 64738)),
             user=self._connection_params.get(SYS_USER),
-            password=self._connection_params.get(SYS_PASS),
+            password=str(self._connection_params.get(SYS_PASS)),
             certfile=self._connection_params.get(SYS_CERT),
             keyfile=self._connection_params.get(SYS_KEY),
             tokens=self._connection_params.get(SYS_TOKENS),
-            reconnect=self._connection_params.get(SYS_RECONNECT, False),
-            debug=self._connection_params.get(SYS_DEBUG, False),
+            reconnect=bool(self._connection_params.get(SYS_RECONNECT, False)),
+            debug=bool(self._connection_params.get(SYS_DEBUG, False)),
             stereo=True,
         )
         self._instance.set_codec_profile("audio")
