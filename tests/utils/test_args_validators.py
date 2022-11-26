@@ -92,7 +92,7 @@ class TestSystemArgumentsValidators:
         def test_port_is_empty(self, port) -> None:
             port = ""
             with pytest.raises(ValidationError, match=r".*\ cannot be empty.$"):
-                validator.validate_host_param(port)
+                validator.validate_port_param(port)
 
         def test_port_is_invalid(self, port) -> None:
             port = "invalid_port"
