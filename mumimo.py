@@ -23,7 +23,7 @@ from src.constants import (
     SYS_USER,
 )
 from src.system_arguments import args_parser
-from src.utils import env_parser
+from src.utils import env_parser, mumimo_utils
 
 
 class MumimoService:
@@ -57,10 +57,13 @@ class MumimoService:
         }
 
     def initialize_connection(self, connection_params):
-        connection = murmur_connection.MurmurConnection(connection_params)
-        connection.connect()
+        self._connection_instance = murmur_connection.MurmurConnection(connection_params)
+        if self._connection_instance is not None:
+            self._connection_instance.connect()
 
 
 if __name__ == "__main__":
+    if not mumimo_utils.is_supported_platform():
+        print("WARNING: Mumimo is only supported for Linux and MacOS systems.\nYou may run into unexpected issues on Windows and other systems.")
     system_args: Dict[str, str] = vars(args_parser.parse_args())
     mumimo = MumimoService(system_args)
