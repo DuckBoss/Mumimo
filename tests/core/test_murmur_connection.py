@@ -14,6 +14,10 @@ class TestMurmurConnection:
         instance = connection.instance()
         yield instance
         if instance is not None:
+            if instance._thread is not None:
+                if instance._thread_stop_event is not None:
+                    instance._thread_stop_event.set()
+                    instance._thread.join()
             instance._thread = None
             instance._connection_instance = None
             instance._connection_params = None
