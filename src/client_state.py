@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 from pymumble_py3 import Mumble
 
@@ -41,15 +42,15 @@ class ClientState:
             def undeafen(self):
                 self._deafen_state = self.DeafenState.UNDEAFENED
 
-        _state: AudioState
-        _connection: Mumble
+        _state: Optional[AudioState]
+        _connection: Optional[Mumble]
 
         def __init__(self, mumble_instance: Mumble) -> None:
             self._state = self.AudioState()
             self._connection = mumble_instance
 
         @property
-        def state(self) -> AudioState:
+        def state(self) -> Optional[AudioState]:
             return self._state
 
         def mute(self) -> bool:
