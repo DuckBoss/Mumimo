@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-from typing import Dict, Optional, Union
+import sys
+import time
+from typing import Dict, NoReturn, Optional, Union
 
-from src import murmur_connection
 from src.constants import (
     ENV_CERT,
     ENV_HOST,
@@ -22,20 +23,21 @@ from src.constants import (
     SYS_TOKENS,
     SYS_USER,
 )
+from src.murmur_connection import MurmurConnection, MurmurConnectionSingleton
 from src.system_arguments import args_parser
 from src.utils import env_parser, mumimo_utils
 
 
 class MumimoService:
-    _connection_instance: murmur_connection.MurmurConnection
+    _murmur_connection_instance: Optional[MurmurConnection]
     _connection_params: Dict[str, Union[Optional[str], Optional[bool]]]
 
-    def __init__(self, sys_args: Dict[str, str]):
+    def __init__(self, sys_args: Dict[str, str]) -> None:
         print(sys_args)
         self.interpret_sys_args(sys_args)
         self.initialize_connection(self._connection_params)
 
-    def interpret_sys_args(self, sys_args: Dict[str, str]):
+    def interpret_sys_args(self, sys_args: Dict[str, str]) -> None:
         # Load in options from .env file if present.
         available_env_file: Optional[str] = sys_args.get(SYS_ENV_FILE)
         env_file_dict: Dict[str, Optional[str]] = {}
@@ -56,10 +58,26 @@ class MumimoService:
             SYS_DEBUG: bool(sys_args.get(SYS_DEBUG, False)),
         }
 
-    def initialize_connection(self, connection_params):
-        self._connection_instance = murmur_connection.MurmurConnection(connection_params)
-        if self._connection_instance is not None:
-            self._connection_instance.connect()
+    def initialize_connection(self, connection_params) -> None:
+        connection_singleton = MurmurConnectionSingleton(connection_params)
+        self._murmur_connection_instance = connection_singleton.instance()
+        if self._murmur_connection_instance is not None:
+            self._murmur_connection_instance.connect()
+            if self._murmur_connection_instance.is_connected:
+                if self._murmur_connection_instance._client_state is not None:
+                    self._murmur_connection_instance._client_state.audio_properties.mute()
+            self._murmur_connection_instance.start()
+            self._wait_for_interrupt()
+
+    def _wait_for_interrupt(self) -> NoReturn:
+        try:
+            while True:
+                time.sleep(0.1)
+        except KeyboardInterrupt:
+            print("\nExiting Mumimo service.")
+            if self._murmur_connection_instance is not None:
+                self._murmur_connection_instance.stop()
+            sys.exit(0)
 
 
 if __name__ == "__main__":
