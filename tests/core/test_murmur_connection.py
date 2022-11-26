@@ -3,84 +3,100 @@ from unittest.mock import patch
 
 import pytest
 
-from src.constants import SYS_CERT, SYS_DEBUG, SYS_HOST, SYS_KEY, SYS_PASS, SYS_PORT, SYS_RECONNECT, SYS_TOKENS, SYS_USER
 from src.exceptions import ValidationError
-from src.murmur_connection import MurmurConnection
+from src.murmur_connection import MurmurConnection, MurmurConnectionSingleton
 
 
 class TestMurmurConnection:
     @pytest.fixture(autouse=True)
-    def correct_params(self) -> Dict[str, Union[str, bool]]:
-        return {
-            SYS_HOST: "127.0.0.1",
-            SYS_PORT: "64738",
-            SYS_USER: "test",
-            SYS_PASS: "test",
-            SYS_CERT: "path/to/cert",
-            SYS_TOKENS: "token1 token2",
-            SYS_KEY: "path/to/key",
-            SYS_RECONNECT: False,
-            SYS_DEBUG: False,
-        }
+    def murmur_connection(self):
+        connection = MurmurConnectionSingleton()
+        instance = connection.instance()
+        yield instance
+        if instance is not None:
+            if instance._thread is not None:
+                if instance._thread_stop_event is not None:
+                    instance._thread_stop_event.set()
+                    instance._thread.join()
+            instance._thread = None
+            instance._connection_instance = None
+            instance._connection_params = None
+            instance._is_connected = False
+        if hasattr(connection, "_instance"):
+            connection.clear()
 
-    @pytest.fixture(autouse=True)
-    def incorrect_params(self) -> Dict[str, Union[str, bool]]:
-        return {
-            SYS_HOST: "hello",
-            SYS_PORT: "hello",
-            SYS_USER: "test",
-            SYS_PASS: "test",
-            SYS_CERT: "path/to/cert",
-            SYS_TOKENS: "token1 token2",
-            SYS_KEY: "path/to/key",
-            SYS_RECONNECT: False,
-            SYS_DEBUG: False,
-        }
+    def test_murmur_connection_setup_without_init_params(self, murmur_connection) -> None:
+        murmur_connection._setup()
+        assert murmur_connection._connection_params is None
 
     @patch.object(MurmurConnection, "_validate_connection_params")
-    def test_murmur_connection_without_init_params(self, mock_setup) -> None:
-        mock_setup.return_value = None
-        connection = MurmurConnection()
-        assert connection._connection_params is None
-
-    @patch.object(MurmurConnection, "_validate_connection_params")
-    def test_murmur_connection_with_init_params(self, mock_setup, correct_params: Dict[str, Union[str, bool]]) -> None:
-        mock_setup.return_value = None
-        connection = MurmurConnection(correct_params)
-        assert connection._connection_params is not None
+    def test_murmur_connection_setup_with_init_params(
+        self, mock_validate, murmur_connection, valid_connection_params: Dict[str, Union[str, bool]]
+    ) -> None:
+        mock_validate.return_value = None
+        murmur_connection._setup(valid_connection_params)
+        assert murmur_connection._connection_params is not None
 
     @patch.object(MurmurConnection, "_setup")
-    def test_murmur_connection_validate_correct_params(self, mock_validate, correct_params: Dict[str, Union[str, bool]]) -> None:
-        mock_validate.return_value = None
-        connection = MurmurConnection(correct_params)
-        connection._validate_connection_params(correct_params)
-        assert connection is not None
+    def test_murmur_connection_validate_correct_params(
+        self, mock_setup, murmur_connection, valid_connection_params: Dict[str, Union[str, bool]]
+    ) -> None:
+        mock_setup.return_value = None
+        murmur_connection._validate_connection_params(valid_connection_params)
+        assert murmur_connection is not None
 
     @patch.object(MurmurConnection, "_setup")
-    def test_murmur_connection_validate_incorrect_params(self, mock_validate, incorrect_params: Dict[str, Union[str, bool]]) -> None:
-        mock_validate.return_value = None
-        connection = MurmurConnection(incorrect_params)
+    def test_murmur_connection_validate_incorrect_params(
+        self, mock_setup, murmur_connection, invalid_connection_params: Dict[str, Union[str, bool]]
+    ) -> None:
+        mock_setup.return_value = None
         with pytest.raises(ValidationError, match=r".*\ is not a valid host ip or url.$"):
-            connection._validate_connection_params(incorrect_params)
+            murmur_connection._validate_connection_params(invalid_connection_params)
 
     @patch.object(MurmurConnection, "_connect_instance")
     @patch.object(MurmurConnection, "_loop")
+    @patch.object(MurmurConnection, "start")
+    @patch.object(MurmurConnection, "stop")
     def test_murmur_connection_connect_to_murmur_with_init_params(
-        self, mock_instance, mock_loop, correct_params: Dict[str, Union[str, bool]]
+        self, mock_instance, mock_loop, mock_start, mock_stop, murmur_connection, valid_connection_params: Dict[str, Union[str, bool]]
     ) -> None:
         mock_instance.return_value = None
         mock_loop.return_value = None
-        connection = MurmurConnection(correct_params)
-        connection.connect()
-        assert connection._connection_params == correct_params
+        mock_start.return_value = True
+        mock_stop.return_value = True
+        murmur_connection._setup(valid_connection_params)
+        murmur_connection.connect()
+        murmur_connection.start()
+        murmur_connection.stop()
+        assert murmur_connection._connection_params == valid_connection_params
 
     @patch.object(MurmurConnection, "_connect_instance")
     @patch.object(MurmurConnection, "_loop")
+    @patch.object(MurmurConnection, "start")
+    @patch.object(MurmurConnection, "stop")
     def test_murmur_connection_connect_to_murmur_with_connect_params(
-        self, mock_instance, mock_loop, correct_params: Dict[str, Union[str, bool]]
+        self, mock_instance, mock_loop, mock_start, mock_stop, murmur_connection, valid_connection_params: Dict[str, Union[str, bool]]
     ) -> None:
         mock_instance.return_value = None
         mock_loop.return_value = None
-        connection = MurmurConnection()
-        connection.connect(correct_params)
-        assert connection._connection_params == correct_params
+        mock_start.return_value = True
+        mock_stop.return_value = True
+        murmur_connection.connect(valid_connection_params)
+        murmur_connection.start()
+        murmur_connection.stop()
+        assert murmur_connection._connection_params == valid_connection_params
+
+    @patch.object(MurmurConnection, "_connect_instance")
+    @patch("pymumble_py3.Mumble")
+    def test_murmur_connection_threading(
+        self, mock_connect, mock_mumble, murmur_connection, valid_connection_params: Dict[str, Union[str, bool]]
+    ) -> None:
+        mock_connect.return_value = None
+        murmur_connection._setup(valid_connection_params)
+        murmur_connection.connect()
+        murmur_connection._is_connected = True
+        murmur_connection.start()
+        assert murmur_connection._thread is not None
+        murmur_connection._connection_instance = mock_mumble
+        murmur_connection.stop()
+        assert murmur_connection._thread is None
