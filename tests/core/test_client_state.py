@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+import pytest
 from pymumble_py3 import Mumble
 
 from src.client_state import ClientState
@@ -25,21 +26,29 @@ class TestAudioState:
 
     def test_audio_state_mute(self) -> None:
         audio_state = ClientState.AudioProperties.AudioState()
+        audio_state._mute_state = ClientState.AudioProperties.AudioState.MuteState.UNMUTED
+
         audio_state.mute()
         assert audio_state.mute_state == ClientState.AudioProperties.AudioState.MuteState.MUTED
 
     def test_audio_state_unmute(self) -> None:
         audio_state = ClientState.AudioProperties.AudioState()
+        audio_state._mute_state = ClientState.AudioProperties.AudioState.MuteState.MUTED
+
         audio_state.unmute()
         assert audio_state.mute_state == ClientState.AudioProperties.AudioState.MuteState.UNMUTED
 
     def test_audio_state_deafen(self) -> None:
         audio_state = ClientState.AudioProperties.AudioState()
+        audio_state._deafen_state = ClientState.AudioProperties.AudioState.DeafenState.UNDEAFENED
+
         audio_state.deafen()
         assert audio_state.deafen_state == ClientState.AudioProperties.AudioState.DeafenState.DEAFENED
 
     def test_audio_state_undeafen(self) -> None:
         audio_state = ClientState.AudioProperties.AudioState()
+        audio_state._deafen_state = ClientState.AudioProperties.AudioState.DeafenState.DEAFENED
+
         audio_state.undeafen()
         assert audio_state.deafen_state == ClientState.AudioProperties.AudioState.DeafenState.UNDEAFENED
 
@@ -49,61 +58,172 @@ class TestAudioProperties:
     def test_audio_properties_init(self, mumble_instance: Mumble) -> None:
         client_state = ClientState(mumble_instance)
         audio_properties = client_state.audio_properties
-        assert audio_properties.state.mute_state.value == ClientState.AudioProperties.AudioState.MuteState.UNMUTED.value
-        assert audio_properties.state.deafen_state.value == ClientState.AudioProperties.AudioState.DeafenState.UNDEAFENED.value
+        if audio_properties._state:
+            assert audio_properties._state.mute_state.value == ClientState.AudioProperties.AudioState.MuteState.UNMUTED.value
+            assert audio_properties._state.deafen_state.value == ClientState.AudioProperties.AudioState.DeafenState.UNDEAFENED.value
+        else:
+            pytest.fail("Something went wrong: the _state value is None")
 
     @patch.object(MurmurConnection, "connection_instance")
-    @patch.object(ClientState.AudioProperties, "_check_client_mute")
-    @patch.object(ClientState.AudioProperties, "_check_client_unmute")
-    def test_audio_properties_mute(self, client_unmute_mock, client_mute_mock, mumble_instance: Mumble) -> None:
-        client_mute_mock.return_value = True
-        client_unmute_mock.return_value = True
-
+    def test_audio_properties_state_exists(self, mumble_instance: Mumble) -> None:
         client_state = ClientState(mumble_instance)
         audio_properties = client_state.audio_properties
-        audio_properties._state._mute_state = ClientState.AudioProperties.AudioState.MuteState.UNMUTED
-
-        assert audio_properties.mute() is True
-        assert audio_properties._state.mute_state.value == ClientState.AudioProperties.AudioState.MuteState.MUTED.value
+        assert audio_properties.state is not None
 
     @patch.object(MurmurConnection, "connection_instance")
-    @patch.object(ClientState.AudioProperties, "_check_client_mute")
-    @patch.object(ClientState.AudioProperties, "_check_client_unmute")
-    def test_audio_properties_unmute(self, client_unmute_mock, client_mute_mock, mumble_instance: Mumble) -> None:
-        client_mute_mock.return_value = True
-        client_unmute_mock.return_value = True
-
+    def test_audio_properties_state_does_not_exist(self, mumble_instance: Mumble) -> None:
         client_state = ClientState(mumble_instance)
         audio_properties = client_state.audio_properties
-        audio_properties._state._mute_state = ClientState.AudioProperties.AudioState.MuteState.MUTED
+        audio_properties._state = None
+        assert audio_properties.state is None
 
-        assert audio_properties.unmute() is True
-        assert audio_properties.state.mute_state.value == ClientState.AudioProperties.AudioState.MuteState.UNMUTED.value
+    class TestMute:
+        @patch.object(MurmurConnection, "connection_instance")
+        @patch.object(ClientState.AudioProperties, "_check_client_mute")
+        def test_audio_properties_mute(self, client_mute_mock, mumble_instance: Mumble) -> None:
+            client_mute_mock.return_value = True
 
-    @patch.object(MurmurConnection, "connection_instance")
-    @patch.object(ClientState.AudioProperties, "_check_client_deafen")
-    @patch.object(ClientState.AudioProperties, "_check_client_undeafen")
-    def test_audio_properties_deafen(self, client_undeafen_mock, client_deafen_mock, mumble_instance: Mumble) -> None:
-        client_deafen_mock.return_value = True
-        client_undeafen_mock.return_value = True
+            client_state = ClientState(mumble_instance)
+            audio_properties = client_state.audio_properties
+            if audio_properties._state:
+                audio_properties._state._mute_state = ClientState.AudioProperties.AudioState.MuteState.UNMUTED
 
-        client_state = ClientState(mumble_instance)
-        audio_properties = client_state.audio_properties
-        audio_properties._state._deafen_state = ClientState.AudioProperties.AudioState.DeafenState.UNDEAFENED
+                assert audio_properties.mute() is True
+                assert audio_properties._state.mute_state.value == ClientState.AudioProperties.AudioState.MuteState.MUTED.value
+            else:
+                pytest.fail("Something went wrong: the _state value is None")
 
-        assert audio_properties.deafen() is True
-        assert audio_properties.state.deafen_state.value == ClientState.AudioProperties.AudioState.DeafenState.DEAFENED.value
+        @patch.object(MurmurConnection, "connection_instance")
+        @patch.object(ClientState.AudioProperties, "_check_client_mute")
+        def test_audio_properties_mute_invalid_state(self, client_mute_mock, mumble_instance: Mumble) -> None:
+            client_mute_mock.return_value = True
 
-    @patch.object(MurmurConnection, "connection_instance")
-    @patch.object(ClientState.AudioProperties, "_check_client_deafen")
-    @patch.object(ClientState.AudioProperties, "_check_client_undeafen")
-    def test_audio_properties_undeafen(self, client_undeafen_mock, client_deafen_mock, mumble_instance: Mumble) -> None:
-        client_deafen_mock.return_value = True
-        client_undeafen_mock.return_value = True
+            client_state = ClientState(mumble_instance)
+            audio_properties = client_state.audio_properties
+            audio_properties._state = None
 
-        client_state = ClientState(mumble_instance)
-        audio_properties = client_state.audio_properties
-        audio_properties._state._deafen_state = ClientState.AudioProperties.AudioState.DeafenState.DEAFENED
+            assert audio_properties.mute() is False
 
-        assert audio_properties.undeafen() is True
-        assert audio_properties.state.deafen_state.value == ClientState.AudioProperties.AudioState.DeafenState.UNDEAFENED.value
+        @patch.object(MurmurConnection, "connection_instance")
+        @patch.object(ClientState.AudioProperties, "_check_client_mute")
+        def test_audio_properties_mute_invalid_mute_check(self, client_mute_mock, mumble_instance: Mumble) -> None:
+            client_mute_mock.return_value = False
+
+            client_state = ClientState(mumble_instance)
+            audio_properties = client_state.audio_properties
+
+            assert audio_properties.mute() is False
+
+    class TestUnmute:
+        @patch.object(MurmurConnection, "connection_instance")
+        @patch.object(ClientState.AudioProperties, "_check_client_unmute")
+        def test_audio_properties_unmute(self, client_unmute_mock, mumble_instance: Mumble) -> None:
+            client_unmute_mock.return_value = True
+
+            client_state = ClientState(mumble_instance)
+            audio_properties = client_state.audio_properties
+            if audio_properties._state:
+                audio_properties._state._mute_state = ClientState.AudioProperties.AudioState.MuteState.MUTED
+
+                assert audio_properties.unmute() is True
+                assert audio_properties._state.mute_state.value == ClientState.AudioProperties.AudioState.MuteState.UNMUTED.value
+            else:
+                pytest.fail("Something went wrong: the _state value is None")
+
+        @patch.object(MurmurConnection, "connection_instance")
+        @patch.object(ClientState.AudioProperties, "_check_client_unmute")
+        def test_audio_properties_unmute_invalid_state(self, client_unmute_mock, mumble_instance: Mumble) -> None:
+            client_unmute_mock.return_value = True
+
+            client_state = ClientState(mumble_instance)
+            audio_properties = client_state.audio_properties
+            audio_properties._state = None
+
+            assert audio_properties.unmute() is False
+
+        @patch.object(MurmurConnection, "connection_instance")
+        @patch.object(ClientState.AudioProperties, "_check_client_unmute")
+        def test_audio_properties_unmute_invalid_unmute_check(self, client_unmute_mock, mumble_instance: Mumble) -> None:
+            client_unmute_mock.return_value = False
+
+            client_state = ClientState(mumble_instance)
+            audio_properties = client_state.audio_properties
+            audio_properties._state = None
+
+            assert audio_properties.unmute() is False
+
+    class TestDeafen:
+        @patch.object(MurmurConnection, "connection_instance")
+        @patch.object(ClientState.AudioProperties, "_check_client_deafen")
+        def test_audio_properties_deafen(self, client_deafen_mock, mumble_instance: Mumble) -> None:
+            client_deafen_mock.return_value = True
+
+            client_state = ClientState(mumble_instance)
+            audio_properties = client_state.audio_properties
+            if audio_properties._state:
+                audio_properties._state._deafen_state = ClientState.AudioProperties.AudioState.DeafenState.UNDEAFENED
+
+                assert audio_properties.deafen() is True
+                assert audio_properties._state.deafen_state.value == ClientState.AudioProperties.AudioState.DeafenState.DEAFENED.value
+            else:
+                pytest.fail("Something went wrong: the _state value is None")
+
+        @patch.object(MurmurConnection, "connection_instance")
+        @patch.object(ClientState.AudioProperties, "_check_client_deafen")
+        def test_audio_properties_deafen_invalid_state(self, client_deafen_mock, mumble_instance: Mumble) -> None:
+            client_deafen_mock.return_value = True
+
+            client_state = ClientState(mumble_instance)
+            audio_properties = client_state.audio_properties
+            audio_properties._state = None
+
+            assert audio_properties.deafen() is False
+
+        @patch.object(MurmurConnection, "connection_instance")
+        @patch.object(ClientState.AudioProperties, "_check_client_deafen")
+        def test_audio_properties_deafen_invalid_deafen_check(self, client_deafen_mock, mumble_instance: Mumble) -> None:
+            client_deafen_mock.return_value = False
+
+            client_state = ClientState(mumble_instance)
+            audio_properties = client_state.audio_properties
+            audio_properties._state = None
+
+            assert audio_properties.deafen() is False
+
+    class TestUndeafen:
+        @patch.object(MurmurConnection, "connection_instance")
+        @patch.object(ClientState.AudioProperties, "_check_client_undeafen")
+        def test_audio_properties_undeafen(self, client_undeafen_mock, mumble_instance: Mumble) -> None:
+            client_undeafen_mock.return_value = True
+
+            client_state = ClientState(mumble_instance)
+            audio_properties = client_state.audio_properties
+            if audio_properties._state:
+                audio_properties._state._deafen_state = ClientState.AudioProperties.AudioState.DeafenState.DEAFENED
+
+                assert audio_properties.undeafen() is True
+                assert audio_properties._state.deafen_state.value == ClientState.AudioProperties.AudioState.DeafenState.UNDEAFENED.value
+            else:
+                pytest.fail("Something went wrong: the _state value is None")
+
+        @patch.object(MurmurConnection, "connection_instance")
+        @patch.object(ClientState.AudioProperties, "_check_client_undeafen")
+        def test_audio_properties_undeafen_invalid_state(self, client_undeafen_mock, mumble_instance: Mumble) -> None:
+            client_undeafen_mock.return_value = True
+
+            client_state = ClientState(mumble_instance)
+            audio_properties = client_state.audio_properties
+            audio_properties._state = None
+
+            assert audio_properties.undeafen() is False
+
+        @patch.object(MurmurConnection, "connection_instance")
+        @patch.object(ClientState.AudioProperties, "_check_client_undeafen")
+        def test_audio_properties_undeafen_invalid_undeafen_check(self, client_undeafen_mock, mumble_instance: Mumble) -> None:
+            client_undeafen_mock.return_value = False
+
+            client_state = ClientState(mumble_instance)
+            audio_properties = client_state.audio_properties
+            audio_properties._state = None
+
+            assert audio_properties.undeafen() is False
