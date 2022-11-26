@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from typing import Dict, Optional, Union
 
 from src import murmur_connection
