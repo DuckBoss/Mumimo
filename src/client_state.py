@@ -71,33 +71,48 @@ class ClientState:
         def unmute(self) -> bool:
             if self._state is None:
                 return False
+            if self._check_client_unmute():
+                self._state.unmute()
+                return True
+            return False
+
+        def _check_client_unmute(self) -> bool:
             if self._connection is not None:
                 if self._connection.users.myself:
                     self._connection.users.myself.unmute()
                     if self._connection.users.myself.get_property("self_mute") is False:
-                        self._state.unmute()
                         return True
             return False
 
         def deafen(self) -> bool:
             if self._state is None:
                 return False
+            if self._check_client_deafen():
+                self._state.deafen()
+                return True
+            return False
+
+        def _check_client_deafen(self) -> bool:
             if self._connection is not None:
                 if self._connection.users.myself:
                     self._connection.users.myself.deafen()
                     if self._connection.users.myself.get_property("self_deaf") is True:
-                        self._state.deafen()
                         return True
             return False
 
         def undeafen(self) -> bool:
             if self._state is None:
                 return False
+            if self._check_client_undeafen():
+                self._state.undeafen()
+                return True
+            return False
+
+        def _check_client_undeafen(self) -> bool:
             if self._connection is not None:
                 if self._connection.users.myself:
                     self._connection.users.myself.undeafen()
                     if self._connection.users.myself.get_property("self_deaf") is False:
-                        self._state.unmute()
                         return True
             return False
 

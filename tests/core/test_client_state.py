@@ -46,55 +46,64 @@ class TestAudioState:
 
 class TestAudioProperties:
     @patch.object(MurmurConnection, "connection_instance")
-    def test_audio_properties_init(self, mumble_instance) -> None:
+    def test_audio_properties_init(self, mumble_instance: Mumble) -> None:
         client_state = ClientState(mumble_instance)
         audio_properties = client_state.audio_properties
-        assert audio_properties is not None
+        assert audio_properties.state.mute_state.value == ClientState.AudioProperties.AudioState.MuteState.UNMUTED.value
+        assert audio_properties.state.deafen_state.value == ClientState.AudioProperties.AudioState.DeafenState.UNDEAFENED.value
 
     @patch.object(MurmurConnection, "connection_instance")
-    def test_audio_properties_mute(self, mumble_instance) -> None:
+    @patch.object(ClientState.AudioProperties, "_check_client_mute")
+    @patch.object(ClientState.AudioProperties, "_check_client_unmute")
+    def test_audio_properties_mute(self, client_unmute_mock, client_mute_mock, mumble_instance: Mumble) -> None:
+        client_mute_mock.return_value = True
+        client_unmute_mock.return_value = True
+
         client_state = ClientState(mumble_instance)
         audio_properties = client_state.audio_properties
+        audio_properties._state._mute_state = ClientState.AudioProperties.AudioState.MuteState.UNMUTED
 
-        with patch.object(ClientState.AudioProperties, "unmute", return_value=True, side_effect=audio_properties.state.unmute()):
-            assert audio_properties.unmute() is True
-            assert audio_properties._state.mute_state.value == ClientState.AudioProperties.AudioState.MuteState.UNMUTED.value
-        with patch.object(ClientState.AudioProperties, "mute", return_value=True, side_effect=audio_properties.state.mute()):
-            assert audio_properties.mute() is True
-            assert audio_properties._state.mute_state.value == ClientState.AudioProperties.AudioState.MuteState.MUTED.value
+        assert audio_properties.mute() is True
+        assert audio_properties._state.mute_state.value == ClientState.AudioProperties.AudioState.MuteState.MUTED.value
 
     @patch.object(MurmurConnection, "connection_instance")
-    def test_audio_properties_unmute(self, mumble_instance: Mumble) -> None:
+    @patch.object(ClientState.AudioProperties, "_check_client_mute")
+    @patch.object(ClientState.AudioProperties, "_check_client_unmute")
+    def test_audio_properties_unmute(self, client_unmute_mock, client_mute_mock, mumble_instance: Mumble) -> None:
+        client_mute_mock.return_value = True
+        client_unmute_mock.return_value = True
+
         client_state = ClientState(mumble_instance)
         audio_properties = client_state.audio_properties
+        audio_properties._state._mute_state = ClientState.AudioProperties.AudioState.MuteState.MUTED
 
-        with patch.object(ClientState.AudioProperties, "mute", return_value=True, side_effect=audio_properties.state.mute()):
-            assert audio_properties.mute() is True
-            assert audio_properties._state.mute_state.value == ClientState.AudioProperties.AudioState.MuteState.MUTED.value
-        with patch.object(ClientState.AudioProperties, "unmute", return_value=True, side_effect=audio_properties.state.unmute()):
-            assert audio_properties.unmute() is True
-            assert audio_properties._state.mute_state.value == ClientState.AudioProperties.AudioState.MuteState.UNMUTED.value
+        assert audio_properties.unmute() is True
+        assert audio_properties.state.mute_state.value == ClientState.AudioProperties.AudioState.MuteState.UNMUTED.value
 
     @patch.object(MurmurConnection, "connection_instance")
-    def test_audio_properties_deafen(self, mumble_instance: Mumble) -> None:
+    @patch.object(ClientState.AudioProperties, "_check_client_deafen")
+    @patch.object(ClientState.AudioProperties, "_check_client_undeafen")
+    def test_audio_properties_deafen(self, client_undeafen_mock, client_deafen_mock, mumble_instance: Mumble) -> None:
+        client_deafen_mock.return_value = True
+        client_undeafen_mock.return_value = True
+
         client_state = ClientState(mumble_instance)
         audio_properties = client_state.audio_properties
+        audio_properties._state._deafen_state = ClientState.AudioProperties.AudioState.DeafenState.UNDEAFENED
 
-        with patch.object(ClientState.AudioProperties, "undeafen", return_value=True, side_effect=audio_properties.state.undeafen()):
-            assert audio_properties.undeafen() is True
-            assert audio_properties._state.deafen_state.value == ClientState.AudioProperties.AudioState.DeafenState.UNDEAFENED.value
-        with patch.object(ClientState.AudioProperties, "deafen", return_value=True, side_effect=audio_properties.state.deafen()):
-            assert audio_properties.deafen() is True
-            assert audio_properties._state.deafen_state.value == ClientState.AudioProperties.AudioState.DeafenState.DEAFENED.value
+        assert audio_properties.deafen() is True
+        assert audio_properties.state.deafen_state.value == ClientState.AudioProperties.AudioState.DeafenState.DEAFENED.value
 
     @patch.object(MurmurConnection, "connection_instance")
-    def test_audio_properties_undeafen(self, mumble_instance: Mumble) -> None:
+    @patch.object(ClientState.AudioProperties, "_check_client_deafen")
+    @patch.object(ClientState.AudioProperties, "_check_client_undeafen")
+    def test_audio_properties_undeafen(self, client_undeafen_mock, client_deafen_mock, mumble_instance: Mumble) -> None:
+        client_deafen_mock.return_value = True
+        client_undeafen_mock.return_value = True
+
         client_state = ClientState(mumble_instance)
         audio_properties = client_state.audio_properties
+        audio_properties._state._deafen_state = ClientState.AudioProperties.AudioState.DeafenState.DEAFENED
 
-        with patch.object(ClientState.AudioProperties, "deafen", return_value=True, side_effect=audio_properties.state.deafen()):
-            assert audio_properties.deafen() is True
-            assert audio_properties._state.deafen_state.value == ClientState.AudioProperties.AudioState.DeafenState.DEAFENED.value
-        with patch.object(ClientState.AudioProperties, "undeafen", return_value=True, side_effect=audio_properties.state.undeafen()):
-            assert audio_properties.undeafen() is True
-            assert audio_properties._state.deafen_state.value == ClientState.AudioProperties.AudioState.DeafenState.UNDEAFENED.value
+        assert audio_properties.undeafen() is True
+        assert audio_properties.state.deafen_state.value == ClientState.AudioProperties.AudioState.DeafenState.UNDEAFENED.value
