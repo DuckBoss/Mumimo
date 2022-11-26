@@ -55,11 +55,16 @@ class ClientState:
         def mute(self) -> bool:
             if self._state is None:
                 return False
+            if self._check_client_mute():
+                self._state.mute()
+                return True
+            return False
+
+        def _check_client_mute(self) -> bool:
             if self._connection is not None:
                 if self._connection.users.myself:
                     self._connection.users.myself.mute()
                     if self._connection.users.myself.get_property("self_mute") is True:
-                        self._state.mute()
                         return True
             return False
 
