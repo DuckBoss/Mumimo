@@ -9,4 +9,3 @@ pytest-randomly
 pytest-timeout
 pytest-cov
 pytest-clarity
-mock
