@@ -1,6 +1,9 @@
 name: tests
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - 'main'
 
 jobs:
   build:
@@ -20,6 +23,6 @@ jobs:
         pip install -r dev_requirements.txt
         pip install -e .
     - name: Run tests and collect coverage
-      run: pytest --cov=. --cov-config=.coveragerc --cov-report=xml
+      run: pytest --cov=src/ --cov-config=.coveragerc --cov-report=xml
     - name: Upload coverage reports to Codecov with GitHub Action
       uses: codecov/codecov-action@v3
