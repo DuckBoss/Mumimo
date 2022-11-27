@@ -1,4 +1,4 @@
-FROM docker.io/python:3-slim
+FROM docker.io/python:3.10-slim
 
 ARG DEBIAN_FRONTEND=noninteractive
 
