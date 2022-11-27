@@ -3,9 +3,9 @@ FROM docker.io/python:3.10-slim
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update --no-install-recommends \
-&& apt-get install -y -qq -o=Dpkg::Use-Pty=0 apt-utils --no-install-recommends 2>&1 | grep -v "debconf: delaying package configuration, since apt-utils is not installed" \
-&& apt-get install -y -qq -o=Dpkg::Use-Pty=0 ffmpeg vlc --no-install-recommends \
-&& apt-get install -y -qq -o=Dpkg::Use-Pty=0 libopus-dev gcc openssl git \
+&& apt-get install -y -qq apt-utils --no-install-recommends 2>&1 | grep -v "debconf: delaying package configuration, since apt-utils is not installed" \
+&& apt-get install -y -qq ffmpeg vlc --no-install-recommends \
+&& apt-get install -y -qq libopus-dev gcc openssl git \
 && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Enable VLC to be executed as root
