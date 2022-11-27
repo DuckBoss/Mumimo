@@ -1,4 +1,4 @@
-# JJMumbleBotReworked - Under Construction
+# Mumimo - Under Construction
 
 [![Build Status](https://build.jasonjero.me/api/badges/DuckBoss/JJMumbleBotReworked/status.svg?ref=refs/heads/main)](https://build.jasonjero.me/DuckBoss/JJMumbleBotReworked)
 [![Pytest](https://github.com/DuckBoss/JJMumbleBotReworked/actions/workflows/pytest_main.yaml/badge.svg)](https://github.com/DuckBoss/JJMumbleBotReworked/actions/workflows/pytest_main.yaml)
