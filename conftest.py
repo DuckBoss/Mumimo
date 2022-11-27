@@ -1,3 +1,4 @@
+import pathlib
 from typing import Dict, Union
 
 import pytest
@@ -33,3 +34,16 @@ def invalid_connection_params() -> Dict[str, Union[str, bool]]:
         SYS_RECONNECT: False,
         SYS_DEBUG: False,
     }
+
+
+@pytest.fixture(autouse=True)
+def generated_files_teardown():
+    generated_files_path = pathlib.Path("tests/data/generated")
+    if not generated_files_path.exists():
+        generated_files_path.mkdir(parents=True, exist_ok=True)
+    yield
+    for f in generated_files_path.glob("*"):
+        if f.is_file():
+            f.unlink()
+            print(f"Removed generated test file: {f.name}")
+    generated_files_path.rmdir()
