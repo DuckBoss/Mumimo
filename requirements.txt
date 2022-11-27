@@ -1,5 +1,6 @@
 python-dotenv
 validators
+toml
 
 fuzzywuzzy
 python-Levenshtein
