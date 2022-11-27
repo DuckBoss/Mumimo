@@ -37,7 +37,7 @@ steps:
       from_secret: dockerhub_user
     password:
       from_secret: dockerhub_secret
-    repo: jasonjerome/jjmumblebotreworked
+    repo: jasonjerome/mumimo
     tags: ["${DRONE_BUILD_CREATED}-${DRONE_COMMIT_SHA:0:8}", "latest"]
 trigger:
   branch:
