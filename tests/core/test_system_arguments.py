@@ -87,33 +87,33 @@ class TestSystemArguments:
                 sys_args_parser.parse_args(options)
 
     class TestOptionCertFile:
-        def test_option_valid_certfile(self, sys_args_parser):
+        def test_option_valid_cert_file(self, sys_args_parser):
             options = ["-c", "path/to/cert"]
             parser = sys_args_parser.parse_args(options)
-            assert parser.certfile == "path/to/cert"
+            assert parser.cert_file == "path/to/cert"
 
-        def test_option_invalid_certfile_value(self, sys_args_parser):
+        def test_option_invalid_cert_file_value(self, sys_args_parser):
             options = ["-c", 99]
             with pytest.raises(TypeError):
                 sys_args_parser.parse_args(options)
 
-        def test_option_invalid_certfile_empty(self, sys_args_parser):
+        def test_option_invalid_cert_file_empty(self, sys_args_parser):
             options = ["-c"]
             with pytest.raises(SystemExit):
                 sys_args_parser.parse_args(options)
 
     class TestOptionKeyFile:
-        def test_option_valid_certfile(self, sys_args_parser):
+        def test_option_valid_key_file(self, sys_args_parser):
             options = ["-k", "path/to/key"]
             parser = sys_args_parser.parse_args(options)
-            assert parser.keyfile == "path/to/key"
+            assert parser.key_file == "path/to/key"
 
-        def test_option_invalid_keyfile_value(self, sys_args_parser):
+        def test_option_invalid_key_file_value(self, sys_args_parser):
             options = ["-k", 99]
             with pytest.raises(TypeError):
                 sys_args_parser.parse_args(options)
 
-        def test_option_invalid_keyfile_empty(self, sys_args_parser):
+        def test_option_invalid_key_file_empty(self, sys_args_parser):
             options = ["-k"]
             with pytest.raises(SystemExit):
                 sys_args_parser.parse_args(options)
