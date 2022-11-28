@@ -1,5 +1,6 @@
 import pytest
 
+from src.constants import VERBOSITY_MIN
 from src.system_arguments import args_parser
 
 
@@ -18,6 +19,22 @@ class TestSystemArguments:
             options = []
             parser = sys_args_parser.parse_args(options)
             assert parser.headless is False
+
+    class TestOptionConfigFile:
+        def test_option_valid_config_file(self, sys_args_parser):
+            options = ["-cf", "path/to/config"]
+            parser = sys_args_parser.parse_args(options)
+            assert parser.config_file == "path/to/config"
+
+        def test_option_invalid_config_file_value(self, sys_args_parser):
+            options = ["-cf", 99]
+            with pytest.raises(TypeError):
+                sys_args_parser.parse_args(options)
+
+        def test_option_invalid_config_file_empty(self, sys_args_parser):
+            options = ["-cf"]
+            with pytest.raises(SystemExit):
+                sys_args_parser.parse_args(options)
 
     class TestOptionHost:
         def test_option_valid_host(self, sys_args_parser):
@@ -145,16 +162,16 @@ class TestSystemArguments:
             parser = sys_args_parser.parse_args(options)
             assert parser.reconnect is False
 
-    class TestOptionDebug:
-        def test_option_debug(self, sys_args_parser):
-            options = ["-d"]
+    class TestOptionVerbose:
+        def test_option_verbose(self, sys_args_parser):
+            options = ["-v"]
             parser = sys_args_parser.parse_args(options)
-            assert parser.debug is True
+            assert parser.verbose == 1
 
-        def test_option_no_debug(self, sys_args_parser):
+        def test_option_no_verbose(self, sys_args_parser):
             options = []
             parser = sys_args_parser.parse_args(options)
-            assert parser.debug is False
+            assert parser.verbose == VERBOSITY_MIN
 
     class TestOptionGenerateCert:
         def test_option_generate_cert(self, sys_args_parser):

@@ -2,7 +2,7 @@ from typing import Dict, Union
 
 import pytest
 
-from src.constants import SYS_CERT, SYS_DEBUG, SYS_HOST, SYS_KEY, SYS_PASS, SYS_PORT, SYS_RECONNECT, SYS_TOKENS, SYS_USER
+from src.constants import SYS_CERT, SYS_HOST, SYS_KEY, SYS_PASS, SYS_PORT, SYS_RECONNECT, SYS_TOKENS, SYS_USER, SYS_VERBOSE
 from src.exceptions import ValidationError
 from src.utils.args_validators import SystemArgumentsValidator as validator
 
@@ -19,7 +19,7 @@ class TestSystemArgumentsValidators:
             "key_file": "",
             "tokens": "",
             "reconnect": "",
-            "debug": "",
+            "verbose": "",
         }
 
     @pytest.fixture(autouse=True)
@@ -63,9 +63,9 @@ class TestSystemArgumentsValidators:
         sys_args[SYS_RECONNECT] = ""
 
     @pytest.fixture(autouse=True)
-    def debug(self, sys_args):
-        yield sys_args[SYS_DEBUG]
-        sys_args[SYS_DEBUG] = ""
+    def verbose(self, sys_args):
+        yield sys_args[SYS_VERBOSE]
+        sys_args[SYS_VERBOSE] = ""
 
     class TestHostParam:
         def test_host_is_none(self, host) -> None:
@@ -170,13 +170,18 @@ class TestSystemArgumentsValidators:
             with pytest.raises(ValidationError, match=r".*\ can only be True or False.$"):
                 validator.validate_reconnect_param(reconnect)
 
-    class TestDebugParam:
-        def test_debug_is_empty(self, debug) -> None:
-            debug = None
-            with pytest.raises(ValidationError, match=r".*\ can only be True or False, not None.$"):
-                validator.validate_debug_param(debug)
+    class TestVerboseParam:
+        def test_verbose_is_empty(self, verbose) -> None:
+            verbose = None
+            with pytest.raises(ValidationError, match=r"^The verbose option can only be a number from"):
+                validator.validate_verbose_param(verbose)
 
-        def test_debug_is_invalid(self, debug) -> None:
-            debug = "invalid_debug"
-            with pytest.raises(ValidationError, match=r".*\ can only be True or False.$"):
-                validator.validate_debug_param(debug)
+        def test_verbose_is_invalid(self, verbose) -> None:
+            verbose = "invalid_verbose"
+            with pytest.raises(ValidationError, match=r"^The verbose option can only be a number from"):
+                validator.validate_verbose_param(verbose)
+
+        def test_verbose_is_above_limit(self, verbose) -> None:
+            verbose = 9999
+            with pytest.raises(ValidationError, match=r"^The verbose option can only be a number from"):
+                validator.validate_verbose_param(verbose)
