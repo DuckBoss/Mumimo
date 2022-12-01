@@ -1,0 +1,8 @@
+[main]
+mute = true
+deafen = true
+register = false
+comment = ""
+reconnect = false
+verbose = 0       # 0 to 4 range
+# test_field

@@ -1,5 +1,6 @@
 import validators
 
+from ..constants import VERBOSITY_MAX, VERBOSITY_MIN
 from ..exceptions import ValidationError
 
 
@@ -74,8 +75,10 @@ class SystemArgumentsValidator:
             raise ValidationError("The reconnect option can only be True or False.")
 
     @staticmethod
-    def validate_debug_param(debug) -> None:
-        if debug is None:
-            raise ValidationError("The debug option can only be True or False, not None.")
-        if not isinstance(debug, bool):
-            raise ValidationError("The debug option can only be True or False.")
+    def validate_verbose_param(verbose) -> None:
+        if verbose is None:
+            raise ValidationError(f"The verbose option can only be a number from {VERBOSITY_MIN} to {VERBOSITY_MAX}, not None.")
+        if not isinstance(verbose, int):
+            raise ValidationError(f"The verbose option can only be a number from {VERBOSITY_MIN} to {VERBOSITY_MAX}.")
+        if VERBOSITY_MIN > verbose or verbose > VERBOSITY_MAX:
+            raise ValidationError(f"The verbose option can only be a number from {VERBOSITY_MIN} to {VERBOSITY_MAX}.")

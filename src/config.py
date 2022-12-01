@@ -25,12 +25,11 @@ class ConfigSingleton:
     def clear(cls) -> None:
         if cls._instance is not None:
             del cls._instance
-        if cls._config_instance is not None:
-            del cls._config_instance
 
 
 class Config(dict):
     _config_file_path: Optional[pathlib.Path] = None
+    _initial_config: Optional["Config"] = None
 
     def __init__(self, file_name: Optional[str] = None) -> None:
         super().__init__()
@@ -55,12 +54,22 @@ class Config(dict):
                 contents = toml.load(file_handler, _dict=dict)
                 self.update(contents)
                 self._config_file_path = file_path
+                if self._initial_config is None:
+                    self._initial_config = Config()
+                    self._initial_config._config_file_path = self._config_file_path
+                    self._initial_config.update(self)
         except toml.TomlDecodeError as exc:
             raise ConfigReadError(f"Unable to read config file at: {file_path}.") from exc
         except IOError as exc:
             raise ConfigReadError(f"Unable to open config file to read at: {file_path}.") from exc
 
-    def save(self, file_name: Optional[str] = None) -> str:
+    def save(
+        self,
+        file_name: Optional[str] = None,
+        modified_only: bool = False,
+        modified_field_name: Optional[str] = None,
+        modified_sub_field_name: Optional[str] = None,
+    ) -> str:
         target_path = None
         if file_name is not None:
             target_path = file_name
@@ -72,7 +81,20 @@ class Config(dict):
         try:
             saved_data = None
             with open(target_path, "w", encoding="utf-8") as file_handler:
-                saved_data = toml.dump(self, file_handler)
+                if not modified_only:
+                    saved_data = toml.dump(self, file_handler)
+                else:
+                    if not modified_field_name:
+                        raise ConfigWriteError("Unable to save modified data to a config file because the section name is invalid.")
+                    if not modified_sub_field_name:
+                        raise ConfigWriteError("Unable to save modified data to a config file because the field name is invalid.")
+                    field = self.get(modified_field_name, modified_sub_field_name)
+                    if field is None:
+                        raise ConfigWriteError("Unable to save modified data to a config file because the field name is invalid.")
+                    if self._initial_config is None:
+                        raise ConfigWriteError("Unable to save modified data to a config file because no file has been initialized.")
+                    self._initial_config[modified_field_name].update({modified_sub_field_name: field})
+                    saved_data = toml.dump(self._initial_config, file_handler)
             if saved_data is None:
                 raise ConfigWriteError(f"Unable to save data to a config file at: {target_path}")
         except IOError as exc:
@@ -86,8 +108,34 @@ class Config(dict):
             return True
         return False
 
-    def set(self, field_name: str, field_value: Any) -> bool:
+    def get(self, field_name: str, sub_field_name: Optional[str] = None, fallback: Optional[Any] = None) -> Any:
+        if sub_field_name is None:
+            field = super().get(field_name)
+            if field is None:
+                if fallback is not None:
+                    return fallback
+                return None
+            return field
         if field_name is None:
+            raise ConfigReadError("A field section must be provided to query a subfield.")
+        field = super().get(field_name)
+        if field is None:
+            raise ConfigReadError(f"Unable to find section: {field_name}")
+        sub_field = field.get(sub_field_name)
+        if sub_field is None:
+            if fallback is not None:
+                return fallback
+            return None
+        return sub_field
+
+    def set(self, field_name: str, sub_field_name: Optional[str] = None, sub_field_value: Optional[Any] = None) -> bool:
+        if not field_name:
             return False
-        self[field_name] = field_value
+        if self.get(field_name) is None:
+            self[field_name] = {}
+            if not sub_field_name:
+                return True
+        if not sub_field_name:
+            return False
+        self[field_name][sub_field_name] = sub_field_value
         return True

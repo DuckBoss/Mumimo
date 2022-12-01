@@ -89,6 +89,18 @@ class TestConfig:
             """.strip(),
         )
 
+    @pytest.fixture(autouse=True)
+    def expected_save_data_modified_only(self):
+        return re.sub(
+            r"[\t\s]*",
+            "",
+            """
+            [test]
+            test_1 = false
+            test_2 = true
+            """.strip(),
+        )
+
     def test_config_init_without_file_path(self, empty_config: Config) -> None:
         assert empty_config._config_file_path is None
 
@@ -160,6 +172,75 @@ class TestConfig:
             saved_data: str = empty_config.save(save_config_path)
             assert self._validate_saved_data(saved_data, expected_save_data) is True
 
+        def test_config_save_modified_data_only(self, empty_config: Config, save_config_path: str, expected_save_data_modified_only: str) -> None:
+            original_config = {"test": {"test_1": True, "test_2": True}}
+            updates = {"test": {"test_1": False, "test_2": True}}
+            empty_config.update(original_config)
+            empty_config._config_file_path = pathlib.Path.cwd() / save_config_path
+            empty_config._initial_config = Config()
+            empty_config._initial_config._config_file_path = empty_config._config_file_path
+            empty_config._initial_config.update(empty_config)
+            empty_config.update(updates)
+            saved_data: str = empty_config.save(modified_only=True, modified_field_name="test", modified_sub_field_name="test_1")
+            assert self._validate_saved_data(saved_data, expected_save_data_modified_only) is True
+
+        def test_config_save_modified_data_only_missing_initial_config(self, empty_config: Config, save_config_path: str) -> None:
+            original_config = {"test": {"test_1": True, "test_2": True}}
+            updates = {"test": {"test_1": False, "test_2": True}}
+            empty_config.update(original_config)
+            empty_config._config_file_path = pathlib.Path.cwd() / save_config_path
+            empty_config.update(updates)
+            with pytest.raises(ConfigWriteError, match=r"because no file has been initialized.$"):
+                empty_config.save(modified_only=True, modified_field_name="test", modified_sub_field_name="test_1")
+
+        def test_config_save_modified_data_only_no_section_provided(self, empty_config: Config, save_config_path: str) -> None:
+            original_config = {"test": {"test_1": True, "test_2": True}}
+            updates = {"test": {"test_1": False, "test_2": True}}
+            empty_config.update(original_config)
+            empty_config._config_file_path = pathlib.Path.cwd() / save_config_path
+            empty_config._initial_config = Config()
+            empty_config._initial_config._config_file_path = empty_config._config_file_path
+            empty_config._initial_config.update(empty_config)
+            empty_config.update(updates)
+            with pytest.raises(ConfigWriteError, match=r"the section name is invalid.$"):
+                empty_config.save(modified_only=True, modified_sub_field_name="test_1")
+
+        def test_config_save_modified_data_only_no_field_provided(self, empty_config: Config, save_config_path: str) -> None:
+            original_config = {"test": {"test_1": True, "test_2": True}}
+            updates = {"test": {"test_1": False, "test_2": True}}
+            empty_config.update(original_config)
+            empty_config._config_file_path = pathlib.Path.cwd() / save_config_path
+            empty_config._initial_config = Config()
+            empty_config._initial_config._config_file_path = empty_config._config_file_path
+            empty_config._initial_config.update(empty_config)
+            empty_config.update(updates)
+            with pytest.raises(ConfigWriteError, match=r"the field name is invalid.$"):
+                empty_config.save(modified_only=True, modified_field_name="test")
+
+        def test_config_save_modified_data_only_invalid_section_provided(self, empty_config: Config, save_config_path: str) -> None:
+            original_config = {"test": {"test_1": True, "test_2": True}}
+            updates = {"test": {"test_1": False, "test_2": True}}
+            empty_config.update(original_config)
+            empty_config._config_file_path = pathlib.Path.cwd() / save_config_path
+            empty_config._initial_config = Config()
+            empty_config._initial_config._config_file_path = empty_config._config_file_path
+            empty_config._initial_config.update(empty_config)
+            empty_config.update(updates)
+            with pytest.raises(ConfigReadError, match=r"^Unable to find section:"):
+                empty_config.save(modified_only=True, modified_field_name="testing123", modified_sub_field_name="test_1")
+
+        def test_config_save_modified_data_only_invalid_field_provided(self, empty_config: Config, save_config_path: str) -> None:
+            original_config = {"test": {"test_1": True, "test_2": True}}
+            updates = {"test": {"test_1": False, "test_2": True}}
+            empty_config.update(original_config)
+            empty_config._config_file_path = pathlib.Path.cwd() / save_config_path
+            empty_config._initial_config = Config()
+            empty_config._initial_config._config_file_path = empty_config._config_file_path
+            empty_config._initial_config.update(empty_config)
+            empty_config.update(updates)
+            with pytest.raises(ConfigWriteError, match=r"the field name is invalid.$"):
+                empty_config.save(modified_only=True, modified_field_name="test", modified_sub_field_name="testing123")
+
         @patch.object(toml, "dump")
         def test_config_save_toml_dump_failed(self, toml_return, empty_config: Config, save_config_path: str) -> None:
             toml_return.return_value = None
@@ -182,14 +263,75 @@ class TestConfig:
             assert empty_config.reset("field") is False
 
     class TestConfigSet:
-        def test_config_set_valid_field(self, empty_config: Config) -> None:
-            empty_config.update({"field": "test1"})
-            assert empty_config.set("field", "test2") is True
-            assert empty_config.get("field") == "test2"
+        def test_config_set_field_when_section_exists(self, empty_config: Config) -> None:
+            empty_config.update({"main": {"field": "test1"}})
+            assert empty_config.set("main", "field", "test2") is True
+            assert empty_config.get("main", "field") == "test2"
 
-        def test_config_set_new_field(self, empty_config: Config) -> None:
-            empty_config.set("field", "test")
-            assert empty_config.get("field") == "test"
+        def test_config_set_new_field_when_section_exists(self, empty_config: Config) -> None:
+            empty_config.update({"main": {}})
+            assert empty_config.set("main", "field", "test2") is True
+            assert empty_config.get("main", "field") == "test2"
+
+        def test_config_set_none_field_when_section_exists(self, empty_config: Config) -> None:
+            empty_config.update({"main": {}})
+            assert empty_config.set("main", "field", "") is True
+            assert empty_config.get("main", "field") == ""
+            assert empty_config == {"main": {"field": ""}}
+
+        def test_config_set_empty_field_when_section_exists(self, empty_config: Config) -> None:
+            empty_config.update({"main": {}})
+            assert empty_config.set("main", "field", None) is True
+            assert empty_config.get("main", "field") is None
+            assert empty_config == {"main": {"field": None}}
+
+        def test_config_set_new_section_and_field(self, empty_config: Config) -> None:
+            assert empty_config.set("new_section", "field", "test") is True
+            assert empty_config.get("new_section", "field") == "test"
+            assert empty_config == {"new_section": {"field": "test"}}
+
+        def test_config_set_new_section(self, empty_config: Config) -> None:
+            assert empty_config.set("new_section") is True
+            assert empty_config.get("new_section") == {}
+            assert empty_config == {"new_section": {}}
 
         def test_config_set_invalid_field(self, empty_config: Config) -> None:
-            assert empty_config.set(None, "") is False  # type: ignore
+            empty_config.update({"main": {}})
+            assert empty_config.set("main", "") is False
+            assert empty_config.set("main", None) is False
+            assert empty_config == {"main": {}}
+
+        def test_config_set_none_field_name(self, empty_config: Config) -> None:
+            assert empty_config.set(None) is False  # type: ignore
+
+    class TestConfigGet:
+        def test_config_get_section(self, empty_config: Config) -> None:
+            empty_config.update({"main": {"test": None}})
+            assert empty_config.get("main") == {"test": None}
+
+        def test_config_get_section_does_not_exist(self, empty_config: Config) -> None:
+            assert empty_config.get("main") is None
+
+        def test_config_get_section_does_not_exist_fallback(self, empty_config: Config) -> None:
+            assert empty_config.get("main", fallback={"test": None}) == {"test": None}
+
+        def test_config_get_no_section_query_field_name(self, empty_config: Config) -> None:
+            with pytest.raises(ConfigReadError, match=r"^A field section must be provided"):
+                empty_config.get(None, "test")  # type: ignore
+
+        def test_config_get_section_and_field_section_does_not_exist(self, empty_config: Config) -> None:
+            empty_config.update({"main": {"test": None}})
+            with pytest.raises(ConfigReadError, match=r"^Unable to find section:"):
+                empty_config.get("test", "test")
+
+        def test_config_get_section_and_field(self, empty_config: Config) -> None:
+            empty_config.update({"main": {"test": None}})
+            assert empty_config.get("main", "test") is None
+
+        def test_config_get_section_and_field_does_not_exist(self, empty_config: Config) -> None:
+            empty_config.update({"main": {"test": "val"}})
+            assert empty_config.get("main", "new_test") is None
+
+        def test_config_get_section_and_field_does_not_exist_fallback(self, empty_config: Config) -> None:
+            empty_config.update({"main": {"test": "val"}})
+            assert empty_config.get("main", "new_test", fallback={"new_test": "val"}) == {"new_test": "val"}

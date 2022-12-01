@@ -6,7 +6,7 @@ import pymumble_py3 as pymumble
 from pymumble_py3.errors import ConnectionRejectedError
 
 from .client_state import ClientState
-from .constants import SYS_CERT, SYS_DEBUG, SYS_HOST, SYS_KEY, SYS_PASS, SYS_PORT, SYS_RECONNECT, SYS_TOKENS, SYS_USER
+from .constants import SYS_CERT, SYS_HOST, SYS_KEY, SYS_PASS, SYS_PORT, SYS_RECONNECT, SYS_TOKENS, SYS_USER, SYS_VERBOSE
 from .utils.args_validators import SystemArgumentsValidator
 
 
@@ -29,8 +29,6 @@ class MurmurConnectionSingleton:
     def clear(cls) -> None:
         if cls._instance is not None:
             del cls._instance
-        if cls._murmur_connection_instance is not None:
-            del cls._murmur_connection_instance
 
 
 class MurmurConnection:
@@ -107,11 +105,11 @@ class MurmurConnection:
             keyfile=self._connection_params.get(SYS_KEY),
             tokens=self._connection_params.get(SYS_TOKENS),
             reconnect=bool(self._connection_params.get(SYS_RECONNECT, False)),
-            debug=bool(self._connection_params.get(SYS_DEBUG, False)),
+            debug=bool(self._connection_params.get(SYS_VERBOSE, False)),
             stereo=True,
         )
         self._connection_instance.set_codec_profile("audio")
-        self._connection_instance.set_receive_sound(True)
+        self._connection_instance.set_receive_sound(True)  # Only set to False if testing on Windows
 
         try:
             self._connection_instance.start()
@@ -139,4 +137,4 @@ class MurmurConnection:
         SystemArgumentsValidator.validate_key_param(params.get(SYS_KEY))
         SystemArgumentsValidator.validate_tokens_param(params.get(SYS_TOKENS))
         SystemArgumentsValidator.validate_reconnect_param(params.get(SYS_RECONNECT))
-        SystemArgumentsValidator.validate_debug_param(params.get(SYS_DEBUG))
+        SystemArgumentsValidator.validate_verbose_param(params.get(SYS_VERBOSE))
