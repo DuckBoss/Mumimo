@@ -1,0 +1,11 @@
+[main]
+enable = true
+
+[misc]
+log_level = "DEBUG"
+log_format = "(%(asctime)s)[%(name)s][%(levelname)s]::%(message)s"
+console_format = "[%(levelname)s]::%(message)s"
+path = "tests/data/logs/"
+name = "mumimo_test_%s.log"
+max_logs = 20
+max_bytes = 1000000

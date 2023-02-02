@@ -2,8 +2,11 @@ import pathlib
 from typing import Any, Optional
 
 import toml
+from logging import getLogger
 
 from .exceptions import ConfigReadError, ConfigWriteError
+
+_logger = getLogger(__name__)
 
 
 class ConfigSingleton:
@@ -39,14 +42,14 @@ class Config(dict):
     def read(self, file_name: Optional[str] = None) -> "Config":
         if file_name is None:
             if self._config_file_path is None:
-                raise ConfigReadError("Unable to read config file because no file was specified.")
+                raise ConfigReadError("Unable to read config file because no file was specified.", _logger)
             self._read_from_file(self._config_file_path)
             return self
         search_path = pathlib.Path.cwd() / file_name
         if search_path.is_file():
             self._read_from_file(search_path)
             return self
-        raise ConfigReadError(f"Unable to read config file at: {search_path}")
+        raise ConfigReadError(f"Unable to read config file at: {search_path}", _logger)
 
     def _read_from_file(self, file_path: pathlib.Path):
         try:
@@ -59,9 +62,9 @@ class Config(dict):
                     self._initial_config._config_file_path = self._config_file_path
                     self._initial_config.update(self)
         except toml.TomlDecodeError as exc:
-            raise ConfigReadError(f"Unable to read config file at: {file_path}.") from exc
+            raise ConfigReadError(f"Unable to read config file at: {file_path}.", _logger) from exc
         except IOError as exc:
-            raise ConfigReadError(f"Unable to open config file to read at: {file_path}.") from exc
+            raise ConfigReadError(f"Unable to open config file to read at: {file_path}.", _logger) from exc
 
     def save(
         self,
@@ -76,7 +79,7 @@ class Config(dict):
         elif self._config_file_path is not None:
             target_path = str(self._config_file_path.resolve())
         else:
-            raise ConfigWriteError("Unable to save data to a config file because no file was specified.")
+            raise ConfigWriteError("Unable to save data to a config file because no file was specified.", _logger)
 
         try:
             saved_data = None
@@ -85,20 +88,20 @@ class Config(dict):
                     saved_data = toml.dump(self, file_handler)
                 else:
                     if not modified_field_name:
-                        raise ConfigWriteError("Unable to save modified data to a config file because the section name is invalid.")
+                        raise ConfigWriteError("Unable to save modified data to a config file because the section name is invalid.", _logger)
                     if not modified_sub_field_name:
-                        raise ConfigWriteError("Unable to save modified data to a config file because the field name is invalid.")
+                        raise ConfigWriteError("Unable to save modified data to a config file because the field name is invalid.", _logger)
                     field = self.get(modified_field_name, modified_sub_field_name)
                     if field is None:
-                        raise ConfigWriteError("Unable to save modified data to a config file because the field name is invalid.")
+                        raise ConfigWriteError("Unable to save modified data to a config file because the field name is invalid.", _logger)
                     if self._initial_config is None:
-                        raise ConfigWriteError("Unable to save modified data to a config file because no file has been initialized.")
+                        raise ConfigWriteError("Unable to save modified data to a config file because no file has been initialized.", _logger)
                     self._initial_config[modified_field_name].update({modified_sub_field_name: field})
                     saved_data = toml.dump(self._initial_config, file_handler)
             if saved_data is None:
-                raise ConfigWriteError(f"Unable to save data to a config file at: {target_path}")
+                raise ConfigWriteError(f"Unable to save data to a config file at: {target_path}", _logger)
         except IOError as exc:
-            raise ConfigWriteError(f"Unable to save config file at: {target_path}") from exc
+            raise ConfigWriteError(f"Unable to save config file at: {target_path}", _logger) from exc
         return saved_data
 
     def reset(self, field_name: str) -> bool:
@@ -117,10 +120,10 @@ class Config(dict):
                 return None
             return field
         if field_name is None:
-            raise ConfigReadError("A field section must be provided to query a subfield.")
+            raise ConfigReadError("A field section must be provided to query a subfield.", _logger)
         field = super().get(field_name)
         if field is None:
-            raise ConfigReadError(f"Unable to find section: {field_name}")
+            raise ConfigReadError(f"Unable to find section: {field_name}", _logger)
         sub_field = field.get(sub_field_name)
         if sub_field is None:
             if fallback is not None:

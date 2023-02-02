@@ -2,6 +2,8 @@ import pathlib
 
 import pytest
 
+# from src.logging import Logging
+
 pytest_plugins = [
     "tests.fixtures.config_fixtures",
     "tests.fixtures.connection_fixtures",
