@@ -63,6 +63,10 @@ class MurmurConnection:
     def is_connected(self) -> bool:
         return self._is_connected
 
+    @property
+    def client_state(self) -> Optional[ClientState]:
+        return self._client_state
+
     def _setup(self, connection_params: Optional[Dict[str, Union[str, bool]]] = None) -> None:
         if connection_params is None:
             print_warn("Connection parameters have not been provided during Murmur initialization.")
@@ -150,5 +154,5 @@ class MurmurConnection:
         SystemArgumentsValidator.validate_cert_param(params.get(SYS_ARGS.SYS_CERT))
         SystemArgumentsValidator.validate_key_param(params.get(SYS_ARGS.SYS_KEY))
         SystemArgumentsValidator.validate_tokens_param(params.get(SYS_ARGS.SYS_TOKENS))
-        SystemArgumentsValidator.validate_reconnect_param(params.get(SYS_ARGS.SYS_RECONNECT))
+        SystemArgumentsValidator.validate_auto_reconnect_param(params.get(SYS_ARGS.SYS_RECONNECT))
         SystemArgumentsValidator.validate_verbose_param(params.get(SYS_ARGS.SYS_VERBOSE))
