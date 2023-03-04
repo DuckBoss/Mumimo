@@ -2,8 +2,7 @@
 VERBOSE_NONE: int = 0
 VERBOSE_MIN: int = 1
 VERBOSE_STANDARD: int = 2
-VERBOSE_PLUS: int = 3
-VERBOSE_MAX: int = 4
+VERBOSE_MAX: int = 3
 VERBOSITY_MIN: int = VERBOSE_NONE
 VERBOSITY_MAX: int = VERBOSE_MAX
 
@@ -35,10 +34,36 @@ class SYS_ARGS:
     SYS_SUPER_USER: str = "superuser"
     SYS_ENV_FILE: str = "env_file"
     SYS_CONFIG_FILE: str = "config_file"
+    SYS_LOG_CONFIG_FILE: str = "log_config_file"
 
 
 # Config Constants
 DEFAULT_PATH_CONFIG_FILE: str = "config/config.toml"
+DEFAULT_PATH_LOGGING_CONFIG_FILE: str = "config/logging.toml"
+
+
+class LOG_CFG_SECTION:
+    OUTPUT: str = "output"
+    LOGGING: str = "logging"
+    CONSOLE: str = "console"
+
+
+class LOG_CFG_FIELD:
+    class OUTPUT:
+        class LOGGING:
+            ENABLE: str = "enable"
+            LEVEL: str = "level"
+            PATH: str = "path"
+            FORMAT: str = "format"
+            NAME: str = "name"
+            MAX_LOGS: str = "max_logs"
+            MAX_BYTES: str = "max_bytes"
+            MESSAGE_PRIVACY: str = "message_privacy"
+            ENABLE_STACK_TRACE: str = "enable_stack_trace"
+
+        class CONSOLE:
+            FORMAT: str = "format"
+            MESSAGE_PRIVACY: str = "message_privacy"
 
 
 class CFG_SECTION:
@@ -52,8 +77,6 @@ class CFG_SECTION:
         PLUGINS: str = "settings.plugins"
 
     class OUTPUT:
-        LOGGING: str = "output.logging"
-        CONSOLE: str = "output.console"
         GUI: str = "output.gui"
         GUI_CANVAS: str = "output.gui.canvas"
         GUI_TEXT: str = "output.gui.text"
@@ -102,21 +125,6 @@ class CFG_FIELD:
             SAFE_MODE_PLUGINS: str = "safe_mode_plugins"
 
     class OUTPUT:
-        class LOGGING:
-            ENABLE: str = "enable"
-            LEVEL: str = "level"
-            PATH: str = "path"
-            FORMAT: str = "format"
-            NAME: str = "name"
-            MAX_LOGS: str = "max_logs"
-            MAX_BYTES: str = "max_bytes"
-            MESSAGE_PRIVACY: str = "message_privacy"
-            ENABLE_STACK_TRACE: str = "enable_stack_trace"
-
-        class CONSOLE:
-            FORMAT: str = "format"
-            MESSAGE_PRIVACY: str = "message_privacy"
-
         class GUI:
             ENABLE: str = "enable"
 

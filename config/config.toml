@@ -1,7 +1,7 @@
 ### Main Settings ###
 [settings]
 username = "Mumimo"
-superuser = ""
+superuser = "SuperUser"
 
 [settings.connection]
 mute = true
@@ -41,22 +41,6 @@ cookie_file = ""
 [settings.plugins]
 disabled_plugins = []
 safe_mode_plugins = []
-
-### Output Settings ###
-[output.logging]
-enable = true
-level = "DEBUG"
-path = "logs/"
-format = "(%(asctime)s)[%(name)s][%(levelname)s]::%(message)s"
-name = "mumimo_%s.log"
-max_logs = 20
-max_bytes = 1000000
-message_privacy = true
-enable_stack_trace = false
-
-[output.console]
-format = "[%(levelname)s]::%(message)s"
-message_privacy = true
 
 ### GUI Settings ###
 [output.gui]

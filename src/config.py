@@ -1,6 +1,7 @@
 import pathlib
 from typing import Any, Optional
-
+import functools
+import operator
 import toml
 from logging import getLogger
 
@@ -121,15 +122,21 @@ class Config(dict):
             return field
         if field_name is None:
             raise ConfigReadError("A field section must be provided to query a subfield.", _logger)
-        field = super().get(field_name)
-        if field is None:
+
+        field = self._get_field_section(field_name)
+        if not field:
             raise ConfigReadError(f"Unable to find section: {field_name}", _logger)
-        sub_field = field.get(sub_field_name)
+        sub_field = field.__getitem__(sub_field_name)
         if sub_field is None:
             if fallback is not None:
                 return fallback
             return None
         return sub_field
+
+    def _get_field_section(self, field_name: str):
+        field_sections = field_name.split(".")
+        field = functools.reduce(operator.getitem, field_sections, self)
+        return field
 
     def set(self, field_name: str, sub_field_name: Optional[str] = None, sub_field_value: Optional[Any] = None) -> bool:
         if not field_name:

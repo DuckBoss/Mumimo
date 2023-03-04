@@ -12,6 +12,7 @@ args_parser.add_argument(
 )
 args_parser.add_argument("-hl", "--headless", help="runs the application with no console output", action="store_true")
 args_parser.add_argument("-cf", "--config-file", help="use a custom config file from the given path", type=str)
+args_parser.add_argument("-lcf", "--log-config-file", help="use a custom config file for logging from the given path", type=str)
 args_parser.add_argument("-sh", "--host", help="host IP of murmur server", type=str)
 args_parser.add_argument("-sp", "--port", help="host port of murmur server", type=int)
 args_parser.add_argument("-u", "--user", help="the client username", type=str)

@@ -1,0 +1,14 @@
+[output.logging]
+enable = true
+level = "DEBUG"
+path = "logs/"
+format = "(%(asctime)s)[%(name)s][%(levelname)s]::%(message)s"
+name = "mumimo_%s.log"
+max_logs = 20
+max_bytes = 1000000
+message_privacy = true
+enable_stack_trace = false
+
+[output.console]
+format = "[%(levelname)s]::%(message)s"
+message_privacy = true

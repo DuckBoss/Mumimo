@@ -1,9 +1,12 @@
 from typing import Dict, Any, Optional
 
 from ..utils import config_utils, env_parser, mumimo_utils
-from ..constants import ENV_ARGS, SYS_ARGS, CFG_SECTION, CFG_FIELD
-from ..exceptions import ConfigError, ServiceError
+from ..constants import ENV_ARGS, SYS_ARGS, CFG_SECTION, CFG_FIELD, VERBOSITY_MIN
+from ..exceptions import ConfigError
 from ..config import Config
+from ..logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class MumimoInitService:
@@ -13,23 +16,20 @@ class MumimoInitService:
         self._sys_args = sys_args
 
     def initialize_config(self) -> Config:
-        if not self._sys_args:
-            raise ServiceError("Mumimo initialization service failed to initialize the config because system arguments were not provided.")
-
         # Initialize mumimo config.
         cfg_instance: Config = config_utils.initialize_mumimo_config(self._sys_args.get(SYS_ARGS.SYS_CONFIG_FILE))
         if cfg_instance is None:
-            raise ConfigError("An unexpected error occurred where the config file was not read during initialization.")
+            raise ConfigError("An unexpected error occurred where the config file was not read during initialization.", logger)
         return cfg_instance
 
     def initialize_client_settings(self, cfg_instance: Config) -> Dict[str, Any]:
-        if not self._sys_args:
-            raise ServiceError("Mumimo initialization service failed to initialize client settings because system arguments were not provided.")
-
         prioritized_cfg_options = self._get_prioritized_client_config_options(cfg_instance)
         cfg_instance.update(prioritized_cfg_options)
 
         prioritized_env_options = self._get_prioritized_client_env_options()
+        import builtins
+
+        builtins.print(self._sys_args)
 
         return {
             SYS_ARGS.SYS_HOST: prioritized_env_options.get(SYS_ARGS.SYS_HOST),
@@ -39,7 +39,7 @@ class MumimoInitService:
             SYS_ARGS.SYS_CERT: prioritized_env_options.get(SYS_ARGS.SYS_CERT),
             SYS_ARGS.SYS_KEY: prioritized_env_options.get(SYS_ARGS.SYS_KEY),
             SYS_ARGS.SYS_TOKENS: prioritized_env_options.get(SYS_ARGS.SYS_TOKENS),
-            SYS_ARGS.SYS_VERBOSE: prioritized_env_options.get(SYS_ARGS.SYS_VERBOSE),
+            SYS_ARGS.SYS_VERBOSE: self._sys_args.get(SYS_ARGS.SYS_VERBOSE) or VERBOSITY_MIN,
             SYS_ARGS.SYS_RECONNECT: cfg_instance.get(CFG_SECTION.SETTINGS.CONNECTION, CFG_FIELD.SETTINGS.CONNECTION.AUTO_RECONNECT),
         }
 
