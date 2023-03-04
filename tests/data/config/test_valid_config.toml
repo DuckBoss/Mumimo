@@ -4,4 +4,3 @@ deafen = true
 register = false
 comment = ""
 reconnect = false
-verbose = 0

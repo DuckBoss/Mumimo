@@ -27,9 +27,6 @@ class MumimoInitService:
         cfg_instance.update(prioritized_cfg_options)
 
         prioritized_env_options = self._get_prioritized_client_env_options()
-        import builtins
-
-        builtins.print(self._sys_args)
 
         return {
             SYS_ARGS.SYS_HOST: prioritized_env_options.get(SYS_ARGS.SYS_HOST),

@@ -71,7 +71,7 @@ class SystemArgumentsValidator:
                 raise ValidationError("The client channels access tokens cannot be empty.", logger)
 
     @staticmethod
-    def validate_reconnect_param(reconnect) -> None:
+    def validate_auto_reconnect_param(reconnect) -> None:
         if reconnect is None:
             raise ValidationError("The reconnect option can only be True or False, not None.", logger)
         if not isinstance(reconnect, bool):

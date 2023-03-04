@@ -47,7 +47,7 @@ class Config(dict):
             self._read_from_file(self._config_file_path)
             return self
         search_path = pathlib.Path.cwd() / file_name
-        if search_path.is_file():
+        if search_path.exists() and search_path.is_file():
             self._read_from_file(search_path)
             return self
         raise ConfigReadError(f"Unable to read config file at: {search_path}", _logger)
@@ -126,8 +126,9 @@ class Config(dict):
         field = self._get_field_section(field_name)
         if not field:
             raise ConfigReadError(f"Unable to find section: {field_name}", _logger)
-        sub_field = field.__getitem__(sub_field_name)
-        if sub_field is None:
+        try:
+            sub_field = field.__getitem__(sub_field_name)
+        except KeyError:
             if fallback is not None:
                 return fallback
             return None
@@ -135,7 +136,10 @@ class Config(dict):
 
     def _get_field_section(self, field_name: str):
         field_sections = field_name.split(".")
-        field = functools.reduce(operator.getitem, field_sections, self)
+        try:
+            field = functools.reduce(operator.getitem, field_sections, self)
+        except KeyError:
+            raise ConfigReadError(f"Unable to find section: {field_name}", _logger)
         return field
 
     def set(self, field_name: str, sub_field_name: Optional[str] = None, sub_field_value: Optional[Any] = None) -> bool:

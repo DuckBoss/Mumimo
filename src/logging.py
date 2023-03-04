@@ -20,7 +20,6 @@ def _read_log_config(cfg_path: Optional[str] = None):
     with open(str(_cfg_path.resolve()), "r", encoding="utf-8") as file_handler:
         contents = toml.load(file_handler, _dict=dict)
         _log_config.update(contents)
-    # builtins.print(_log_config)
 
 
 def init_logger(sys_args: Optional[Dict[str, str]] = None) -> bool:

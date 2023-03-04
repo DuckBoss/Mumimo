@@ -54,7 +54,7 @@ class TestConfig:
     @pytest.fixture(autouse=True)
     def expected_config_data(self) -> Dict[str, Any]:
         return {
-            "test_section_1": {"test_1": "test_1", "test_2": 2, "test_3": ["test_3"], "test_4": True},
+            "test_section_1": {"test_1": "test_1", "test_2": 2, "test_3": ["test_3"], "test_4": True, "nested": {"test_1": "test_1"}},
             "test_section_2": {"test_1": "test_1", "test_2": 2, "test_3": ["test_3"], "test_4": True},
         }
 
@@ -86,6 +86,9 @@ class TestConfig:
             test_2 = 2
             test_3 = ["test_3",]
             test_4 = true
+
+            [test_section_1.nested]
+            test_1 = "test_1"
             """.strip(),
         )
 
@@ -323,6 +326,18 @@ class TestConfig:
             empty_config.update({"main": {"test": None}})
             with pytest.raises(ConfigReadError, match=r"^Unable to find section:"):
                 empty_config.get("test", "test")
+
+        def test_config_get_nested_section_and_field(self, empty_config: Config) -> None:
+            empty_config.update({"main": {"nested": {"test": "test"}}})
+            assert empty_config.get("main.nested", "test") == "test"
+
+        def test_config_get_nested_section_and_field_does_not_exist(self, empty_config: Config) -> None:
+            empty_config.update({"main": {"nested": {"test": "test"}}})
+            assert empty_config.get("main.nested", "new_test") is None
+
+        def test_config_get_nested_section_and_field_does_not_exist_fallback(self, empty_config: Config) -> None:
+            empty_config.update({"main": {"nested": {"test": "test"}}})
+            assert empty_config.get("main.nested", "new_test", "fallback") == "fallback"
 
         def test_config_get_section_and_field(self, empty_config: Config) -> None:
             empty_config.update({"main": {"test": None}})

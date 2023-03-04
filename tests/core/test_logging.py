@@ -1,6 +1,5 @@
 import logging
 import pytest
-from unittest.mock import patch
 import src.logging as log
 import pathlib
 import shutil
@@ -10,9 +9,8 @@ class TestLogging:
     @pytest.fixture(autouse=True)
     def get_logger(self):
         log._is_initialized = False
-        assert log.init_logger(pathlib.Path.cwd() / "tests/data/config/test_logging.toml") is True
+        assert log.init_logger({"log_config_file": "tests/data/config/test_logging.toml"}) is True
         assert log._is_initialized is True
-        assert log._enable_log is True
         yield log.get_logger(__name__)
         log._is_initialized = False
         generated_logs_path = pathlib.Path("tests/data/logs")
@@ -22,6 +20,12 @@ class TestLogging:
     def print_fixture(self, get_logger):
         assert get_logger.hasHandlers() is True
         print = log.print(logger=get_logger)
+        return print
+
+    @pytest.fixture(autouse=True)
+    def debug_fixture(self, get_logger):
+        assert get_logger.hasHandlers() is True
+        print = log.debug(logger=get_logger)
         return print
 
     @pytest.fixture(autouse=True)
@@ -41,6 +45,11 @@ class TestLogging:
         assert caplog.records[0].levelno == logging.INFO
         assert "test_print_default" in caplog.text
 
+    def test_log_print_debug(self, print_fixture, caplog):
+        print_fixture("test_print_debug", level=logging.DEBUG)
+        assert caplog.records[0].levelno == logging.DEBUG
+        assert "test_print_debug" in caplog.text
+
     def test_log_print_info(self, print_fixture, caplog):
         print_fixture("test_print_info", level=logging.INFO)
         assert caplog.records[0].levelno == logging.INFO
@@ -55,6 +64,11 @@ class TestLogging:
         print_fixture("test_print_error", level=logging.ERROR)
         assert caplog.records[0].levelno == logging.ERROR
         assert "test_print_error" in caplog.text
+
+    def test_log_debug(self, debug_fixture, caplog):
+        debug_fixture("test_debug")
+        assert caplog.records[0].levelno == logging.DEBUG
+        assert "test_debug" in caplog.text
 
     def test_log_error(self, error_fixture, caplog):
         error_fixture("test_error")
