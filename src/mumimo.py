@@ -5,6 +5,7 @@ from typing import Dict, Optional
 from .logging import get_logger
 from .logging import print as _print
 from .logging import print_warn as _print_warn
+from .logging import print_err as _print_err
 from .murmur_connection import MurmurConnection, MurmurConnectionSingleton
 from .utils import mumimo_utils
 from .services.init_service import MumimoInitService
@@ -12,6 +13,7 @@ from .services.init_service import MumimoInitService
 logger = get_logger(__name__)
 print = _print(logger=logger)
 print_warn = _print_warn(logger=logger)
+print_err = _print_err(logger=logger)
 
 
 class MumimoService:
@@ -44,9 +46,9 @@ class MumimoService:
                 print("Mumimo client initialized.")
                 self._wait_for_interrupt()
             else:
-                print_warn("Failed to establish Murmur connectivity.")
+                print_err("Failed to establish Murmur connectivity.")
         else:
-            print_warn("Failed to initialize Mumimo connection singleton.")
+            print_err("Failed to initialize Mumimo connection singleton.")
 
     def _wait_for_interrupt(self) -> None:
         try:
