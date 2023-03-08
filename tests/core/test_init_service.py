@@ -4,8 +4,7 @@ import pytest
 from src.config import ConfigSingleton
 
 from src.constants import (
-    CFG_SECTION,
-    CFG_FIELD,
+    MUMIMO_CFG_FIELDS,
     ENV_ARGS,
     SYS_ARGS,
     VERBOSITY_MAX,
@@ -137,7 +136,7 @@ class TestMumimoInitService:
             mock_cfg = ConfigSingleton().instance()
             mock_sys_args.return_value = {}
             if mock_cfg is not None:
-                mock_cfg.set(f"{CFG_SECTION.SETTINGS.CONNECTION}.{CFG_FIELD.SETTINGS.CONNECTION.AUTO_RECONNECT}", True)
+                mock_cfg.set(MUMIMO_CFG_FIELDS.SETTINGS.CONNECTION.AUTO_RECONNECT, True)
                 client_settings = init_service._get_prioritized_client_config_options(mock_cfg)
                 assert client_settings[SYS_ARGS.SYS_RECONNECT] is False
 

@@ -1,4 +1,4 @@
-[output.logging]
+[output.file]
 enable = true
 level = "DEBUG"
 path = "tests/data/logs/"

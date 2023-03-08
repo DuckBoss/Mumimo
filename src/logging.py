@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional
 from logging.handlers import RotatingFileHandler
 
 import toml
-from .constants import SYS_ARGS, DEFAULT_PATH_LOGGING_CONFIG_FILE, VERBOSE_MIN, VERBOSE_NONE, VERBOSE_STANDARD, LOG_CFG_FIELD, LOG_CFG_SECTION
+from .constants import SYS_ARGS, DEFAULT_PATH_LOGGING_CONFIG_FILE, VERBOSE_MIN, VERBOSE_NONE, VERBOSE_STANDARD, LOG_CFG_SECTIONS, LOG_CFG_FIELDS
 from .version import version
 
 _is_initialized = False
@@ -30,8 +30,8 @@ def init_logger(sys_args: Optional[Dict[str, str]] = None) -> bool:
         sys_args = {}
     _read_log_config(sys_args.get(SYS_ARGS.SYS_LOG_CONFIG_FILE, None))
     _log_config[SYS_ARGS.SYS_VERBOSE] = int(sys_args.get(SYS_ARGS.SYS_VERBOSE, VERBOSE_MIN))
-    _log_parent_directory = pathlib.Path.cwd() / _log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.LOGGING][LOG_CFG_FIELD.OUTPUT.LOGGING.PATH]
-    _enable_log = bool(_log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.LOGGING][LOG_CFG_FIELD.OUTPUT.LOGGING.ENABLE])
+    _log_parent_directory = pathlib.Path.cwd() / _log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.FILE][LOG_CFG_FIELDS.OUTPUT.FILE.PATH]
+    _enable_log = bool(_log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.FILE][LOG_CFG_FIELDS.OUTPUT.FILE.ENABLE])
     _log_version_directory = _log_parent_directory / f"mumimo_{version()}/"
     if not _log_parent_directory.exists() and _enable_log:
         pathlib.Path.mkdir(_log_parent_directory)
@@ -47,7 +47,7 @@ def get_logger(logger_name: str):
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)
     if not logger.hasHandlers():
-        if bool(_log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.LOGGING][LOG_CFG_FIELD.OUTPUT.LOGGING.ENABLE]):
+        if bool(_log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.FILE][LOG_CFG_FIELDS.OUTPUT.FILE.ENABLE]):
             file_handler = get_file_handler()
             if file_handler is not None:
                 logger.addHandler(file_handler)
@@ -63,7 +63,7 @@ def _print(msg: str, logger: logging.Logger, level: int = logging.INFO, verbosit
     if isinstance(logger, logging.Logger):
         logger.log(level, msg)
     _verbosity = int(_log_config[SYS_ARGS.SYS_VERBOSE])
-    _console_formatter = _log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.CONSOLE][LOG_CFG_FIELD.OUTPUT.LOGGING.FORMAT]
+    _console_formatter = _log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.CONSOLE][LOG_CFG_FIELDS.OUTPUT.CONSOLE.FORMAT]
     if verbosity >= VERBOSE_MIN or _verbosity >= VERBOSE_MIN:
         if _console_formatter:
             builtins.print(
@@ -78,7 +78,7 @@ def _debug(msg: str, logger: logging.Logger) -> None:
     if isinstance(logger, logging.Logger):
         logger.debug(msg)
     _verbosity = int(_log_config[SYS_ARGS.SYS_VERBOSE])
-    _console_formatter = _log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.CONSOLE][LOG_CFG_FIELD.OUTPUT.LOGGING.FORMAT]
+    _console_formatter = _log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.CONSOLE][LOG_CFG_FIELDS.OUTPUT.CONSOLE.FORMAT]
     if _verbosity >= VERBOSE_STANDARD:
         if _console_formatter:
             builtins.print(
@@ -93,7 +93,7 @@ def _error(msg: str, logger: logging.Logger) -> None:
     if isinstance(logger, logging.Logger):
         logger.error(msg)
     _verbosity = int(_log_config[SYS_ARGS.SYS_VERBOSE])
-    _console_formatter = _log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.CONSOLE][LOG_CFG_FIELD.OUTPUT.LOGGING.FORMAT]
+    _console_formatter = _log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.CONSOLE][LOG_CFG_FIELDS.OUTPUT.CONSOLE.FORMAT]
     if _verbosity >= VERBOSE_MIN:
         if _console_formatter:
             builtins.print(
@@ -108,7 +108,7 @@ def _warning(msg: str, logger: logging.Logger) -> None:
     if isinstance(logger, logging.Logger):
         logger.warning(msg)
     _verbosity = int(_log_config[SYS_ARGS.SYS_VERBOSE])
-    _console_formatter = _log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.CONSOLE][LOG_CFG_FIELD.OUTPUT.LOGGING.FORMAT]
+    _console_formatter = _log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.CONSOLE][LOG_CFG_FIELDS.OUTPUT.CONSOLE.FORMAT]
     if _verbosity >= VERBOSE_MIN:
         if _console_formatter:
             builtins.print(
@@ -122,7 +122,7 @@ def get_console_handler():
         return
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.CRITICAL)
-    _logging_formatter = logging.Formatter(_log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.LOGGING][LOG_CFG_FIELD.OUTPUT.LOGGING.FORMAT])
+    _logging_formatter = logging.Formatter(_log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.FILE][LOG_CFG_FIELDS.OUTPUT.FILE.FORMAT])
     console_handler.setFormatter(_logging_formatter)
     return console_handler
 
@@ -131,14 +131,14 @@ def get_file_handler() -> Optional[RotatingFileHandler]:
     if not _is_initialized:
         return
 
-    _logging_formatter = logging.Formatter(_log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.LOGGING][LOG_CFG_FIELD.OUTPUT.LOGGING.FORMAT])
+    _logging_formatter = logging.Formatter(_log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.FILE][LOG_CFG_FIELDS.OUTPUT.FILE.FORMAT])
     _log_location = (
-        pathlib.Path.cwd() / _log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.LOGGING][LOG_CFG_FIELD.OUTPUT.LOGGING.PATH] / f"mumimo_{version()}"
+        pathlib.Path.cwd() / _log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.FILE][LOG_CFG_FIELDS.OUTPUT.FILE.PATH] / f"mumimo_{version()}"
     )
-    _log_name = _log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.LOGGING][LOG_CFG_FIELD.OUTPUT.LOGGING.NAME] % version()
-    _max_bytes = int(_log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.LOGGING][LOG_CFG_FIELD.OUTPUT.LOGGING.MAX_BYTES])
-    _max_logs = int(_log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.LOGGING][LOG_CFG_FIELD.OUTPUT.LOGGING.MAX_LOGS])
-    _log_level = _log_config[LOG_CFG_SECTION.OUTPUT][LOG_CFG_SECTION.LOGGING][LOG_CFG_FIELD.OUTPUT.LOGGING.LEVEL]
+    _log_name = _log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.FILE][LOG_CFG_FIELDS.OUTPUT.FILE.NAME] % version()
+    _max_bytes = int(_log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.FILE][LOG_CFG_FIELDS.OUTPUT.FILE.MAX_BYTES])
+    _max_logs = int(_log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.FILE][LOG_CFG_FIELDS.OUTPUT.FILE.MAX_LOGS])
+    _log_level = _log_config[LOG_CFG_SECTIONS.OUTPUT][LOG_CFG_SECTIONS.FILE][LOG_CFG_FIELDS.OUTPUT.FILE.LEVEL]
 
     file_handler = RotatingFileHandler(_log_location / _log_name, maxBytes=_max_bytes, backupCount=_max_logs, delay=True)
     file_handler.setLevel(_log_level)

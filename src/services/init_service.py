@@ -1,7 +1,7 @@
 from typing import Dict, Any, Optional
 
 from ..utils import config_utils, env_parser, mumimo_utils
-from ..constants import ENV_ARGS, SYS_ARGS, CFG_SECTION, CFG_FIELD, VERBOSITY_MIN
+from ..constants import ENV_ARGS, SYS_ARGS, MUMIMO_CFG_FIELDS, VERBOSITY_MIN
 from ..exceptions import ConfigError
 from ..config import Config
 from ..logging import get_logger
@@ -38,7 +38,7 @@ class MumimoInitService:
             SYS_ARGS.SYS_TOKENS: prioritized_env_options.get(SYS_ARGS.SYS_TOKENS),
             SYS_ARGS.SYS_SUPER_USER: prioritized_env_options.get(SYS_ARGS.SYS_SUPER_USER),
             SYS_ARGS.SYS_VERBOSE: self._get_sys_args().get(SYS_ARGS.SYS_VERBOSE) or VERBOSITY_MIN,
-            SYS_ARGS.SYS_RECONNECT: prioritized_cfg_options.get(CFG_FIELD.SETTINGS.CONNECTION.AUTO_RECONNECT, False),
+            SYS_ARGS.SYS_RECONNECT: prioritized_cfg_options.get(SYS_ARGS.SYS_RECONNECT, False),
         }
 
     def _get_sys_args(self) -> Dict[str, str]:
@@ -52,10 +52,10 @@ class MumimoInitService:
         prioritized_options: Dict[str, Any] = {}
 
         reconnect = self._get_sys_args().get(SYS_ARGS.SYS_RECONNECT) or cfg_instance.get(
-            f"{CFG_SECTION.SETTINGS.CONNECTION}.{CFG_FIELD.SETTINGS.CONNECTION.AUTO_RECONNECT}", fallback=False
+            MUMIMO_CFG_FIELDS.SETTINGS.CONNECTION.AUTO_RECONNECT, fallback=False
         )
         if reconnect is not None:
-            prioritized_options[CFG_FIELD.SETTINGS.CONNECTION.AUTO_RECONNECT] = reconnect
+            prioritized_options[SYS_ARGS.SYS_RECONNECT] = reconnect
 
         return prioritized_options
 
