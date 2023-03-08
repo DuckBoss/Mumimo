@@ -152,15 +152,15 @@ class TestSystemArguments:
                 sys_args_parser.parse_args(options)
 
     class TestOptionReconnect:
-        def test_option_reconnect(self, sys_args_parser):
-            options = ["-r"]
+        def test_option_auto_reconnect(self, sys_args_parser):
+            options = ["-ar"]
             parser = sys_args_parser.parse_args(options)
-            assert parser.reconnect is True
+            assert parser.auto_reconnect is True
 
-        def test_option_no_headless(self, sys_args_parser):
+        def test_option_no_auto_reconnect(self, sys_args_parser):
             options = []
             parser = sys_args_parser.parse_args(options)
-            assert parser.reconnect is False
+            assert parser.auto_reconnect is False
 
     class TestOptionVerbose:
         def test_option_verbose(self, sys_args_parser):

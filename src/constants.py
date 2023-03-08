@@ -16,6 +16,7 @@ class ENV_ARGS:
     ENV_CERT: str = "MUMIMO_CERT"
     ENV_KEY: str = "MUMIMO_KEY"
     ENV_TOKENS: str = "MUMIMO_TOKENS"
+    ENV_SUPER_USER: str = "MUMIMO_SUPER_USER"
 
 
 # Sys Args Constants
@@ -29,7 +30,7 @@ class SYS_ARGS:
     SYS_KEY: str = "key_file"
     SYS_TOKENS: str = "tokens"
     SYS_VERBOSE: str = "verbose"
-    SYS_RECONNECT: str = "reconnect"
+    SYS_RECONNECT: str = "auto_reconnect"
     SYS_GEN_CERT: str = "generate_cert"
     SYS_SUPER_USER: str = "superuser"
     SYS_ENV_FILE: str = "env_file"
@@ -68,7 +69,6 @@ class LOG_CFG_FIELD:
 
 class CFG_SECTION:
     class SETTINGS:
-        ROOT: str = "settings"
         CONNECTION: str = "settings.connection"
         COMMANDS: str = "settings.commands"
         MEDIA: str = "settings.media"

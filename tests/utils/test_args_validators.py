@@ -18,7 +18,7 @@ class TestSystemArgumentsValidators:
             "cert_file": "",
             "key_file": "",
             "tokens": "",
-            "reconnect": "",
+            "auto_reconnect": "",
             "verbose": "",
         }
 

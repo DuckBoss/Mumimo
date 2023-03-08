@@ -1,18 +1,13 @@
-import pathlib
 from typing import Optional
 
 from ..config import Config, ConfigSingleton
 from ..constants import DEFAULT_PATH_CONFIG_FILE
 from ..exceptions import ConfigReadError
 
-from ..logging import get_logger
-
-_logger = get_logger(__name__)
-
 
 def initialize_mumimo_config(cfg_path: Optional[str] = None) -> "Config":
     # Load in configurations from custom config file path if present.
-    # Otherwise load configurations from default config file.
+    # Otherwise load configurations from default config file path.
     _cfg_instance = get_config_instance()
     try:
         if not cfg_path:
@@ -20,7 +15,7 @@ def initialize_mumimo_config(cfg_path: Optional[str] = None) -> "Config":
         _cfg_instance.read(cfg_path)
     except ConfigReadError:
         raise
-    finally:
+    else:
         return _cfg_instance
 
 

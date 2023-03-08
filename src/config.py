@@ -1,7 +1,6 @@
+import copy
 import pathlib
 from typing import Any, Optional
-import functools
-import operator
 import toml
 from logging import getLogger
 
@@ -72,7 +71,6 @@ class Config(dict):
         file_name: Optional[str] = None,
         modified_only: bool = False,
         modified_field_name: Optional[str] = None,
-        modified_sub_field_name: Optional[str] = None,
     ) -> str:
         target_path = None
         if file_name is not None:
@@ -89,15 +87,13 @@ class Config(dict):
                     saved_data = toml.dump(self, file_handler)
                 else:
                     if not modified_field_name:
-                        raise ConfigWriteError("Unable to save modified data to a config file because the section name is invalid.", _logger)
-                    if not modified_sub_field_name:
                         raise ConfigWriteError("Unable to save modified data to a config file because the field name is invalid.", _logger)
-                    field = self.get(modified_field_name, modified_sub_field_name)
+                    field = self.get(modified_field_name)
                     if field is None:
-                        raise ConfigWriteError("Unable to save modified data to a config file because the field name is invalid.", _logger)
+                        raise ConfigWriteError("Unable to save modified data to a config file because the field name does not exist.", _logger)
                     if self._initial_config is None:
                         raise ConfigWriteError("Unable to save modified data to a config file because no file has been initialized.", _logger)
-                    self._initial_config[modified_field_name].update({modified_sub_field_name: field})
+                    self._initial_config.set(modified_field_name, field)
                     saved_data = toml.dump(self._initial_config, file_handler)
             if saved_data is None:
                 raise ConfigWriteError(f"Unable to save data to a config file at: {target_path}", _logger)
@@ -106,50 +102,38 @@ class Config(dict):
         return saved_data
 
     def reset(self, field_name: str) -> bool:
-        field = self.get(field_name)
-        if field is not None:
-            self[field_name] = None
-            return True
-        return False
+        return self.set(field_name, None, create_keys_if_not_exists=False)
 
-    def get(self, field_name: str, sub_field_name: Optional[str] = None, fallback: Optional[Any] = None) -> Any:
-        if sub_field_name is None:
-            field = super().get(field_name)
-            if field is None:
-                if fallback is not None:
-                    return fallback
-                return None
-            return field
-        if field_name is None:
-            raise ConfigReadError("A field section must be provided to query a subfield.", _logger)
-
-        field = self._get_field_section(field_name)
-        if not field:
-            raise ConfigReadError(f"Unable to find section: {field_name}", _logger)
-        try:
-            sub_field = field.__getitem__(sub_field_name)
-        except KeyError:
+    def get(self, field_name: str, fallback: Optional[Any] = None) -> Any:
+        if not field_name:
+            return None
+        field = self._get_field(field_name)
+        if field is None:
             if fallback is not None:
                 return fallback
             return None
-        return sub_field
-
-    def _get_field_section(self, field_name: str):
-        field_sections = field_name.split(".")
-        try:
-            field = functools.reduce(operator.getitem, field_sections, self)
-        except KeyError:
-            raise ConfigReadError(f"Unable to find section: {field_name}", _logger)
         return field
 
-    def set(self, field_name: str, sub_field_name: Optional[str] = None, sub_field_value: Optional[Any] = None) -> bool:
+    def _get_field(self, field_name: str):
+        field_sections = field_name.split(".")
+        fields_copy = copy.deepcopy(self)
+        try:
+            for key in field_sections:
+                fields_copy = fields_copy[key]
+        except KeyError:
+            return None
+        return fields_copy
+
+    def set(self, field_name: str, field_value: Optional[Any] = None, create_keys_if_not_exists: bool = False) -> bool:
         if not field_name:
             return False
-        if self.get(field_name) is None:
-            self[field_name] = {}
-            if not sub_field_name:
-                return True
-        if not sub_field_name:
+        return self._set_field(field_name, field_value, create_keys_if_not_exists)
+
+    def _set_field(self, field_name: str, field_value: Optional[Any] = None, create_keys_if_not_exists: bool = False):
+        if not create_keys_if_not_exists and self.get(field_name) is None:
             return False
-        self[field_name][sub_field_name] = sub_field_value
+        field_sections = field_name.split(".")
+        for key in field_sections[:-1]:
+            self = self.setdefault(key, {})
+        self[field_sections[-1]] = field_value
         return True

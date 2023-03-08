@@ -1,8 +1,9 @@
-from typing import Dict
+from typing import Dict, Any
 
 import pytest
 
 from src.utils import env_parser
+from src.constants import ENV_ARGS
 
 
 class TestEnvParserIO:
@@ -11,8 +12,17 @@ class TestEnvParserIO:
         return "tests/data/test.env"
 
     @pytest.fixture(autouse=True)
-    def env_dict(self) -> Dict[str, str]:
-        return {"TEST": "test"}
+    def env_dict(self) -> Dict[str, Any]:
+        return {
+            ENV_ARGS.ENV_HOST: "test_host",
+            ENV_ARGS.ENV_PORT: "12345",
+            ENV_ARGS.ENV_USER: "test_user",
+            ENV_ARGS.ENV_PASS: "test_pass",
+            ENV_ARGS.ENV_CERT: "test_cert",
+            ENV_ARGS.ENV_KEY: "test_key",
+            ENV_ARGS.ENV_TOKENS: "test_token_1 test_token2",
+            ENV_ARGS.ENV_SUPER_USER: "test_super_user",
+        }
 
     class TestGetEnvFile:
         def test_get_env_file_invalid_empty_path(self) -> None:

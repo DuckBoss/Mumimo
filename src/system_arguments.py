@@ -20,7 +20,7 @@ args_parser.add_argument("-p", "--password", help="the client password", type=st
 args_parser.add_argument("-c", "--cert-file", help="path to user certificate", type=str)
 args_parser.add_argument("-k", "--key-file", help="path to private key associated with user certificate", type=str)
 args_parser.add_argument("-t", "--tokens", help="channel access tokens as a list of strings", type=str)
-args_parser.add_argument("-r", "--reconnect", help="attempt to reconnect to the server if disconnected", action="store_true")
+args_parser.add_argument("-ar", "--auto-reconnect", help="attempt to reconnect to the server if disconnected", action="store_true")
 args_parser.add_argument("-v", "--verbose", help="enables verbose and debug messages to output to the console", action="count", default=0)
 args_parser.add_argument("-su", "--superuser", help="the user profile that has full access to this client", type=str)
 args_parser.add_argument(
