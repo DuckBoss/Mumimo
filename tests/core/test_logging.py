@@ -1,7 +1,6 @@
 import logging
 import pathlib
 import shutil
-from unittest.mock import patch
 
 import pytest
 
