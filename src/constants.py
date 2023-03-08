@@ -8,7 +8,7 @@ VERBOSITY_MAX: int = VERBOSE_MAX
 
 
 # Env Args Constants
-class ENV_ARGS:
+class EnvArgs:
     ENV_HOST: str = "MUMIMO_HOST"
     ENV_PORT: str = "MUMIMO_PORT"
     ENV_USER: str = "MUMIMO_USER"
@@ -20,7 +20,7 @@ class ENV_ARGS:
 
 
 # Sys Args Constants
-class SYS_ARGS:
+class SysArgs:
     SYS_HEADLESS: str = "headless"
     SYS_HOST: str = "host"
     SYS_PORT: str = "port"
@@ -43,14 +43,14 @@ DEFAULT_PATH_CONFIG_FILE: str = "config/config.toml"
 DEFAULT_PATH_LOGGING_CONFIG_FILE: str = "config/logging.toml"
 
 
-class LOG_CFG_SECTIONS:
+class LogCfgSections:
     # Log Config Sections
     OUTPUT: str = "output"
     FILE: str = "file"
     CONSOLE: str = "console"
 
 
-class LOG_CFG_FIELDS:
+class LogCfgFields:
     # Log Config Fields
     class OUTPUT:
         class FILE:
@@ -69,7 +69,7 @@ class LOG_CFG_FIELDS:
             MESSAGE_PRIVACY: str = "message_privacy"
 
 
-class MUMIMO_CFG_SECTIONS:
+class MumimoCfgSections:
     # Mumimo Config Sections
     SETTINGS: str = "settings"
     SETTINGS_MEDIA: str = f"{SETTINGS}.media"
@@ -86,59 +86,59 @@ class MUMIMO_CFG_SECTIONS:
     OUTPUT_GUI_TEXT: str = f"{OUTPUT_GUI}.text"
 
 
-class MUMIMO_CFG_FIELDS:
+class MumimoCfgFields:
     # Mumimo Config Fields
     class SETTINGS:
         class CONNECTION:
-            MUTE: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_CONNECTION}.mute"
-            DEAFEN: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_CONNECTION}.deafen"
-            REGISTER: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_CONNECTION}.register"
-            COMMENT: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_CONNECTION}.comment"
-            DEFAULT_CHANNEL: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_CONNECTION}.default_channel"
-            AUTO_RECONNECT: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_CONNECTION}.auto_reconnect"
+            MUTE: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.mute"
+            DEAFEN: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.deafen"
+            REGISTER: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.register"
+            COMMENT: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.comment"
+            DEFAULT_CHANNEL: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.default_channel"
+            AUTO_RECONNECT: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.auto_reconnect"
 
         class COMMANDS:
-            TOKEN: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_COMMANDS}.command_token"
-            TICK_RATE: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_COMMANDS}.command_tick_rate"
-            MAX_MULTI_COMMAND_LENGTH: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_COMMANDS}.max_multi_command_length"
-            MAX_COMMAND_QUEUE_LENGTH: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_COMMANDS}.max_command_queue_length"
-            MESSAGE_HISTORY_LENGTH: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_COMMANDS}.message_history_length"
+            TOKEN: str = f"{MumimoCfgSections.SETTINGS_COMMANDS}.command_token"
+            TICK_RATE: str = f"{MumimoCfgSections.SETTINGS_COMMANDS}.command_tick_rate"
+            MAX_MULTI_COMMAND_LENGTH: str = f"{MumimoCfgSections.SETTINGS_COMMANDS}.max_multi_command_length"
+            MAX_COMMAND_QUEUE_LENGTH: str = f"{MumimoCfgSections.SETTINGS_COMMANDS}.max_command_queue_length"
+            MESSAGE_HISTORY_LENGTH: str = f"{MumimoCfgSections.SETTINGS_COMMANDS}.message_history_length"
 
         class MEDIA:
-            VOLUME: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_MEDIA}.volume"
-            STEREO_AUDIO: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_MEDIA}.stereo_audio"
-            MAX_QUEUE_LENGTH: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_MEDIA}.max_queue_length"
-            FFMPEG_PATH: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_MEDIA}.ffmpeg_path"
-            VLC_PATH: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_MEDIA}.vlc_path"
-            MEDIA_DIRECTORY: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_MEDIA}.media_directory"
+            VOLUME: str = f"{MumimoCfgSections.SETTINGS_MEDIA}.volume"
+            STEREO_AUDIO: str = f"{MumimoCfgSections.SETTINGS_MEDIA}.stereo_audio"
+            MAX_QUEUE_LENGTH: str = f"{MumimoCfgSections.SETTINGS_MEDIA}.max_queue_length"
+            FFMPEG_PATH: str = f"{MumimoCfgSections.SETTINGS_MEDIA}.ffmpeg_path"
+            VLC_PATH: str = f"{MumimoCfgSections.SETTINGS_MEDIA}.vlc_path"
+            MEDIA_DIRECTORY: str = f"{MumimoCfgSections.SETTINGS_MEDIA}.media_directory"
 
-            class AUDIO_DUCKING:
-                ENABLE: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_MEDIA_AUDIODUCKING}.enable"
-                VOLUME: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_MEDIA_AUDIODUCKING}.volume"
-                THRESHOLD: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_MEDIA_AUDIODUCKING}.threshold"
-                DELAY: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_MEDIA_AUDIODUCKING}.delay"
+            class AUDIODUCKING:
+                ENABLE: str = f"{MumimoCfgSections.SETTINGS_MEDIA_AUDIODUCKING}.enable"
+                VOLUME: str = f"{MumimoCfgSections.SETTINGS_MEDIA_AUDIODUCKING}.volume"
+                THRESHOLD: str = f"{MumimoCfgSections.SETTINGS_MEDIA_AUDIODUCKING}.threshold"
+                DELAY: str = f"{MumimoCfgSections.SETTINGS_MEDIA_AUDIODUCKING}.delay"
 
-            class YOUTUBE_DL:
-                PROXY_URL: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_MEDIA_YOUTUBEDL}.proxy_url"
-                COOKIE_FILE: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_MEDIA_YOUTUBEDL}.cookie_file"
+            class YOUTUBEDL:
+                PROXY_URL: str = f"{MumimoCfgSections.SETTINGS_MEDIA_YOUTUBEDL}.proxy_url"
+                COOKIE_FILE: str = f"{MumimoCfgSections.SETTINGS_MEDIA_YOUTUBEDL}.cookie_file"
 
         class PLUGINS:
-            DISABLED_PLUGINS: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_PLUGINS}.disabled_plugins"
-            SAFE_MODE_PLUGINS: str = f"{MUMIMO_CFG_SECTIONS.SETTINGS_PLUGINS}.safe_mode_plugins"
+            DISABLED_PLUGINS: str = f"{MumimoCfgSections.SETTINGS_PLUGINS}.disabled_plugins"
+            SAFE_MODE_PLUGINS: str = f"{MumimoCfgSections.SETTINGS_PLUGINS}.safe_mode_plugins"
 
     class OUTPUT:
         class GUI:
-            ENABLE: str = f"{MUMIMO_CFG_SECTIONS.OUTPUT_GUI}.enable"
+            ENABLE: str = f"{MumimoCfgSections.OUTPUT_GUI}.enable"
 
             class CANVAS:
-                BACKGROUND_COLOR: str = f"{MUMIMO_CFG_SECTIONS.OUTPUT_GUI_CANVAS}.background_color"
-                IMAGE_BACKGROUND_COLOR: str = f"{MUMIMO_CFG_SECTIONS.OUTPUT_GUI_CANVAS}.image_background_color"
-                CONTENT_ALIGNMENT: str = f"{MUMIMO_CFG_SECTIONS.OUTPUT_GUI_CANVAS}.content_alignment"
-                BORDER: str = f"{MUMIMO_CFG_SECTIONS.OUTPUT_GUI_CANVAS}.border"
+                BACKGROUND_COLOR: str = f"{MumimoCfgSections.OUTPUT_GUI_CANVAS}.background_color"
+                IMAGE_BACKGROUND_COLOR: str = f"{MumimoCfgSections.OUTPUT_GUI_CANVAS}.image_background_color"
+                CONTENT_ALIGNMENT: str = f"{MumimoCfgSections.OUTPUT_GUI_CANVAS}.content_alignment"
+                BORDER: str = f"{MumimoCfgSections.OUTPUT_GUI_CANVAS}.border"
 
             class TEXT:
-                FONT: str = f"{MUMIMO_CFG_SECTIONS.OUTPUT_GUI_TEXT}.font"
-                STANDARD_TEXT_COLOR: str = f"{MUMIMO_CFG_SECTIONS.OUTPUT_GUI_TEXT}.standard_text_color"
-                HEADER_TEXT_COLOR: str = f"{MUMIMO_CFG_SECTIONS.OUTPUT_GUI_TEXT}.header_text_color"
-                SUB_HEADER_TEXT_COLOR: str = f"{MUMIMO_CFG_SECTIONS.OUTPUT_GUI_TEXT}.sub_header_text_color"
-                INDEX_TEXT_COLOR: str = f"{MUMIMO_CFG_SECTIONS.OUTPUT_GUI_TEXT}.index_text_Color"
+                FONT: str = f"{MumimoCfgSections.OUTPUT_GUI_TEXT}.font"
+                STANDARD_TEXT_COLOR: str = f"{MumimoCfgSections.OUTPUT_GUI_TEXT}.standard_text_color"
+                HEADER_TEXT_COLOR: str = f"{MumimoCfgSections.OUTPUT_GUI_TEXT}.header_text_color"
+                SUB_HEADER_TEXT_COLOR: str = f"{MumimoCfgSections.OUTPUT_GUI_TEXT}.sub_header_text_color"
+                INDEX_TEXT_COLOR: str = f"{MumimoCfgSections.OUTPUT_GUI_TEXT}.index_text_Color"

@@ -1,7 +1,7 @@
+import pathlib
 from unittest.mock import patch
 
 import pytest
-import pathlib
 
 from src.config import ConfigSingleton
 from src.constants import DEFAULT_PATH_CONFIG_FILE

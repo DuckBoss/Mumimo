@@ -1,17 +1,12 @@
 from unittest.mock import patch
 
 import pytest
-from src.config import ConfigSingleton
 
-from src.constants import (
-    MUMIMO_CFG_FIELDS,
-    ENV_ARGS,
-    SYS_ARGS,
-    VERBOSITY_MAX,
-)
+from src.config import ConfigSingleton
+from src.constants import VERBOSITY_MAX, EnvArgs, MumimoCfgFields, SysArgs
 from src.exceptions import ConfigError
-from src.utils import config_utils
 from src.services.init_service import MumimoInitService
+from src.utils import config_utils
 
 
 class TestMumimoInitService:
@@ -42,20 +37,20 @@ class TestMumimoInitService:
         @pytest.fixture(autouse=True)
         def get_expected_prioritized_client_opts(self):
             return {
-                SYS_ARGS.SYS_RECONNECT: True,
+                SysArgs.SYS_RECONNECT: True,
             }
 
         @pytest.fixture(autouse=True)
         def get_expected_prioritized_env_opts(self):
             return {
-                SYS_ARGS.SYS_HOST: "host",
-                SYS_ARGS.SYS_PORT: 12345,
-                SYS_ARGS.SYS_USER: "user",
-                SYS_ARGS.SYS_PASS: "pass",
-                SYS_ARGS.SYS_CERT: "cert",
-                SYS_ARGS.SYS_KEY: "key",
-                SYS_ARGS.SYS_TOKENS: "tokens",
-                SYS_ARGS.SYS_SUPER_USER: "super",
+                SysArgs.SYS_HOST: "host",
+                SysArgs.SYS_PORT: 12345,
+                SysArgs.SYS_USER: "user",
+                SysArgs.SYS_PASS: "pass",
+                SysArgs.SYS_CERT: "cert",
+                SysArgs.SYS_KEY: "key",
+                SysArgs.SYS_TOKENS: "tokens",
+                SysArgs.SYS_SUPER_USER: "super",
             }
 
         @patch("src.services.init_service.MumimoInitService._get_prioritized_client_config_options")
@@ -79,7 +74,7 @@ class TestMumimoInitService:
                 pytest.fail("mock config failed to be created.")
 
             # mock_init_mumimo_cfg.return_value.set(f"{CFG_SECTION.SETTINGS.CONNECTION}.{CFG_FIELD.SETTINGS.CONNECTION.AUTO_RECONNECT}", True)
-            mock_sys_args.return_value = {SYS_ARGS.SYS_VERBOSE: VERBOSITY_MAX}
+            mock_sys_args.return_value = {SysArgs.SYS_VERBOSE: VERBOSITY_MAX}
             mock_env_opts.return_value = get_expected_prioritized_env_opts
             mock_config_opts.return_value = get_expected_prioritized_client_opts
             client_settings = init_service.initialize_client_settings(mock_init_mumimo_cfg.return_value)
@@ -96,27 +91,27 @@ class TestMumimoInitService:
         @pytest.fixture(autouse=True)
         def get_expected_env_mock_sys_args(self):
             return {
-                SYS_ARGS.SYS_HOST: "host",
-                SYS_ARGS.SYS_PORT: 12345,
-                SYS_ARGS.SYS_USER: "mumimo",
-                SYS_ARGS.SYS_PASS: "pass",
-                SYS_ARGS.SYS_SUPER_USER: "superuser",
-                SYS_ARGS.SYS_CERT: "cert",
-                SYS_ARGS.SYS_TOKENS: "token1 token2",
-                SYS_ARGS.SYS_KEY: "key",
+                SysArgs.SYS_HOST: "host",
+                SysArgs.SYS_PORT: 12345,
+                SysArgs.SYS_USER: "mumimo",
+                SysArgs.SYS_PASS: "pass",
+                SysArgs.SYS_SUPER_USER: "superuser",
+                SysArgs.SYS_CERT: "cert",
+                SysArgs.SYS_TOKENS: "token1 token2",
+                SysArgs.SYS_KEY: "key",
             }
 
         @pytest.fixture(autouse=True)
         def get_expected_env_mock_no_sys_args(self):
             return {
-                ENV_ARGS.ENV_HOST: "test_host",
-                ENV_ARGS.ENV_PORT: 12345,
-                ENV_ARGS.ENV_USER: "test_user",
-                ENV_ARGS.ENV_PASS: "test_pass",
-                ENV_ARGS.ENV_SUPER_USER: "test_super_user",
-                ENV_ARGS.ENV_CERT: "test_cert",
-                ENV_ARGS.ENV_TOKENS: ["test_token_1", "test_token_2"],
-                ENV_ARGS.ENV_KEY: "test_key",
+                EnvArgs.ENV_HOST: "test_host",
+                EnvArgs.ENV_PORT: 12345,
+                EnvArgs.ENV_USER: "test_user",
+                EnvArgs.ENV_PASS: "test_pass",
+                EnvArgs.ENV_SUPER_USER: "test_super_user",
+                EnvArgs.ENV_CERT: "test_cert",
+                EnvArgs.ENV_TOKENS: ["test_token_1", "test_token_2"],
+                EnvArgs.ENV_KEY: "test_key",
             }
 
         @patch.object(config_utils, "initialize_mumimo_config")
@@ -125,9 +120,9 @@ class TestMumimoInitService:
             ConfigSingleton.clear()
             init_service: MumimoInitService = get_init_service
             mock_init_mumimo_cfg.return_value = ConfigSingleton().instance()
-            mock_sys_args.return_value = {SYS_ARGS.SYS_RECONNECT: True}
+            mock_sys_args.return_value = {SysArgs.SYS_RECONNECT: True}
             client_settings = init_service._get_prioritized_client_config_options(mock_init_mumimo_cfg)
-            assert client_settings == {SYS_ARGS.SYS_RECONNECT: True}
+            assert client_settings == {SysArgs.SYS_RECONNECT: True}
 
         @patch.object(MumimoInitService, "_get_sys_args")
         def test__get_prioritized_client_config_options_without_sys_args(self, mock_sys_args, get_init_service):
@@ -136,9 +131,9 @@ class TestMumimoInitService:
             mock_cfg = ConfigSingleton().instance()
             mock_sys_args.return_value = {}
             if mock_cfg is not None:
-                mock_cfg.set(MUMIMO_CFG_FIELDS.SETTINGS.CONNECTION.AUTO_RECONNECT, True)
+                mock_cfg.set(MumimoCfgFields.SETTINGS.CONNECTION.AUTO_RECONNECT, True)
                 client_settings = init_service._get_prioritized_client_config_options(mock_cfg)
-                assert client_settings[SYS_ARGS.SYS_RECONNECT] is False
+                assert client_settings[SysArgs.SYS_RECONNECT] is False
 
         @patch.object(MumimoInitService, "_get_sys_args")
         @patch("src.utils.env_parser.read_env_file")
@@ -151,14 +146,14 @@ class TestMumimoInitService:
             mock_sys_args.return_value = get_expected_env_mock_sys_args
             client_settings = init_service._get_prioritized_client_env_options()
             assert client_settings == {
-                SYS_ARGS.SYS_HOST: mock_sys_args.return_value[SYS_ARGS.SYS_HOST],
-                SYS_ARGS.SYS_PORT: mock_sys_args.return_value[SYS_ARGS.SYS_PORT],
-                SYS_ARGS.SYS_USER: mock_sys_args.return_value[SYS_ARGS.SYS_USER],
-                SYS_ARGS.SYS_PASS: mock_sys_args.return_value[SYS_ARGS.SYS_PASS],
-                SYS_ARGS.SYS_SUPER_USER: mock_sys_args.return_value[SYS_ARGS.SYS_SUPER_USER],
-                SYS_ARGS.SYS_CERT: mock_sys_args.return_value[SYS_ARGS.SYS_CERT],
-                SYS_ARGS.SYS_TOKENS: ["token1", "token2"],
-                SYS_ARGS.SYS_KEY: mock_sys_args.return_value[SYS_ARGS.SYS_KEY],
+                SysArgs.SYS_HOST: mock_sys_args.return_value[SysArgs.SYS_HOST],
+                SysArgs.SYS_PORT: mock_sys_args.return_value[SysArgs.SYS_PORT],
+                SysArgs.SYS_USER: mock_sys_args.return_value[SysArgs.SYS_USER],
+                SysArgs.SYS_PASS: mock_sys_args.return_value[SysArgs.SYS_PASS],
+                SysArgs.SYS_SUPER_USER: mock_sys_args.return_value[SysArgs.SYS_SUPER_USER],
+                SysArgs.SYS_CERT: mock_sys_args.return_value[SysArgs.SYS_CERT],
+                SysArgs.SYS_TOKENS: ["token1", "token2"],
+                SysArgs.SYS_KEY: mock_sys_args.return_value[SysArgs.SYS_KEY],
             }
 
         @patch.object(MumimoInitService, "_get_sys_args")
@@ -169,15 +164,15 @@ class TestMumimoInitService:
             ConfigSingleton.clear()
             init_service: MumimoInitService = get_init_service
             mock_env_args.return_value = get_expected_env_mock_no_sys_args
-            mock_sys_args.return_value = {SYS_ARGS.SYS_ENV_FILE: "data/test.env"}
+            mock_sys_args.return_value = {SysArgs.SYS_ENV_FILE: "data/test.env"}
             client_settings = init_service._get_prioritized_client_env_options()
             assert client_settings == {
-                SYS_ARGS.SYS_HOST: mock_env_args.return_value[ENV_ARGS.ENV_HOST],
-                SYS_ARGS.SYS_PORT: mock_env_args.return_value[ENV_ARGS.ENV_PORT],
-                SYS_ARGS.SYS_USER: mock_env_args.return_value[ENV_ARGS.ENV_USER],
-                SYS_ARGS.SYS_PASS: mock_env_args.return_value[ENV_ARGS.ENV_PASS],
-                SYS_ARGS.SYS_SUPER_USER: mock_env_args.return_value[ENV_ARGS.ENV_SUPER_USER],
-                SYS_ARGS.SYS_CERT: mock_env_args.return_value[ENV_ARGS.ENV_CERT],
-                SYS_ARGS.SYS_TOKENS: mock_env_args.return_value[ENV_ARGS.ENV_TOKENS],
-                SYS_ARGS.SYS_KEY: mock_env_args.return_value[ENV_ARGS.ENV_KEY],
+                SysArgs.SYS_HOST: mock_env_args.return_value[EnvArgs.ENV_HOST],
+                SysArgs.SYS_PORT: mock_env_args.return_value[EnvArgs.ENV_PORT],
+                SysArgs.SYS_USER: mock_env_args.return_value[EnvArgs.ENV_USER],
+                SysArgs.SYS_PASS: mock_env_args.return_value[EnvArgs.ENV_PASS],
+                SysArgs.SYS_SUPER_USER: mock_env_args.return_value[EnvArgs.ENV_SUPER_USER],
+                SysArgs.SYS_CERT: mock_env_args.return_value[EnvArgs.ENV_CERT],
+                SysArgs.SYS_TOKENS: mock_env_args.return_value[EnvArgs.ENV_TOKENS],
+                SysArgs.SYS_KEY: mock_env_args.return_value[EnvArgs.ENV_KEY],
             }

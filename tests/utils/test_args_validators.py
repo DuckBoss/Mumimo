@@ -2,7 +2,7 @@ from typing import Dict, Union
 
 import pytest
 
-from src.constants import SYS_ARGS
+from src.constants import SysArgs
 from src.exceptions import ValidationError
 from src.utils.args_validators import SystemArgumentsValidator as validator
 
@@ -24,48 +24,48 @@ class TestSystemArgumentsValidators:
 
     @pytest.fixture(autouse=True)
     def host(self, sys_args):
-        yield sys_args[SYS_ARGS.SYS_HOST]
-        sys_args[SYS_ARGS.SYS_HOST] = ""
+        yield sys_args[SysArgs.SYS_HOST]
+        sys_args[SysArgs.SYS_HOST] = ""
 
     @pytest.fixture(autouse=True)
     def port(self, sys_args):
-        yield sys_args[SYS_ARGS.SYS_PORT]
-        sys_args[SYS_ARGS.SYS_PORT] = ""
+        yield sys_args[SysArgs.SYS_PORT]
+        sys_args[SysArgs.SYS_PORT] = ""
 
     @pytest.fixture(autouse=True)
     def user(self, sys_args):
-        yield sys_args[SYS_ARGS.SYS_USER]
-        sys_args[SYS_ARGS.SYS_USER] = ""
+        yield sys_args[SysArgs.SYS_USER]
+        sys_args[SysArgs.SYS_USER] = ""
 
     @pytest.fixture(autouse=True)
     def password(self, sys_args):
-        yield sys_args[SYS_ARGS.SYS_PASS]
-        sys_args[SYS_ARGS.SYS_PASS] = ""
+        yield sys_args[SysArgs.SYS_PASS]
+        sys_args[SysArgs.SYS_PASS] = ""
 
     @pytest.fixture(autouse=True)
     def cert(self, sys_args):
-        yield sys_args[SYS_ARGS.SYS_CERT]
-        sys_args[SYS_ARGS.SYS_CERT] = ""
+        yield sys_args[SysArgs.SYS_CERT]
+        sys_args[SysArgs.SYS_CERT] = ""
 
     @pytest.fixture(autouse=True)
     def key(self, sys_args):
-        yield sys_args[SYS_ARGS.SYS_KEY]
-        sys_args[SYS_ARGS.SYS_KEY] = ""
+        yield sys_args[SysArgs.SYS_KEY]
+        sys_args[SysArgs.SYS_KEY] = ""
 
     @pytest.fixture(autouse=True)
     def tokens(self, sys_args):
-        yield sys_args[SYS_ARGS.SYS_TOKENS]
-        sys_args[SYS_ARGS.SYS_TOKENS] = ""
+        yield sys_args[SysArgs.SYS_TOKENS]
+        sys_args[SysArgs.SYS_TOKENS] = ""
 
     @pytest.fixture(autouse=True)
     def reconnect(self, sys_args):
-        yield sys_args[SYS_ARGS.SYS_RECONNECT]
-        sys_args[SYS_ARGS.SYS_RECONNECT] = ""
+        yield sys_args[SysArgs.SYS_RECONNECT]
+        sys_args[SysArgs.SYS_RECONNECT] = ""
 
     @pytest.fixture(autouse=True)
     def verbose(self, sys_args):
-        yield sys_args[SYS_ARGS.SYS_VERBOSE]
-        sys_args[SYS_ARGS.SYS_VERBOSE] = ""
+        yield sys_args[SysArgs.SYS_VERBOSE]
+        sys_args[SysArgs.SYS_VERBOSE] = ""
 
     class TestHostParam:
         def test_host_is_none(self, host) -> None:

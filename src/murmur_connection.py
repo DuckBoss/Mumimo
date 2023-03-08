@@ -6,7 +6,7 @@ import pymumble_py3 as pymumble
 from pymumble_py3.errors import ConnectionRejectedError
 
 from .client_state import ClientState
-from .constants import SYS_ARGS, VERBOSE_MAX
+from .constants import VERBOSE_MAX, SysArgs
 from .exceptions import ConnectivityError, ValidationError
 from .logging import debug as _debug
 from .logging import get_logger
@@ -115,15 +115,15 @@ class MurmurConnection:
             raise ValidationError("Unable to connect: connection parameters are undefined.", logger=logger)
 
         self._connection_instance = pymumble.Mumble(
-            host=self._connection_params.get(SYS_ARGS.SYS_HOST),
-            port=int(self._connection_params.get(SYS_ARGS.SYS_PORT, 64738)),
-            user=self._connection_params.get(SYS_ARGS.SYS_USER),
-            password=str(self._connection_params.get(SYS_ARGS.SYS_PASS)),
-            certfile=self._connection_params.get(SYS_ARGS.SYS_CERT),
-            keyfile=self._connection_params.get(SYS_ARGS.SYS_KEY),
-            tokens=self._connection_params.get(SYS_ARGS.SYS_TOKENS),
-            reconnect=bool(self._connection_params.get(SYS_ARGS.SYS_RECONNECT, False)),
-            debug=bool(int(self._connection_params.get(SYS_ARGS.SYS_VERBOSE, False)) >= VERBOSE_MAX),
+            host=self._connection_params.get(SysArgs.SYS_HOST),
+            port=int(self._connection_params.get(SysArgs.SYS_PORT, 64738)),
+            user=self._connection_params.get(SysArgs.SYS_USER),
+            password=str(self._connection_params.get(SysArgs.SYS_PASS)),
+            certfile=self._connection_params.get(SysArgs.SYS_CERT),
+            keyfile=self._connection_params.get(SysArgs.SYS_KEY),
+            tokens=self._connection_params.get(SysArgs.SYS_TOKENS),
+            reconnect=bool(self._connection_params.get(SysArgs.SYS_RECONNECT, False)),
+            debug=bool(int(self._connection_params.get(SysArgs.SYS_VERBOSE, False)) >= VERBOSE_MAX),
             stereo=True,
         )
         self._connection_instance.set_codec_profile("audio")
@@ -147,12 +147,12 @@ class MurmurConnection:
             time.sleep(0.1)
 
     def _validate_connection_params(self, params: Dict[str, Union[str, bool]]) -> None:
-        SystemArgumentsValidator.validate_host_param(params.get(SYS_ARGS.SYS_HOST))
-        SystemArgumentsValidator.validate_port_param(params.get(SYS_ARGS.SYS_PORT))
-        SystemArgumentsValidator.validate_user_param(params.get(SYS_ARGS.SYS_USER))
-        SystemArgumentsValidator.validate_password_param(params.get(SYS_ARGS.SYS_PASS))
-        SystemArgumentsValidator.validate_cert_param(params.get(SYS_ARGS.SYS_CERT))
-        SystemArgumentsValidator.validate_key_param(params.get(SYS_ARGS.SYS_KEY))
-        SystemArgumentsValidator.validate_tokens_param(params.get(SYS_ARGS.SYS_TOKENS))
-        SystemArgumentsValidator.validate_auto_reconnect_param(params.get(SYS_ARGS.SYS_RECONNECT))
-        SystemArgumentsValidator.validate_verbose_param(params.get(SYS_ARGS.SYS_VERBOSE))
+        SystemArgumentsValidator.validate_host_param(params.get(SysArgs.SYS_HOST))
+        SystemArgumentsValidator.validate_port_param(params.get(SysArgs.SYS_PORT))
+        SystemArgumentsValidator.validate_user_param(params.get(SysArgs.SYS_USER))
+        SystemArgumentsValidator.validate_password_param(params.get(SysArgs.SYS_PASS))
+        SystemArgumentsValidator.validate_cert_param(params.get(SysArgs.SYS_CERT))
+        SystemArgumentsValidator.validate_key_param(params.get(SysArgs.SYS_KEY))
+        SystemArgumentsValidator.validate_tokens_param(params.get(SysArgs.SYS_TOKENS))
+        SystemArgumentsValidator.validate_auto_reconnect_param(params.get(SysArgs.SYS_RECONNECT))
+        SystemArgumentsValidator.validate_verbose_param(params.get(SysArgs.SYS_VERBOSE))

@@ -1,8 +1,9 @@
 import copy
 import pathlib
-from typing import Any, Optional
-import toml
 from logging import getLogger
+from typing import Any, Optional
+
+import toml
 
 from .exceptions import ConfigReadError, ConfigWriteError
 

@@ -1,18 +1,20 @@
 import logging
-import pytest
-import src.logging as log
 import pathlib
 import shutil
+
+import pytest
+
+import src.logging as log
 
 
 class TestLogging:
     @pytest.fixture(autouse=True)
     def get_logger(self):
-        log._is_initialized = False
+        log._IS_INITIALIZED = False
         assert log.init_logger({"log_config_file": "tests/data/config/test_logging.toml"}) is True
-        assert log._is_initialized is True
+        assert log._IS_INITIALIZED is True
         yield log.get_logger(__name__)
-        log._is_initialized = False
+        log._IS_INITIALIZED = False
         generated_logs_path = pathlib.Path("tests/data/logs")
         shutil.rmtree(generated_logs_path)
 
