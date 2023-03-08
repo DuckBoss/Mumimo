@@ -3,6 +3,7 @@ import pathlib
 import shutil
 
 import pytest
+from unittest.mock import patch
 
 import src.logging as log
 
@@ -41,6 +42,32 @@ class TestLogging:
         assert get_logger.hasHandlers() is True
         err = log.print_error(logger=get_logger)
         return err
+
+    @pytest.fixture(autouse=True)
+    def mock_log_config(self):
+        return {
+            "output": {
+                "file": {
+                    "enable": True,
+                    "level": "DEBUG",
+                    "path": "tests/data/logs/",
+                    "format": "(%(asctime)s)[%(name)s][%(levelname)s]::%(message)s",
+                    "name": "mumimo_%s.log",
+                    "max_logs": 20,
+                    "max_bytes": 1000000,
+                    "message_privacy": True,
+                    "enable_stack_trace": False,
+                },
+                "console": {
+                    "format": "[%(levelname)s]::%(message)s",
+                    "message_privacy": True,
+                },
+            }
+        }
+
+    def test_logger_already_initialized(self):
+        log._IS_INITIALIZED = True
+        assert log.init_logger() is False
 
     def test_log_print_default(self, print_fixture, caplog):
         print_fixture("test_print_default")
