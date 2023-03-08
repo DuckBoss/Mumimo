@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 import pytest
 
-from src.constants import CFG_FIELD_COMMENT, CFG_FIELD_DEAFEN, CFG_FIELD_MUTE, CFG_FIELD_RECONNECT, CFG_FIELD_REGISTER, CFG_FIELD_VERBOSE
+from src.constants import MumimoCfgFields
 
 
 @pytest.fixture(autouse=True)
@@ -18,11 +18,10 @@ def invalid_cfg_path() -> str:
 @pytest.fixture(autouse=True)
 def valid_config_params() -> Dict[str, Any]:
     _connection_params = {
-        CFG_FIELD_MUTE: True,
-        CFG_FIELD_DEAFEN: True,
-        CFG_FIELD_REGISTER: False,
-        CFG_FIELD_COMMENT: "test",
-        CFG_FIELD_RECONNECT: False,
-        CFG_FIELD_VERBOSE: 0,
+        MumimoCfgFields.SETTINGS.CONNECTION.MUTE: True,
+        MumimoCfgFields.SETTINGS.CONNECTION.DEAFEN: True,
+        MumimoCfgFields.SETTINGS.CONNECTION.REGISTER: False,
+        MumimoCfgFields.SETTINGS.CONNECTION.COMMENT: "test",
+        MumimoCfgFields.SETTINGS.CONNECTION.AUTO_RECONNECT: False,
     }
     return _connection_params

@@ -9,3 +9,6 @@ test_1 = "test_1"
 test_2 = 2
 test_3 = ["test_3"]
 test_4 = true
+
+[test_section_1.nested]
+test_1 = "test_1"

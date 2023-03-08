@@ -1,8 +1,56 @@
-[main]
+### Main Settings ###
+[settings.connection]
 mute = true
 deafen = true
 register = false
-comment = ""
-reconnect = false
-verbose = 0       # 0 to 4 range
-# test_field
+comment = "Hi! I am Mumimo."
+default_channel = ""
+auto_reconnect = false
+
+[settings.commands]
+command_token = "!"
+command_tick_rate = 0.1
+max_multi_command_length = 200
+max_command_queue_length = 500
+message_history_length = 25
+
+### Media Settings ###
+[settings.media]
+volume = 0.1
+stereo_audio = true
+max_queue_length = 50
+ffmpeg_path = ""
+vlc_path = ""
+media_directory = ""
+
+[settings.media.audio_ducking]
+enable = false
+volume = 0.05
+threshold = 2500.0
+delay = 1.0
+
+[settings.media.youtube_dl]
+proxy_url = ""
+cookie_file = ""
+
+### Plugin Settings ###
+[settings.plugins]
+disabled_plugins = []
+safe_mode_plugins = []
+
+### GUI Settings ###
+[output.gui]
+enable = true
+
+[output.gui.canvas]
+background_color = "black"
+image_background_color = "black"
+content_alignment = "center"
+border = 0
+
+[output.gui.text]
+font = "Georgia"
+standard_text_color = "Snow"
+header_text_color = "red"
+sub_header_text_color = "yellow"
+index_text_color = "cyan"

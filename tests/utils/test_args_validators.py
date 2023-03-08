@@ -2,7 +2,7 @@ from typing import Dict, Union
 
 import pytest
 
-from src.constants import SYS_CERT, SYS_HOST, SYS_KEY, SYS_PASS, SYS_PORT, SYS_RECONNECT, SYS_TOKENS, SYS_USER, SYS_VERBOSE
+from src.constants import SysArgs
 from src.exceptions import ValidationError
 from src.utils.args_validators import SystemArgumentsValidator as validator
 
@@ -18,54 +18,54 @@ class TestSystemArgumentsValidators:
             "cert_file": "",
             "key_file": "",
             "tokens": "",
-            "reconnect": "",
+            "auto_reconnect": "",
             "verbose": "",
         }
 
     @pytest.fixture(autouse=True)
     def host(self, sys_args):
-        yield sys_args[SYS_HOST]
-        sys_args[SYS_HOST] = ""
+        yield sys_args[SysArgs.SYS_HOST]
+        sys_args[SysArgs.SYS_HOST] = ""
 
     @pytest.fixture(autouse=True)
     def port(self, sys_args):
-        yield sys_args[SYS_PORT]
-        sys_args[SYS_PORT] = ""
+        yield sys_args[SysArgs.SYS_PORT]
+        sys_args[SysArgs.SYS_PORT] = ""
 
     @pytest.fixture(autouse=True)
     def user(self, sys_args):
-        yield sys_args[SYS_USER]
-        sys_args[SYS_USER] = ""
+        yield sys_args[SysArgs.SYS_USER]
+        sys_args[SysArgs.SYS_USER] = ""
 
     @pytest.fixture(autouse=True)
     def password(self, sys_args):
-        yield sys_args[SYS_PASS]
-        sys_args[SYS_PASS] = ""
+        yield sys_args[SysArgs.SYS_PASS]
+        sys_args[SysArgs.SYS_PASS] = ""
 
     @pytest.fixture(autouse=True)
     def cert(self, sys_args):
-        yield sys_args[SYS_CERT]
-        sys_args[SYS_CERT] = ""
+        yield sys_args[SysArgs.SYS_CERT]
+        sys_args[SysArgs.SYS_CERT] = ""
 
     @pytest.fixture(autouse=True)
     def key(self, sys_args):
-        yield sys_args[SYS_KEY]
-        sys_args[SYS_KEY] = ""
+        yield sys_args[SysArgs.SYS_KEY]
+        sys_args[SysArgs.SYS_KEY] = ""
 
     @pytest.fixture(autouse=True)
     def tokens(self, sys_args):
-        yield sys_args[SYS_TOKENS]
-        sys_args[SYS_TOKENS] = ""
+        yield sys_args[SysArgs.SYS_TOKENS]
+        sys_args[SysArgs.SYS_TOKENS] = ""
 
     @pytest.fixture(autouse=True)
     def reconnect(self, sys_args):
-        yield sys_args[SYS_RECONNECT]
-        sys_args[SYS_RECONNECT] = ""
+        yield sys_args[SysArgs.SYS_RECONNECT]
+        sys_args[SysArgs.SYS_RECONNECT] = ""
 
     @pytest.fixture(autouse=True)
     def verbose(self, sys_args):
-        yield sys_args[SYS_VERBOSE]
-        sys_args[SYS_VERBOSE] = ""
+        yield sys_args[SysArgs.SYS_VERBOSE]
+        sys_args[SysArgs.SYS_VERBOSE] = ""
 
     class TestHostParam:
         def test_host_is_none(self, host) -> None:
@@ -159,16 +159,16 @@ class TestSystemArgumentsValidators:
             with pytest.raises(ValidationError, match=r".*\ must be a valid string.$"):
                 validator.validate_tokens_param(tokens)
 
-    class TestReconnectParam:
-        def test_reconnect_is_none(self, reconnect) -> None:
+    class TestAutoReconnectParam:
+        def test_auto_reconnect_is_none(self, reconnect) -> None:
             reconnect = None
             with pytest.raises(ValidationError, match=r".*\ can only be True or False, not None.$"):
-                validator.validate_reconnect_param(reconnect)
+                validator.validate_auto_reconnect_param(reconnect)
 
-        def test_reconnect_is_invalid(self, reconnect) -> None:
-            reconnect = "invalid_reconnect"
+        def test_auto_reconnect_is_invalid(self, reconnect) -> None:
+            reconnect = "invalid_auto_reconnect"
             with pytest.raises(ValidationError, match=r".*\ can only be True or False.$"):
-                validator.validate_reconnect_param(reconnect)
+                validator.validate_auto_reconnect_param(reconnect)
 
     class TestVerboseParam:
         def test_verbose_is_empty(self, verbose) -> None:

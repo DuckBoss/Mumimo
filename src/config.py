@@ -1,9 +1,13 @@
+import copy
 import pathlib
+from logging import getLogger
 from typing import Any, Optional
 
 import toml
 
 from .exceptions import ConfigReadError, ConfigWriteError
+
+_logger = getLogger(__name__)
 
 
 class ConfigSingleton:
@@ -39,14 +43,14 @@ class Config(dict):
     def read(self, file_name: Optional[str] = None) -> "Config":
         if file_name is None:
             if self._config_file_path is None:
-                raise ConfigReadError("Unable to read config file because no file was specified.")
+                raise ConfigReadError("Unable to read config file because no file was specified.", _logger)
             self._read_from_file(self._config_file_path)
             return self
         search_path = pathlib.Path.cwd() / file_name
-        if search_path.is_file():
+        if search_path.exists() and search_path.is_file():
             self._read_from_file(search_path)
             return self
-        raise ConfigReadError(f"Unable to read config file at: {search_path}")
+        raise ConfigReadError(f"Unable to read config file at: {search_path}", _logger)
 
     def _read_from_file(self, file_path: pathlib.Path):
         try:
@@ -59,16 +63,15 @@ class Config(dict):
                     self._initial_config._config_file_path = self._config_file_path
                     self._initial_config.update(self)
         except toml.TomlDecodeError as exc:
-            raise ConfigReadError(f"Unable to read config file at: {file_path}.") from exc
+            raise ConfigReadError(f"Unable to read config file at: {file_path}.", _logger) from exc
         except IOError as exc:
-            raise ConfigReadError(f"Unable to open config file to read at: {file_path}.") from exc
+            raise ConfigReadError(f"Unable to open config file to read at: {file_path}.", _logger) from exc
 
     def save(
         self,
         file_name: Optional[str] = None,
         modified_only: bool = False,
         modified_field_name: Optional[str] = None,
-        modified_sub_field_name: Optional[str] = None,
     ) -> str:
         target_path = None
         if file_name is not None:
@@ -76,7 +79,7 @@ class Config(dict):
         elif self._config_file_path is not None:
             target_path = str(self._config_file_path.resolve())
         else:
-            raise ConfigWriteError("Unable to save data to a config file because no file was specified.")
+            raise ConfigWriteError("Unable to save data to a config file because no file was specified.", _logger)
 
         try:
             saved_data = None
@@ -85,57 +88,53 @@ class Config(dict):
                     saved_data = toml.dump(self, file_handler)
                 else:
                     if not modified_field_name:
-                        raise ConfigWriteError("Unable to save modified data to a config file because the section name is invalid.")
-                    if not modified_sub_field_name:
-                        raise ConfigWriteError("Unable to save modified data to a config file because the field name is invalid.")
-                    field = self.get(modified_field_name, modified_sub_field_name)
+                        raise ConfigWriteError("Unable to save modified data to a config file because the field name is invalid.", _logger)
+                    field = self.get(modified_field_name)
                     if field is None:
-                        raise ConfigWriteError("Unable to save modified data to a config file because the field name is invalid.")
+                        raise ConfigWriteError("Unable to save modified data to a config file because the field name does not exist.", _logger)
                     if self._initial_config is None:
-                        raise ConfigWriteError("Unable to save modified data to a config file because no file has been initialized.")
-                    self._initial_config[modified_field_name].update({modified_sub_field_name: field})
+                        raise ConfigWriteError("Unable to save modified data to a config file because no file has been initialized.", _logger)
+                    self._initial_config.set(modified_field_name, field)
                     saved_data = toml.dump(self._initial_config, file_handler)
             if saved_data is None:
-                raise ConfigWriteError(f"Unable to save data to a config file at: {target_path}")
+                raise ConfigWriteError(f"Unable to save data to a config file at: {target_path}", _logger)
         except IOError as exc:
-            raise ConfigWriteError(f"Unable to save config file at: {target_path}") from exc
+            raise ConfigWriteError(f"Unable to save config file at: {target_path}", _logger) from exc
         return saved_data
 
     def reset(self, field_name: str) -> bool:
-        field = self.get(field_name)
-        if field is not None:
-            self[field_name] = None
-            return True
-        return False
+        return self.set(field_name, None, create_keys_if_not_exists=False)
 
-    def get(self, field_name: str, sub_field_name: Optional[str] = None, fallback: Optional[Any] = None) -> Any:
-        if sub_field_name is None:
-            field = super().get(field_name)
-            if field is None:
-                if fallback is not None:
-                    return fallback
-                return None
-            return field
-        if field_name is None:
-            raise ConfigReadError("A field section must be provided to query a subfield.")
-        field = super().get(field_name)
+    def get(self, field_name: str, fallback: Optional[Any] = None) -> Any:
+        if not field_name:
+            return None
+        field = self._get_field(field_name)
         if field is None:
-            raise ConfigReadError(f"Unable to find section: {field_name}")
-        sub_field = field.get(sub_field_name)
-        if sub_field is None:
             if fallback is not None:
                 return fallback
             return None
-        return sub_field
+        return field
 
-    def set(self, field_name: str, sub_field_name: Optional[str] = None, sub_field_value: Optional[Any] = None) -> bool:
+    def _get_field(self, field_name: str):
+        field_sections = field_name.split(".")
+        fields_copy = copy.deepcopy(self)
+        try:
+            for key in field_sections:
+                fields_copy = fields_copy[key]
+        except KeyError:
+            return None
+        return fields_copy
+
+    def set(self, field_name: str, field_value: Optional[Any] = None, create_keys_if_not_exists: bool = False) -> bool:
         if not field_name:
             return False
-        if self.get(field_name) is None:
-            self[field_name] = {}
-            if not sub_field_name:
-                return True
-        if not sub_field_name:
+        return self._set_field(field_name, field_value, create_keys_if_not_exists)
+
+    def _set_field(self, field_name: str, field_value: Optional[Any] = None, create_keys_if_not_exists: bool = False):
+        if not create_keys_if_not_exists and self.get(field_name) is None:
             return False
-        self[field_name][sub_field_name] = sub_field_value
+        field_sections = field_name.split(".")
+        for key in field_sections[:-1]:
+            self = self.setdefault(key, {})
+        self[field_sections[-1]] = field_value
         return True
