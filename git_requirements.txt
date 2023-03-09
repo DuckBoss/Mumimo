@@ -1,1 +1,1 @@
-git+https://github.com/azlux/pymumble.git@790a5262b0f454d3a66a2c58ac69ac5327dfc279
+git+https://github.com/azlux/pymumble.git@70a7c13b19e6a4d5a4f774e9973b001c2ef42cc8
