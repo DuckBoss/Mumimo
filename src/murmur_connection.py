@@ -3,6 +3,7 @@ import time
 from typing import Dict, Optional, Union
 
 import pymumble_py3 as pymumble
+from pymumble_py3.constants import PYMUMBLE_CLBK_TEXTMESSAGERECEIVED
 from pymumble_py3.errors import ConnectionRejectedError
 
 from .client_state import ClientState
@@ -129,12 +130,16 @@ class MurmurConnection:
         self._connection_instance.set_codec_profile("audio")
         self._connection_instance.set_receive_sound(False)  # Only set to False if testing on Windows
 
+        # Set up callbacks
+        if self._client_state is None:
+            self._client_state = ClientState(self._connection_instance)
+        self._connection_instance.callbacks.set_callback(PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, self._client_state.cmd_service.process_cmd)
+
         try:
             self._connection_instance.start()
             self._connection_instance.is_ready()
             self._is_connected = True
-            if self._client_state is None:
-                self._client_state = ClientState(self._connection_instance)
+
             # self._connection_instance.users.myself.register() - don't implement yet
             # self._connection_instance.users.myself.comment(f"Mumimo - v0.0.1") - don't implement yet
         except ConnectionRejectedError as err:

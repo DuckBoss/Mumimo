@@ -136,7 +136,7 @@ class TestMumimoInitService:
                 assert client_settings[SysArgs.SYS_RECONNECT] is False
 
         @patch.object(MumimoInitService, "_get_sys_args")
-        @patch("src.utils.env_parser.read_env_file")
+        @patch("src.utils.parsers.env_parser.read_env_file")
         def test__get_prioritized_client_env_options_with_sys_args(
             self, mock_env_args, mock_sys_args, get_init_service, get_expected_env_mock_sys_args
         ):
@@ -157,7 +157,7 @@ class TestMumimoInitService:
             }
 
         @patch.object(MumimoInitService, "_get_sys_args")
-        @patch("src.utils.env_parser.read_env_file")
+        @patch("src.utils.parsers.env_parser.read_env_file")
         def test__get_prioritized_client_env_options_without_sys_args(
             self, mock_env_args, mock_sys_args, get_init_service, get_expected_env_mock_no_sys_args
         ):
