@@ -3,7 +3,7 @@ from typing import Any, Dict
 import pytest
 
 from src.constants import EnvArgs
-from src.utils import env_parser
+from src.utils.parsers import env_parser
 
 
 class TestEnvParserIO:

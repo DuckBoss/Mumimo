@@ -1,7 +1,10 @@
 from enum import Enum
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
-from pymumble_py3 import Mumble
+from .services.cmd_processing_service import CommandProcessingService
+
+if TYPE_CHECKING:
+    from pymumble_py3.mumble import Mumble
 
 
 class ClientState:
@@ -43,9 +46,9 @@ class ClientState:
                 self._deafen_state = self.DeafenState.UNDEAFENED
 
         _state: Optional[AudioState]
-        _connection: Optional[Mumble]
+        _connection: Optional["Mumble"]
 
-        def __init__(self, mumble_instance: Mumble) -> None:
+        def __init__(self, mumble_instance: "Mumble") -> None:
             self._state = self.AudioState()
             self._connection = mumble_instance
 
@@ -118,10 +121,17 @@ class ClientState:
             return False
 
     _audio_properties: AudioProperties
+    _cmd_service: CommandProcessingService
 
-    def __init__(self, mumble_instance: Mumble) -> None:
+    def __init__(self, mumble_instance: "Mumble") -> None:
         self._audio_properties = self.AudioProperties(mumble_instance)
+        self._murmur_callbacks = {}
+        self._cmd_service = CommandProcessingService(mumble_instance)
 
     @property
     def audio_properties(self) -> AudioProperties:
         return self._audio_properties
+
+    @property
+    def cmd_service(self) -> CommandProcessingService:
+        return self._cmd_service

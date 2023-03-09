@@ -4,7 +4,8 @@ from ..config import Config
 from ..constants import VERBOSITY_MIN, EnvArgs, MumimoCfgFields, SysArgs
 from ..exceptions import ConfigError
 from ..logging import get_logger
-from ..utils import config_utils, env_parser, mumimo_utils
+from ..utils import config_utils, mumimo_utils
+from ..utils.parsers import env_parser
 
 logger = get_logger(__name__)
 
