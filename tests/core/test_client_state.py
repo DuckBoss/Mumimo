@@ -18,6 +18,11 @@ class TestClientState:
         client_state = ClientState(mumble_instance)
         assert client_state.audio_properties is not None
 
+    @patch.object(MurmurConnection, "connection_instance")
+    def test_cmd_service_init(self, mumble_instance: Mumble) -> None:
+        client_state = ClientState(mumble_instance)
+        assert client_state.cmd_service is not None
+
 
 class TestAudioState:
     def test_audio_state_init(self) -> None:
