@@ -102,7 +102,7 @@ class MumimoCfgFields:
             TICK_RATE: str = f"{MumimoCfgSections.SETTINGS_COMMANDS}.command_tick_rate"
             MAX_MULTI_COMMAND_LENGTH: str = f"{MumimoCfgSections.SETTINGS_COMMANDS}.max_multi_command_length"
             MAX_COMMAND_QUEUE_LENGTH: str = f"{MumimoCfgSections.SETTINGS_COMMANDS}.max_command_queue_length"
-            MESSAGE_HISTORY_LENGTH: str = f"{MumimoCfgSections.SETTINGS_COMMANDS}.message_history_length"
+            COMMAND_HISTORY_LENGTH: str = f"{MumimoCfgSections.SETTINGS_COMMANDS}.command_history_length"
 
         class MEDIA:
             VOLUME: str = f"{MumimoCfgSections.SETTINGS_MEDIA}.volume"
