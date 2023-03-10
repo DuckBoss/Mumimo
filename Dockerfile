@@ -18,7 +18,6 @@ WORKDIR /app
 
 # Add all the requirements.txt files from the requirements folder and install them.
 ADD ./dev_requirements.txt /app
-ADD ./git_requirements.txt /app
 ADD ./requirements.txt /app
 
 RUN pip install -r dev_requirements.txt --no-warn-script-location
