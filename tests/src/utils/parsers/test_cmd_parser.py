@@ -5,12 +5,15 @@ import pytest
 
 from src.corelib.command import Command
 from src.utils.parsers import cmd_parser
+from src.exceptions import ServiceError
 
 
 class TestCmdParser:
     @pytest.fixture(autouse=True)
     @patch("src.config.Config")
-    def mock_cfg_instance(self, mock_cfg):
+    @patch("src.settings.MumimoSettings.get_mumimo_config")
+    def mock_cfg_instance(self, mock_get_cfg, mock_cfg):
+        mock_get_cfg.return_value = mock_cfg
         return mock_cfg
 
     class TestParseCommand:
@@ -29,20 +32,27 @@ class TestCmdParser:
             channel_id: Optional[int]
             session: Optional[int]
 
-        def test_parse_command_valid_text_channel(self, std_mock_text, mock_cfg_instance) -> None:
+        @patch("src.settings.MumimoSettings.get_mumimo_config")
+        def test_parse_command_cfg_does_not_exist(self, mock_cfg, std_mock_text):
+            mock_cfg.return_value = None
             mock_text = std_mock_text
-            cmd_result = cmd_parser.parse_command(mock_text, mock_cfg_instance)
+            with pytest.raises(ServiceError, match="^Unable to process commands:"):
+                _ = cmd_parser.parse_command(mock_text)
+
+        def test_parse_command_valid_text_channel(self, mock_cfg_instance, std_mock_text) -> None:
+            mock_text = std_mock_text
+            cmd_result = cmd_parser.parse_command(mock_text)
             assert cmd_result is not None
             assert cmd_result.actor == 0
             assert cmd_result.channel_id == 0
             assert cmd_result.session_id == -1
             assert cmd_result.message == "test_message"
 
-        def test_parse_command_valid_text_private(self, std_mock_text, mock_cfg_instance) -> None:
+        def test_parse_command_valid_text_private(self, mock_cfg_instance, std_mock_text) -> None:
             mock_text = std_mock_text
             mock_text.channel_id = None
             mock_text.session = 0
-            cmd_result = cmd_parser.parse_command(mock_text, mock_cfg_instance)
+            cmd_result = cmd_parser.parse_command(mock_text)
             assert cmd_result is not None
             assert cmd_result.actor == 0
             assert cmd_result.channel_id == -1
@@ -50,59 +60,59 @@ class TestCmdParser:
             assert cmd_result.message == "test_message"
 
         def test_parse_command_text_is_none(self, mock_cfg_instance) -> None:
-            assert cmd_parser.parse_command(None, mock_cfg_instance) is None
+            assert cmd_parser.parse_command(None) is None
 
         def test_parse_command_message_is_none(self, mock_cfg_instance) -> None:
             mock_text = self.MockText()
             mock_text.message = None
-            cmd_result = cmd_parser.parse_command(mock_text, mock_cfg_instance)
+            cmd_result = cmd_parser.parse_command(mock_text)
             assert cmd_result is None
 
-        def test_parse_command_message_is_not_command(self, std_mock_text, mock_cfg_instance) -> None:
+        def test_parse_command_message_is_not_command(self, mock_cfg_instance, std_mock_text) -> None:
             mock_text = std_mock_text
             mock_text.message = "test_message"
             mock_cfg_instance.get.return_value = "!"
 
-            cmd_result = cmd_parser.parse_command(mock_text, mock_cfg_instance)
+            cmd_result = cmd_parser.parse_command(mock_text)
             assert cmd_result is not None
             assert cmd_result.message == mock_text.message
 
-        def test_parse_command_message_is_empty_spaces(self, std_mock_text, mock_cfg_instance) -> None:
+        def test_parse_command_message_is_empty_spaces(self, mock_cfg_instance, std_mock_text) -> None:
             mock_text = std_mock_text
             mock_text.message = "  "
 
             mock_cfg_instance.get.return_value = "!"
 
-            cmd_result = cmd_parser.parse_command(mock_text, mock_cfg_instance)
+            cmd_result = cmd_parser.parse_command(mock_text)
             assert cmd_result is None
 
-        def test_parse_command_message_command_parse_error(self, std_mock_text, mock_cfg_instance) -> None:
+        def test_parse_command_message_command_parse_error(self, mock_cfg_instance, std_mock_text) -> None:
             mock_text = std_mock_text
             mock_text.message = "!"
 
             mock_cfg_instance.get.return_value = "!"
 
-            cmd_result = cmd_parser.parse_command(mock_text, mock_cfg_instance)
+            cmd_result = cmd_parser.parse_command(mock_text)
             assert cmd_result is not None
             assert cmd_result.command is None
 
-        def test_parse_command_message_parameters_parse_error(self, std_mock_text, mock_cfg_instance) -> None:
+        def test_parse_command_message_parameters_parse_error(self, mock_cfg_instance, std_mock_text) -> None:
             mock_text = std_mock_text
             mock_text.message = "!test.param"
 
             mock_cfg_instance.get.return_value = "!"
 
-            cmd_result = cmd_parser.parse_command(mock_text, mock_cfg_instance)
+            cmd_result = cmd_parser.parse_command(mock_text)
             assert cmd_result is not None
             assert cmd_result.parameters == ["param"]
 
-        def test_parse_command_message_body_parse_error(self, std_mock_text, mock_cfg_instance) -> None:
+        def test_parse_command_message_body_parse_error(self, mock_cfg_instance, std_mock_text) -> None:
             mock_text = std_mock_text
             mock_text.message = "!test"
 
             mock_cfg_instance.get.return_value = "!"
 
-            cmd_result = cmd_parser.parse_command(mock_text, mock_cfg_instance)
+            cmd_result = cmd_parser.parse_command(mock_text)
             assert cmd_result is not None
             assert cmd_result.message == ""
 

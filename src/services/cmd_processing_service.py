@@ -13,7 +13,6 @@ from ..utils.parsers import cmd_parser
 if TYPE_CHECKING:
     from pymumble_py3.mumble import Mumble
 
-    from ..config import Config
     from ..log_config import LogConfig
     from ..corelib.command import Command
 
@@ -25,7 +24,6 @@ warning = print_warning(logger=_logger)
 
 
 class CommandProcessingService:
-    _cfg_instance: "Config"
     _log_cfg: "LogConfig"
     _connection_instance: "Mumble"
     _cmd_history: "CommandHistory"
@@ -35,34 +33,27 @@ class CommandProcessingService:
         return self._connection_instance
 
     @property
-    def cfg_instance(self) -> "Config":
-        return self._cfg_instance
-
-    @property
     def cmd_history(self) -> "CommandHistory":
         return self._cmd_history
 
-    def __init__(self, murmur_connection: "Mumble", cfg_instance: Optional["Config"] = None) -> None:
+    def __init__(self, murmur_connection: "Mumble") -> None:
         self._connection_instance = murmur_connection
         if self.connection_instance is None:
             raise ServiceError("Unable to retrieve murmur connection: the murmur instance is not connected to a server.", logger=_logger)
-        if cfg_instance is not None:
-            self._cfg_instance = cfg_instance
-        else:
-            _cfg_instance = settings.get_mumimo_config()
-            if _cfg_instance is None:
-                raise ServiceError("Unable to create command processing service: mumimo config could not be retrieved.", logger=_logger)
-            self._cfg_instance = _cfg_instance
+        _cfg_instance = settings.get_mumimo_config()
+        if _cfg_instance is None:
+            raise ServiceError("Unable to create command processing service: mumimo config could not be retrieved.", logger=_logger)
+        self._cfg_instance = _cfg_instance
         _log_cfg = settings.get_log_config()
         if _log_cfg is None:
             raise ServiceError("Unable to create command processing service: log config could not be retrieved.", logger=_logger)
         self._log_cfg = _log_cfg
-        self._cmd_history = CommandHistory(history_limit=self.cfg_instance.get(MumimoCfgFields.SETTINGS.COMMANDS.COMMAND_HISTORY_LENGTH, None))
+        self._cmd_history = CommandHistory(history_limit=self._cfg_instance.get(MumimoCfgFields.SETTINGS.COMMANDS.COMMAND_HISTORY_LENGTH, None))
 
     def process_cmd(self, text) -> None:
         if text is None:
             raise ServiceError("Received text message with a 'None' value.", logger=_logger)
-        parsed_cmd: Optional["Command"] = cmd_parser.parse_command(text, self.cfg_instance)
+        parsed_cmd: Optional["Command"] = cmd_parser.parse_command(text)
         if parsed_cmd is not None:
             actor_name: str = cmd_parser.parse_actor_name(parsed_cmd, self.connection_instance)
             channel_name: str = cmd_parser.parse_channel_name(parsed_cmd, self.connection_instance)
