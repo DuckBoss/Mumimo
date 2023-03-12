@@ -30,7 +30,7 @@ class TestCommandProcessingService:
             with pytest.raises(ServiceError, match="^Unable to retrieve murmur connection:"):
                 _ = CommandProcessingService(mock_mumble)
 
-        @patch("src.services.cmd_processing_service.CommandProcessingService.cfg_instance", new_callable=PropertyMock)
+        @patch("src.settings.MumimoSettings.get_mumimo_config")
         @patch("pymumble_py3.mumble.Mumble")
         def test_init_command_processing_service_no_cfg_instance(self, mock_mumble, mock_cfg_instance) -> None:
             mock_cfg_instance.return_value = None

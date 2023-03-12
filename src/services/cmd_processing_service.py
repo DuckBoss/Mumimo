@@ -1,19 +1,20 @@
 from typing import TYPE_CHECKING, Optional
 
-from ..constants import MumimoCfgFields
+from ..constants import MumimoCfgFields, LogCfgFields
 from ..corelib.command_history import CommandHistory
 from ..exceptions import ServiceError
 from ..logging import debug as _debug
 from ..logging import get_logger
 from ..logging import print as _print
 from ..logging import print_warning
-from ..utils import config_utils
+from ..settings import settings
 from ..utils.parsers import cmd_parser
 
 if TYPE_CHECKING:
     from pymumble_py3.mumble import Mumble
 
     from ..config import Config
+    from ..log_config import LogConfig
     from ..corelib.command import Command
 
 
@@ -25,6 +26,7 @@ warning = print_warning(logger=_logger)
 
 class CommandProcessingService:
     _cfg_instance: "Config"
+    _log_cfg: "LogConfig"
     _connection_instance: "Mumble"
     _cmd_history: "CommandHistory"
 
@@ -47,9 +49,14 @@ class CommandProcessingService:
         if cfg_instance is not None:
             self._cfg_instance = cfg_instance
         else:
-            self._cfg_instance = config_utils.get_config_instance()
-            if self.cfg_instance is None:
-                raise ServiceError("Unable to create command processing service: config instance could not be retrieved.", logger=_logger)
+            _cfg_instance = settings.get_mumimo_config()
+            if _cfg_instance is None:
+                raise ServiceError("Unable to create command processing service: mumimo config could not be retrieved.", logger=_logger)
+            self._cfg_instance = _cfg_instance
+        _log_cfg = settings.get_log_config()
+        if _log_cfg is None:
+            raise ServiceError("Unable to create command processing service: log config could not be retrieved.", logger=_logger)
+        self._log_cfg = _log_cfg
         self._cmd_history = CommandHistory(history_limit=self.cfg_instance.get(MumimoCfgFields.SETTINGS.COMMANDS.COMMAND_HISTORY_LENGTH, None))
 
     def process_cmd(self, text) -> None:
@@ -59,8 +66,14 @@ class CommandProcessingService:
         if parsed_cmd is not None:
             actor_name: str = cmd_parser.parse_actor_name(parsed_cmd, self.connection_instance)
             channel_name: str = cmd_parser.parse_channel_name(parsed_cmd, self.connection_instance)
-            parsed_cmd.message = cmd_parser.parse_message_image_data(parsed_cmd)
-            parsed_cmd.message = cmd_parser.parse_message_hyperlink_data(parsed_cmd)
+
+            if self._log_cfg.get(LogCfgFields.OUTPUT.FILE.MESSAGE_PRIVACY):
+                actor_name = "Redacted"
+                channel_name = "Redacted"
+                parsed_cmd.message = "[Redacted Message]"
+            else:
+                parsed_cmd.message = cmd_parser.parse_message_image_data(parsed_cmd)
+                parsed_cmd.message = cmd_parser.parse_message_hyperlink_data(parsed_cmd)
 
             # Add command to command history:
             if self.cmd_history is None:

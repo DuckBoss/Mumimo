@@ -1,5 +1,5 @@
 import time
-from typing import Dict, Optional
+from typing import Dict, Optional, TYPE_CHECKING
 
 from .logging import get_logger
 from .logging import print as _print
@@ -7,7 +7,11 @@ from .logging import print_err as _print_err
 from .logging import print_warn as _print_warn
 from .murmur_connection import MurmurConnection, MurmurConnectionSingleton
 from .services.init_service import MumimoInitService
-from .utils import mumimo_utils
+from .utils import connection_utils
+from .settings import settings
+
+if TYPE_CHECKING:
+    from .client_state import ClientState
 
 logger = get_logger(__name__)
 print = _print(logger=logger)
@@ -22,13 +26,14 @@ class MumimoService:
         self._setup(sys_args)
 
     def _setup(self, sys_args: Dict[str, str]) -> None:
-        if not mumimo_utils.is_supported_platform():
+        if not connection_utils.is_supported_platform():
             print_warn("Mumimo is only supported for Linux and MacOS systems. You may run into unexpected issues on Windows and other systems.")
         print("Initializing Mumimo client...")
         _init_service = MumimoInitService(sys_args)
+        print("Initializing client settings...")
         _config = _init_service.initialize_config()
         _connection_params = _init_service.initialize_client_settings(_config)
-        print("Mumimo client state configured.")
+        print("Mumimo client settings initialized.")
         self.initialize_connection(_connection_params)
 
     def initialize_connection(self, connection_params) -> None:
@@ -38,8 +43,9 @@ class MumimoService:
         if self._murmur_connection_instance is not None:
             self._murmur_connection_instance.connect()
             if self._murmur_connection_instance.is_connected:
-                if self._murmur_connection_instance._client_state is not None:
-                    self._murmur_connection_instance._client_state.audio_properties.mute()
+                _client_state: Optional["ClientState"] = settings.get_client_state()
+                if _client_state is not None:
+                    _client_state.audio_properties.mute()
             if self._murmur_connection_instance.start():
                 print("Established Murmur connectivity.")
                 print("Mumimo client initialized.")
@@ -47,7 +53,7 @@ class MumimoService:
             else:
                 print_err("Failed to establish Murmur connectivity.")
         else:
-            print_err("Failed to initialize Mumimo connection singleton.")
+            print_err("Failed to initialize Mumimo connection instance singleton.")
 
     def _wait_for_interrupt(self) -> None:
         try:

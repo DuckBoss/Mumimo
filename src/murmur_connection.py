@@ -8,7 +8,8 @@ from pymumble_py3.errors import ConnectionRejectedError
 
 from .client_state import ClientState
 from .constants import VERBOSE_MAX, SysArgs
-from .exceptions import ConnectivityError, ValidationError
+from .settings import settings
+from .exceptions import ConnectivityError, ValidationError, ServiceError
 from .logging import debug as _debug
 from .logging import get_logger
 from .logging import print as _print
@@ -50,8 +51,6 @@ class MurmurConnection:
     _connection_params: Optional[Dict[str, Union[str, bool]]] = None
     _is_connected: bool = False
 
-    _client_state: Optional[ClientState] = None
-
     def __init__(self, connection_params: Optional[Dict[str, Union[str, bool]]] = None) -> None:
         if self._connection_instance is None:
             self._setup(connection_params)
@@ -63,10 +62,6 @@ class MurmurConnection:
     @property
     def is_connected(self) -> bool:
         return self._is_connected
-
-    @property
-    def client_state(self) -> Optional[ClientState]:
-        return self._client_state
 
     def _setup(self, connection_params: Optional[Dict[str, Union[str, bool]]] = None) -> None:
         if connection_params is None:
@@ -131,9 +126,7 @@ class MurmurConnection:
         self._connection_instance.set_receive_sound(False)  # Only set to False if testing on Windows
 
         # Set up callbacks
-        if self._client_state is None:
-            self._client_state = ClientState(self._connection_instance)
-        self._connection_instance.callbacks.set_callback(PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, self._client_state.cmd_service.process_cmd)
+        self._set_up_callbacks()
 
         try:
             self._connection_instance.start()
@@ -144,6 +137,16 @@ class MurmurConnection:
             # self._connection_instance.users.myself.comment(f"Mumimo - v0.0.1") - don't implement yet
         except ConnectionRejectedError as err:
             raise ConnectivityError(str(err), logger) from err
+
+    def _set_up_callbacks(self) -> None:
+        if self._connection_instance is None:
+            raise ServiceError("Unable to set up mumble callbacks: the connection instance is not initialized.", logger=logger)
+
+        _client_state: Optional[ClientState] = settings.get_client_state()
+        if _client_state is None:
+            settings.set_client_state(ClientState(self._connection_instance))
+        if _client_state is not None:
+            self._connection_instance.callbacks.set_callback(PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, _client_state.cmd_service.process_cmd)
 
     def _loop(self, stop_event: threading.Event) -> None:
         while True:

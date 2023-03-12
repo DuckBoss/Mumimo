@@ -46,27 +46,25 @@ DEFAULT_PATH_LOGGING_CONFIG_FILE: str = "config/logging.toml"
 class LogCfgSections:
     # Log Config Sections
     OUTPUT: str = "output"
-    FILE: str = "file"
-    CONSOLE: str = "console"
+    OUTPUT_FILE: str = f"{OUTPUT}.file"
+    OUTPUT_CONSOLE: str = f"{OUTPUT}.console"
 
 
 class LogCfgFields:
     # Log Config Fields
     class OUTPUT:
         class FILE:
-            ENABLE: str = "enable"
-            LEVEL: str = "level"
-            PATH: str = "path"
-            FORMAT: str = "format"
-            NAME: str = "name"
-            MAX_LOGS: str = "max_logs"
-            MAX_BYTES: str = "max_bytes"
-            MESSAGE_PRIVACY: str = "message_privacy"
-            ENABLE_STACK_TRACE: str = "enable_stack_trace"
+            ENABLE: str = f"{LogCfgSections.OUTPUT_FILE}.enable"
+            LEVEL: str = f"{LogCfgSections.OUTPUT_FILE}.level"
+            PATH: str = f"{LogCfgSections.OUTPUT_FILE}.path"
+            FORMAT: str = f"{LogCfgSections.OUTPUT_FILE}.format"
+            NAME: str = f"{LogCfgSections.OUTPUT_FILE}.name"
+            MESSAGE_PRIVACY: str = f"{LogCfgSections.OUTPUT_FILE}.message_privacy"
+            ENABLE_STACK_TRACE: str = f"{LogCfgSections.OUTPUT_FILE}.enable_stack_trace"
 
         class CONSOLE:
-            FORMAT: str = "format"
-            MESSAGE_PRIVACY: str = "message_privacy"
+            FORMAT: str = f"{LogCfgSections.OUTPUT_CONSOLE}.format"
+            MESSAGE_PRIVACY: str = f"{LogCfgSections.OUTPUT_CONSOLE}.message_privacy"
 
 
 class MumimoCfgSections:

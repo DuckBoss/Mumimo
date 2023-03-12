@@ -1,9 +1,9 @@
 [output.file]
 enable = true
 level = "DEBUG"
-path = "tests/data/logs/"
+path = "tests/generated/logs/"
 format = "(%(asctime)s)[%(name)s][%(levelname)s]::%(message)s"
-name = "mumimo_%s.log"
+name = "mumimo_test_%s.log"
 max_logs = 20
 max_bytes = 1000000
 message_privacy = true
