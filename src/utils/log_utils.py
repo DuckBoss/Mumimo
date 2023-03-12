@@ -3,9 +3,6 @@ from typing import Optional
 from ..settings import settings
 from ..constants import DEFAULT_PATH_LOGGING_CONFIG_FILE
 from ..log_config import LogConfig
-from logging import getLogger
-
-_logger = getLogger(__name__)
 
 
 def initialize_log_config(cfg_path: Optional[str] = None) -> "LogConfig":
@@ -15,7 +12,6 @@ def initialize_log_config(cfg_path: Optional[str] = None) -> "LogConfig":
     if _cfg_instance is None:
         if not cfg_path:
             cfg_path = DEFAULT_PATH_LOGGING_CONFIG_FILE
-            _logger.warning("Log config file path not provided. Reading config from default path.")
         _cfg_instance = LogConfig(cfg_path)
         _cfg_instance.read(cfg_path)
         settings.set_log_config(_cfg_instance)

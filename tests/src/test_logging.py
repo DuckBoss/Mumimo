@@ -53,8 +53,6 @@ class TestLogging:
                     "path": "tests/generated/logs/",
                     "format": "(%(asctime)s)[%(name)s][%(levelname)s]::%(message)s",
                     "name": "mumimo_test_%s.log",
-                    "max_logs": 20,
-                    "max_bytes": 1000000,
                     "message_privacy": True,
                     "enable_stack_trace": False,
                 },
