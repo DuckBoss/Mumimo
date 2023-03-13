@@ -2,8 +2,8 @@ from typing import Any, Dict
 
 import pytest
 
-from src.utils import config_utils
 from src.constants import SysArgs
+from src.utils import config_utils
 
 
 @pytest.fixture(autouse=True)

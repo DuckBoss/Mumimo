@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Optional, Dict, Any
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from ..constants import MumimoCfgFields, LogCfgFields
+from ..constants import LogCfgFields, MumimoCfgFields
 from ..corelib.command_history import CommandHistory
 from ..exceptions import ServiceError
 from ..logging import debug as _debug
@@ -8,13 +8,14 @@ from ..logging import get_logger
 from ..logging import print as _print
 from ..logging import print_warning
 from ..settings import settings
+from ..utils.log_utils import privacy_console_redact_all_check, privacy_file_redact_all_check
 from ..utils.parsers import cmd_parser
-from ..utils.log_utils import privacy_file_redact_all_check, privacy_console_redact_all_check
 
 if TYPE_CHECKING:
     from pymumble_py3.mumble import Mumble
-    from ..log_config import LogConfig
+
     from ..corelib.command import Command
+    from ..log_config import LogConfig
 
 
 _logger = get_logger(__name__)

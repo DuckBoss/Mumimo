@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from ..constants import VERBOSITY_MIN, EnvArgs, MumimoCfgFields, SysArgs
 from ..exceptions import ConfigError

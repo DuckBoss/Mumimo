@@ -4,9 +4,9 @@ import pathlib
 import sys
 from typing import Dict, Optional
 
-from .utils import log_utils
-from .settings import settings
 from .constants import VERBOSE_MIN, VERBOSE_NONE, VERBOSE_STANDARD, LogCfgFields, SysArgs
+from .settings import settings
+from .utils import log_utils
 from .version import version
 
 _IS_INITIALIZED: bool = False
@@ -130,14 +130,14 @@ def _warning(msg: str, logger: logging.Logger, skip_file: bool = False, skip_con
             )
 
 
-def get_console_handler():
+def get_console_handler() -> Optional[logging.StreamHandler]:
     if not _IS_INITIALIZED:
         return None
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.CRITICAL)
     _log_config = settings.get_log_config()
     if _log_config is None:
-        return
+        return None
     _logging_formatter = logging.Formatter(_log_config.get(LogCfgFields.OUTPUT.FILE.FORMAT))
     console_handler.setFormatter(_logging_formatter)
     return console_handler
@@ -148,7 +148,7 @@ def get_file_handler() -> Optional[logging.FileHandler]:
         return None
     _log_config = settings.get_log_config()
     if _log_config is None:
-        return
+        return None
     _logging_formatter = logging.Formatter(_log_config.get(LogCfgFields.OUTPUT.FILE.FORMAT))
     _log_location = pathlib.Path.cwd() / _log_config.get(LogCfgFields.OUTPUT.FILE.PATH) / f"mumimo_{version()}"
     _log_name = _log_config.get(LogCfgFields.OUTPUT.FILE.NAME) % version()

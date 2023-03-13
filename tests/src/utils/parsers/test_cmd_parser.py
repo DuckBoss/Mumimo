@@ -4,8 +4,8 @@ from unittest.mock import patch
 import pytest
 
 from src.corelib.command import Command
-from src.utils.parsers import cmd_parser
 from src.exceptions import ServiceError
+from src.utils.parsers import cmd_parser
 
 
 class TestCmdParser:

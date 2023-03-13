@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, List, Optional
 
-from ...settings import settings
+from ...constants import MumimoCfgFields
 from ...corelib.command import Command
 from ...exceptions import ServiceError
-from ...constants import MumimoCfgFields
+from ...settings import settings
 
 if TYPE_CHECKING:
     from pymumble_py3.mumble import Mumble

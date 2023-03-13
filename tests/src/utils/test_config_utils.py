@@ -1,9 +1,11 @@
 import pathlib
-import pytest
 from unittest.mock import patch
+
+import pytest
+
 from src.constants import DEFAULT_PATH_CONFIG_FILE
-from src.utils import config_utils
 from src.exceptions import ConfigReadError
+from src.utils import config_utils
 
 
 class TestConfigUtils:

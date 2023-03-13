@@ -1,11 +1,11 @@
 import copy
 import pathlib
-from .logging import get_logger
-from typing import Any, Optional, Dict
+from typing import Any, Dict, Optional
 
 import toml
 
 from .exceptions import ConfigReadError, ConfigWriteError
+from .logging import get_logger
 
 _logger = get_logger(__name__)
 

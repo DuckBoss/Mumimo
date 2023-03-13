@@ -1,8 +1,8 @@
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
-from ..settings import settings
 from ..constants import DEFAULT_PATH_LOGGING_CONFIG_FILE, LogCfgSections
 from ..log_config import LogConfig
+from ..settings import settings
 
 
 def initialize_log_config(cfg_path: Optional[str] = None) -> "LogConfig":

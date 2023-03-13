@@ -8,12 +8,12 @@ from pymumble_py3.errors import ConnectionRejectedError
 
 from .client_state import ClientState
 from .constants import VERBOSE_MAX, SysArgs
-from .settings import settings
-from .exceptions import ConnectivityError, ValidationError, ServiceError
+from .exceptions import ConnectivityError, ServiceError, ValidationError
 from .logging import debug as _debug
 from .logging import get_logger
 from .logging import print as _print
 from .logging import print_warn as _print_warn
+from .settings import settings
 from .utils.args_validators import SystemArgumentsValidator
 
 logger = get_logger(__name__)
