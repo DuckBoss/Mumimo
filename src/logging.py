@@ -91,8 +91,11 @@ def _debug(msg: str, logger: logging.Logger, skip_file: bool = False, skip_conso
             )
 
 
-def _error(msg: str, logger: logging.Logger, exc: Optional[str] = None) -> None:
+def _error(msg: str, logger: logging.Logger) -> None:
     if not _IS_INITIALIZED:
+        return
+    _log_config = settings.get_log_config()
+    if _log_config is None:
         return
     if isinstance(logger, logging.Logger):
         logger.error(f"{msg}")
@@ -179,8 +182,8 @@ def print_warning(logger: logging.Logger):
 
 
 def print_error(logger: logging.Logger):
-    def wrap(msg: str, exc: Optional[str] = None):
-        _error(msg=msg, exc=exc, logger=logger)
+    def wrap(msg: str):
+        _error(msg=msg, logger=logger)
 
     return wrap
 
