@@ -4,9 +4,23 @@ level = "DEBUG"
 path = "logs/"
 format = "(%(asctime)s)[%(name)s][%(levelname)s]::%(message)s"
 name = "mumimo_%s.log"
-message_privacy = true
-enable_stack_trace = false
+enable_stack_trace = true
+
+# Please note that setting all redaction options to 'true' will prevent the entire message
+# from being logged to the file. This is also a useful way to reduce log sizes.
+[output.file.privacy]
+redact_message = false
+redact_commands = false
+redact_channel = false
+redact_user = false
 
 [output.console]
 format = "[%(levelname)s]::%(message)s"
-message_privacy = true
+
+# Please note that setting all redaction options to 'true' will prevent the entire message
+# from being logged to the console.
+[output.console.privacy]
+redact_message = true
+redact_commands = false
+redact_channel = false
+redact_user = false

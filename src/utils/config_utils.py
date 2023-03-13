@@ -1,8 +1,10 @@
 from typing import Optional
-from ..settings import settings
-from ..constants import DEFAULT_PATH_CONFIG_FILE
-from ..logging import get_logger, print_warn as _print_warn
+
 from ..config import Config
+from ..constants import DEFAULT_PATH_CONFIG_FILE
+from ..logging import get_logger
+from ..logging import print_warn as _print_warn
+from ..settings import settings
 
 _logger = get_logger(__name__)
 print_warn = _print_warn(logger=_logger)

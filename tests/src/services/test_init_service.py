@@ -2,11 +2,11 @@ from unittest.mock import patch
 
 import pytest
 
-from src.utils.config_utils import initialize_mumimo_config
 from src.constants import VERBOSITY_MAX, EnvArgs, MumimoCfgFields, SysArgs
 from src.exceptions import ConfigError
 from src.services.init_service import MumimoInitService
 from src.utils import config_utils
+from src.utils.config_utils import initialize_mumimo_config
 
 
 class TestMumimoInitService:

@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
+    from .client_state import ClientState
     from .config import Config
     from .log_config import LogConfig
-    from .client_state import ClientState
 
 
 class MumimoSettings:

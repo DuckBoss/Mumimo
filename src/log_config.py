@@ -5,7 +5,6 @@ from typing import Any, Optional
 
 import toml
 
-
 _logger = getLogger(__name__)
 
 

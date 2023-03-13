@@ -4,9 +4,19 @@ level = "DEBUG"
 path = "tests/generated/logs/"
 format = "(%(asctime)s)[%(name)s][%(levelname)s]::%(message)s"
 name = "mumimo_test_%s.log"
-message_privacy = true
 enable_stack_trace = false
+
+[output.file.privacy]
+redact_message = true
+redact_commands = true
+redact_channel = true
+redact_user = true
 
 [output.console]
 format = "[%(levelname)s]::%(message)s"
-message_privacy = true
+
+[output.console.privacy]
+redact_message = false
+redact_commands = false
+redact_channel = false
+redact_user = false
