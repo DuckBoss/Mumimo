@@ -14,7 +14,6 @@ from ..utils.log_utils import privacy_file_redact_all_check, privacy_console_red
 if TYPE_CHECKING:
     from pymumble_py3.mumble import Mumble
     from ..log_config import LogConfig
-    from ..config import Config
     from ..corelib.command import Command
 
 
