@@ -1,14 +1,15 @@
 from typing import TYPE_CHECKING, List, Optional
 
-from ...config import Config
-from ...constants import MumimoCfgFields
+from ...settings import settings
 from ...corelib.command import Command
+from ...exceptions import ServiceError
+from ...constants import MumimoCfgFields
 
 if TYPE_CHECKING:
     from pymumble_py3.mumble import Mumble
 
 
-def parse_command(text, _cfg_instance: Config) -> Optional[Command]:
+def parse_command(text) -> Optional[Command]:
     if not text:
         return None
     message = text.message
@@ -26,6 +27,9 @@ def parse_command(text, _cfg_instance: Config) -> Optional[Command]:
     if not message:
         return None
 
+    _cfg_instance = settings.get_mumimo_config()
+    if _cfg_instance is None:
+        raise ServiceError("Unable to process commands: mumimo config is not initialized.")
     if message[0] != _cfg_instance.get(MumimoCfgFields.SETTINGS.COMMANDS.TOKEN, "!"):
         return Command(message=message, actor=actor, channel_id=channel_id, session_id=session_id)
 

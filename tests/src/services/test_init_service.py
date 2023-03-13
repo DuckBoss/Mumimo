@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.config import ConfigSingleton
+from src.utils.config_utils import initialize_mumimo_config
 from src.constants import VERBOSITY_MAX, EnvArgs, MumimoCfgFields, SysArgs
 from src.exceptions import ConfigError
 from src.services.init_service import MumimoInitService
@@ -67,9 +67,8 @@ class TestMumimoInitService:
             get_expected_prioritized_env_opts,
             get_expected_prioritized_client_opts,
         ):
-            ConfigSingleton.clear()
             init_service: MumimoInitService = get_init_service
-            mock_init_mumimo_cfg.return_value = ConfigSingleton().instance()
+            mock_init_mumimo_cfg.return_value = initialize_mumimo_config()
             if mock_init_mumimo_cfg.return_value is None:
                 pytest.fail("mock config failed to be created.")
 
@@ -117,18 +116,16 @@ class TestMumimoInitService:
         @patch.object(config_utils, "initialize_mumimo_config")
         @patch.object(MumimoInitService, "_get_sys_args")
         def test__get_prioritized_client_config_options_with_sys_args(self, mock_sys_args, mock_init_mumimo_cfg, get_init_service):
-            ConfigSingleton.clear()
             init_service: MumimoInitService = get_init_service
-            mock_init_mumimo_cfg.return_value = ConfigSingleton().instance()
+            mock_init_mumimo_cfg.return_value = initialize_mumimo_config()
             mock_sys_args.return_value = {SysArgs.SYS_RECONNECT: True}
             client_settings = init_service._get_prioritized_client_config_options(mock_init_mumimo_cfg)
             assert client_settings == {SysArgs.SYS_RECONNECT: True}
 
         @patch.object(MumimoInitService, "_get_sys_args")
         def test__get_prioritized_client_config_options_without_sys_args(self, mock_sys_args, get_init_service):
-            ConfigSingleton.clear()
             init_service: MumimoInitService = get_init_service
-            mock_cfg = ConfigSingleton().instance()
+            mock_cfg = initialize_mumimo_config()
             mock_sys_args.return_value = {}
             if mock_cfg is not None:
                 mock_cfg.set(MumimoCfgFields.SETTINGS.CONNECTION.AUTO_RECONNECT, True)
@@ -140,7 +137,6 @@ class TestMumimoInitService:
         def test__get_prioritized_client_env_options_with_sys_args(
             self, mock_env_args, mock_sys_args, get_init_service, get_expected_env_mock_sys_args
         ):
-            ConfigSingleton.clear()
             init_service: MumimoInitService = get_init_service
             mock_env_args.return_value = {}
             mock_sys_args.return_value = get_expected_env_mock_sys_args
@@ -161,7 +157,6 @@ class TestMumimoInitService:
         def test__get_prioritized_client_env_options_without_sys_args(
             self, mock_env_args, mock_sys_args, get_init_service, get_expected_env_mock_no_sys_args
         ):
-            ConfigSingleton.clear()
             init_service: MumimoInitService = get_init_service
             mock_env_args.return_value = get_expected_env_mock_no_sys_args
             mock_sys_args.return_value = {SysArgs.SYS_ENV_FILE: "data/test.env"}

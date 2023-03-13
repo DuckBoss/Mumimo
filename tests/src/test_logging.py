@@ -15,8 +15,9 @@ class TestLogging:
         assert log._IS_INITIALIZED is True
         yield log.get_logger(__name__)
         log._IS_INITIALIZED = False
-        generated_logs_path = pathlib.Path("tests/data/logs")
-        shutil.rmtree(generated_logs_path)
+        generated_logs_path = pathlib.Path("tests/generated/logs")
+        if generated_logs_path.exists():
+            shutil.rmtree(generated_logs_path)
 
     @pytest.fixture(autouse=True)
     def print_fixture(self, get_logger):
@@ -49,11 +50,9 @@ class TestLogging:
                 "file": {
                     "enable": True,
                     "level": "DEBUG",
-                    "path": "tests/data/logs/",
+                    "path": "tests/generated/logs/",
                     "format": "(%(asctime)s)[%(name)s][%(levelname)s]::%(message)s",
-                    "name": "mumimo_%s.log",
-                    "max_logs": 20,
-                    "max_bytes": 1000000,
+                    "name": "mumimo_test_%s.log",
                     "message_privacy": True,
                     "enable_stack_trace": False,
                 },

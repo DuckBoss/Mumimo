@@ -12,10 +12,6 @@ class TestExceptions:
         with pytest.raises(exceptions.ValidationError, match="test"):
             raise exceptions.ValidationError("test", logger=None)
 
-    def test_raise_generic_error(self):
-        with pytest.raises(exceptions.GenericError, match="test"):
-            raise exceptions.GenericError("test", logger=None)
-
     def test_raise_connectivity_error(self):
         with pytest.raises(exceptions.ConnectivityError, match="test"):
             raise exceptions.ConnectivityError("test", logger=None)

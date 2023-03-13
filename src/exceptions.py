@@ -16,11 +16,6 @@ class ValidationError(LoggedException):
         super().__init__(msg, logger=logger, *args)
 
 
-class GenericError(LoggedException):
-    def __init__(self, msg: str, logger: Optional[logging.Logger] = None, *args) -> None:
-        super().__init__(msg, logger=logger, *args)
-
-
 class ConnectivityError(LoggedException):
     def __init__(self, msg: str, logger: Optional[logging.Logger] = None, *args) -> None:
         super().__init__(msg, logger=logger, *args)

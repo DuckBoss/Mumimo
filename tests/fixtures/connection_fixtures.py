@@ -2,13 +2,13 @@ from typing import Any, Dict
 
 import pytest
 
-from src.config import ConfigSingleton
+from src.utils import config_utils
 from src.constants import SysArgs
 
 
 @pytest.fixture(autouse=True)
 def cfg_instance():
-    _cfg_instance = ConfigSingleton().instance()
+    _cfg_instance = config_utils.initialize_mumimo_config()
     yield _cfg_instance
     if _cfg_instance is not None:
         _cfg_instance.clear()
@@ -17,7 +17,7 @@ def cfg_instance():
 
 @pytest.fixture(autouse=True)
 def cfg_instance_teardown():
-    _cfg_instance = ConfigSingleton().instance()
+    _cfg_instance = config_utils.initialize_mumimo_config()
     yield
     if _cfg_instance is not None:
         _cfg_instance.clear()

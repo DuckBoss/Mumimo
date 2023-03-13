@@ -6,30 +6,18 @@ from unittest.mock import patch
 import pytest
 import toml
 
-from src.config import Config, ConfigSingleton
+from src.config import Config
 from src.exceptions import ConfigReadError, ConfigWriteError
 
 
 class TestConfig:
     @pytest.fixture(autouse=True)
-    def config(self, config_path: str):
-        ConfigSingleton().clear()
-        singleton = ConfigSingleton(config_path)
-        instance = singleton.instance()
-        yield instance
-        if hasattr(singleton, "_instance"):
-            singleton.clear()
-        del singleton
+    def config(self, config_path: str) -> Config:
+        return Config(config_path)
 
     @pytest.fixture(autouse=True)
-    def empty_config(self):
-        ConfigSingleton().clear()
-        singleton = ConfigSingleton()
-        instance = singleton.instance()
-        yield instance
-        if hasattr(singleton, "_instance"):
-            singleton.clear()
-        del singleton
+    def empty_config(self) -> Config:
+        return Config()
 
     @pytest.fixture(autouse=True)
     def config_path(self) -> str:
@@ -104,7 +92,7 @@ class TestConfig:
             """.strip(),
         )
 
-    def test_config_init_without_file_path(self, empty_config: Config) -> None:
+    def test_config_init_without_file_path(self, empty_config: Config, caplog) -> None:
         assert empty_config._config_file_path is None
 
     def test_config_init_with_file_path(self, config: Config) -> None:
@@ -120,11 +108,12 @@ class TestConfig:
             assert empty_config.items() == expected_config_data.items()
 
         def test_config_read_from_missing_path(self, empty_config: Config) -> None:
+            empty_config._config_file_path = None
             with pytest.raises(ConfigReadError, match=r".*\ no file was specified.$"):
                 empty_config.read()
 
         def test_config_read_from_empty_path(self, empty_config: Config) -> None:
-            with pytest.raises(ConfigReadError, match=r"^Unable to read config file at:"):
+            with pytest.raises(ConfigReadError, match=r"^Unable to read config file"):
                 empty_config.read("")
 
         def test_config_read_from_invalid_path(self, empty_config: Config, invalid_config_path: str) -> None:
@@ -190,6 +179,7 @@ class TestConfig:
         def test_config_save_modified_data_only_missing_initial_config(self, empty_config: Config, save_config_path: str) -> None:
             original_config = {"test": {"test_1": True, "test_2": True}}
             updates = {"test": {"test_1": False, "test_2": True}}
+            empty_config._initial_config = None
             empty_config.update(original_config)
             empty_config._config_file_path = pathlib.Path.cwd() / save_config_path
             empty_config.update(updates)
