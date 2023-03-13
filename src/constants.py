@@ -48,6 +48,8 @@ class LogCfgSections:
     OUTPUT: str = "output"
     OUTPUT_FILE: str = f"{OUTPUT}.file"
     OUTPUT_CONSOLE: str = f"{OUTPUT}.console"
+    OUTPUT_FILE_PRIVACY: str = f"{OUTPUT_FILE}.privacy"
+    OUTPUT_CONSOLE_PRIVACY: str = f"{OUTPUT_CONSOLE}.privacy"
 
 
 class LogCfgFields:
@@ -59,12 +61,22 @@ class LogCfgFields:
             PATH: str = f"{LogCfgSections.OUTPUT_FILE}.path"
             FORMAT: str = f"{LogCfgSections.OUTPUT_FILE}.format"
             NAME: str = f"{LogCfgSections.OUTPUT_FILE}.name"
-            MESSAGE_PRIVACY: str = f"{LogCfgSections.OUTPUT_FILE}.message_privacy"
             ENABLE_STACK_TRACE: str = f"{LogCfgSections.OUTPUT_FILE}.enable_stack_trace"
+
+            class PRIVACY:
+                REDACT_MESSAGE: str = f"{LogCfgSections.OUTPUT_FILE_PRIVACY}.redact_message"
+                REDACT_COMMANDS: str = f"{LogCfgSections.OUTPUT_FILE_PRIVACY}.redact_commands"
+                REDACT_CHANNEL: str = f"{LogCfgSections.OUTPUT_FILE_PRIVACY}.redact_channel"
+                REDACT_USER: str = f"{LogCfgSections.OUTPUT_FILE_PRIVACY}.redact_user"
 
         class CONSOLE:
             FORMAT: str = f"{LogCfgSections.OUTPUT_CONSOLE}.format"
-            MESSAGE_PRIVACY: str = f"{LogCfgSections.OUTPUT_CONSOLE}.message_privacy"
+
+            class PRIVACY:
+                REDACT_MESSAGE: str = f"{LogCfgSections.OUTPUT_CONSOLE_PRIVACY}.redact_message"
+                REDACT_COMMANDS: str = f"{LogCfgSections.OUTPUT_CONSOLE_PRIVACY}.redact_commands"
+                REDACT_CHANNEL: str = f"{LogCfgSections.OUTPUT_CONSOLE_PRIVACY}.redact_channel"
+                REDACT_USER: str = f"{LogCfgSections.OUTPUT_CONSOLE_PRIVACY}.redact_user"
 
 
 class MumimoCfgSections:

@@ -1,7 +1,7 @@
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from ..settings import settings
-from ..constants import DEFAULT_PATH_LOGGING_CONFIG_FILE
+from ..constants import DEFAULT_PATH_LOGGING_CONFIG_FILE, LogCfgSections
 from ..log_config import LogConfig
 
 
@@ -16,3 +16,19 @@ def initialize_log_config(cfg_path: Optional[str] = None) -> "LogConfig":
         _cfg_instance.read(cfg_path)
         settings.set_log_config(_cfg_instance)
     return _cfg_instance
+
+
+def privacy_file_redact_all_check():
+    _log_config = settings.get_log_config()
+    if _log_config is None:
+        return False
+    file_privacy_dict: Dict[str, Any] = _log_config.get(LogCfgSections.OUTPUT_FILE_PRIVACY, {})
+    return all(file_privacy_dict.values())
+
+
+def privacy_console_redact_all_check():
+    _log_config = settings.get_log_config()
+    if _log_config is None:
+        return False
+    console_privacy_dict: Dict[str, Any] = _log_config.get(LogCfgSections.OUTPUT_CONSOLE_PRIVACY, {})
+    return all(console_privacy_dict.values())

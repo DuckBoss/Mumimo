@@ -47,13 +47,18 @@ def get_logger(logger_name: str) -> logging.Logger:
     return logger
 
 
-def _print(msg: str, logger: logging.Logger, level: int = logging.INFO, verbosity: int = VERBOSE_NONE) -> None:
+def _print(
+    msg: str, logger: logging.Logger, level: int = logging.INFO, verbosity: int = VERBOSE_NONE, skip_file: bool = False, skip_console: bool = False
+) -> None:
     if not _IS_INITIALIZED:
         return
-    if isinstance(logger, logging.Logger):
-        logger.log(level, msg)
     _log_config = settings.get_log_config()
     if _log_config is None:
+        return
+    if not skip_file:
+        if isinstance(logger, logging.Logger):
+            logger.log(level, msg)
+    if skip_console:
         return
     _verbosity = int(_log_config.get(SysArgs.SYS_VERBOSE))
     _console_formatter = _log_config.get(LogCfgFields.OUTPUT.CONSOLE.FORMAT)
@@ -65,13 +70,16 @@ def _print(msg: str, logger: logging.Logger, level: int = logging.INFO, verbosit
             )
 
 
-def _debug(msg: str, logger: logging.Logger) -> None:
+def _debug(msg: str, logger: logging.Logger, skip_file: bool = False, skip_console: bool = False) -> None:
     if not _IS_INITIALIZED:
         return
-    if isinstance(logger, logging.Logger):
-        logger.debug(msg)
     _log_config = settings.get_log_config()
     if _log_config is None:
+        return
+    if not skip_file:
+        if isinstance(logger, logging.Logger):
+            logger.debug(msg)
+    if skip_console:
         return
     _verbosity = int(_log_config.get(SysArgs.SYS_VERBOSE))
     _console_formatter = _log_config.get(LogCfgFields.OUTPUT.CONSOLE.FORMAT)
@@ -83,15 +91,12 @@ def _debug(msg: str, logger: logging.Logger) -> None:
             )
 
 
-def _error(msg: str, logger: logging.Logger) -> None:
+def _error(msg: str, logger: logging.Logger, exc: Optional[str] = None) -> None:
     if not _IS_INITIALIZED:
         return
     if isinstance(logger, logging.Logger):
-        logger.error(msg)
-    _log_config = settings.get_log_config()
-    if _log_config is None:
-        return
-    _verbosity = int(_log_config.get(SysArgs.SYS_VERBOSE))
+        logger.error(f"{msg}")
+    _verbosity = int(_log_config[SysArgs.SYS_VERBOSE])
     _console_formatter = _log_config.get(LogCfgFields.OUTPUT.CONSOLE.FORMAT)
     if _verbosity >= VERBOSE_MIN:
         if _console_formatter:
@@ -101,13 +106,16 @@ def _error(msg: str, logger: logging.Logger) -> None:
             )
 
 
-def _warning(msg: str, logger: logging.Logger) -> None:
+def _warning(msg: str, logger: logging.Logger, skip_file: bool = False, skip_console: bool = False) -> None:
     if not _IS_INITIALIZED:
         return
-    if isinstance(logger, logging.Logger):
-        logger.warning(msg)
     _log_config = settings.get_log_config()
     if _log_config is None:
+        return
+    if not skip_file:
+        if isinstance(logger, logging.Logger):
+            logger.warning(msg)
+    if skip_console:
         return
     _verbosity = int(_log_config.get(SysArgs.SYS_VERBOSE))
     _console_formatter = _log_config.get(LogCfgFields.OUTPUT.CONSOLE.FORMAT)
@@ -150,29 +158,29 @@ def get_file_handler() -> Optional[logging.FileHandler]:
 
 
 def print(logger: logging.Logger):
-    def wrap(msg: str, level: int = logging.INFO):
-        _print(msg=msg, level=level, logger=logger)
+    def wrap(msg: str, level: int = logging.INFO, skip_file: bool = False, skip_console: bool = False):
+        _print(msg=msg, level=level, logger=logger, skip_file=skip_file, skip_console=skip_console)
 
     return wrap
 
 
 def debug(logger: logging.Logger):
-    def wrap(msg: str):
-        _debug(msg=msg, logger=logger)
+    def wrap(msg: str, skip_file: bool = False, skip_console: bool = False):
+        _debug(msg=msg, logger=logger, skip_file=skip_file, skip_console=skip_console)
 
     return wrap
 
 
 def print_warning(logger: logging.Logger):
-    def wrap(msg: str):
-        _warning(msg=msg, logger=logger)
+    def wrap(msg: str, skip_file: bool = False, skip_console: bool = False):
+        _warning(msg=msg, logger=logger, skip_file=skip_file, skip_console=skip_console)
 
     return wrap
 
 
 def print_error(logger: logging.Logger):
-    def wrap(msg: str):
-        _error(msg=msg, logger=logger)
+    def wrap(msg: str, exc: Optional[str] = None):
+        _error(msg=msg, exc=exc, logger=logger)
 
     return wrap
 
