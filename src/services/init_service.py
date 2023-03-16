@@ -1,8 +1,8 @@
+import logging
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from ..constants import VERBOSITY_MIN, EnvArgs, MumimoCfgFields, SysArgs
 from ..exceptions import ConfigError
-from ..logging import get_logger
 from ..utils import config_utils, connection_utils
 from ..utils.parsers import env_parser
 
@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from ..config import Config
 
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class MumimoInitService:

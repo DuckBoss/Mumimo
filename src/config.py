@@ -1,13 +1,13 @@
 import copy
+import logging
 import pathlib
 from typing import Any, Dict, Optional
 
 import toml
 
 from .exceptions import ConfigReadError, ConfigWriteError
-from .logging import get_logger
 
-_logger = get_logger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 class Config(dict):
