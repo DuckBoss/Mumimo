@@ -1,11 +1,11 @@
 import copy
+import logging
 import pathlib
-from logging import getLogger
 from typing import Any, Optional
 
 import toml
 
-_logger = getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 class LogConfig(dict):

@@ -1,6 +1,8 @@
 import logging
 import pathlib
 import shutil
+import sys
+from unittest.mock import patch
 
 import pytest
 
@@ -13,35 +15,11 @@ class TestLogging:
         log._IS_INITIALIZED = False
         assert log.init_logger({"log_config_file": "tests/data/config/test_logging.toml"}) is True
         assert log._IS_INITIALIZED is True
-        yield log.get_logger(__name__)
+        yield logging.getLogger(__name__)
         log._IS_INITIALIZED = False
-        generated_logs_path = pathlib.Path("tests/generated/logs")
+        generated_logs_path = pathlib.Path("tests/data/generated/logs")
         if generated_logs_path.exists():
             shutil.rmtree(generated_logs_path)
-
-    @pytest.fixture(autouse=True)
-    def print_fixture(self, get_logger):
-        assert get_logger.hasHandlers() is True
-        print = log.print(logger=get_logger)
-        return print
-
-    @pytest.fixture(autouse=True)
-    def debug_fixture(self, get_logger):
-        assert get_logger.hasHandlers() is True
-        print = log.debug(logger=get_logger)
-        return print
-
-    @pytest.fixture(autouse=True)
-    def warning_fixture(self, get_logger):
-        assert get_logger.hasHandlers() is True
-        warn = log.print_warning(logger=get_logger)
-        return warn
-
-    @pytest.fixture(autouse=True)
-    def error_fixture(self, get_logger):
-        assert get_logger.hasHandlers() is True
-        err = log.print_error(logger=get_logger)
-        return err
 
     @pytest.fixture(autouse=True)
     def mock_log_config(self):
@@ -50,7 +28,7 @@ class TestLogging:
                 "file": {
                     "enable": True,
                     "level": "DEBUG",
-                    "path": "tests/generated/logs/",
+                    "path": "tests/data/generated/logs/",
                     "format": "(%(asctime)s)[%(name)s][%(levelname)s]::%(message)s",
                     "name": "mumimo_test_%s.log",
                     "message_privacy": True,
@@ -67,42 +45,24 @@ class TestLogging:
         log._IS_INITIALIZED = True
         assert log.init_logger() is False
 
-    def test_log_print_default(self, print_fixture, caplog):
-        print_fixture("test_print_default")
+    @patch("src.utils.log_utils.privacy_console_redact_all_check")
+    @patch("src.utils.log_utils.privacy_file_redact_all_check")
+    def test_log_privacy_fully_redacted(self, mock_file_redact, mock_console_redact, get_logger, caplog):
+        mock_file_redact.return_value = True
+        mock_console_redact.return_value = True
+        log.log_privacy(msg="test_print_redacted", logger=get_logger, level=logging.INFO)
+        assert len(caplog.records) == 0
+
+    @patch("src.logging._log_console_handler")
+    @patch("src.logging._log_file_handler")
+    @patch("src.utils.log_utils.privacy_console_redact_all_check")
+    @patch("src.utils.log_utils.privacy_file_redact_all_check")
+    def test_log_privacy(self, mock_file_redact, mock_console_redact, mock_file_handler, mock_console_handler, get_logger, caplog):
+        mock_file_redact.return_value = False
+        mock_console_redact.return_value = False
+        mock_file_handler.return_value = logging.FileHandler("/tmp/mumimo_temp.log")
+        mock_console_handler.return_value = logging.StreamHandler(sys.stdout)
+
+        log.log_privacy(msg="test_print_privacy", logger=get_logger, level=logging.INFO)
         assert caplog.records[0].levelno == logging.INFO
-        assert "test_print_default" in caplog.text
-
-    def test_log_print_debug(self, print_fixture, caplog):
-        print_fixture("test_print_debug", level=logging.DEBUG)
-        assert caplog.records[0].levelno == logging.DEBUG
-        assert "test_print_debug" in caplog.text
-
-    def test_log_print_info(self, print_fixture, caplog):
-        print_fixture("test_print_info", level=logging.INFO)
-        assert caplog.records[0].levelno == logging.INFO
-        assert "test_print_info" in caplog.text
-
-    def test_log_print_warning(self, print_fixture, caplog):
-        print_fixture("test_print_warning", level=logging.WARNING)
-        assert caplog.records[0].levelno == logging.WARNING
-        assert "test_print_warning" in caplog.text
-
-    def test_log_print_error(self, print_fixture, caplog):
-        print_fixture("test_print_error", level=logging.ERROR)
-        assert caplog.records[0].levelno == logging.ERROR
-        assert "test_print_error" in caplog.text
-
-    def test_log_debug(self, debug_fixture, caplog):
-        debug_fixture("test_debug")
-        assert caplog.records[0].levelno == logging.DEBUG
-        assert "test_debug" in caplog.text
-
-    def test_log_error(self, error_fixture, caplog):
-        error_fixture("test_error")
-        assert caplog.records[0].levelno == logging.ERROR
-        assert "test_error" in caplog.text
-
-    def test_log_warning(self, warning_fixture, caplog):
-        warning_fixture("test_warning")
-        assert caplog.records[0].levelno == logging.WARNING
-        assert "test_warning" in caplog.text
+        assert "test_print_privacy" in caplog.text

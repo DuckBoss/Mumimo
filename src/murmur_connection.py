@@ -1,3 +1,4 @@
+import logging
 import threading
 import time
 from typing import Dict, Optional, Union
@@ -9,17 +10,10 @@ from pymumble_py3.errors import ConnectionRejectedError
 from .client_state import ClientState
 from .constants import VERBOSE_MAX, SysArgs
 from .exceptions import ConnectivityError, ServiceError, ValidationError
-from .logging import debug as _debug
-from .logging import get_logger
-from .logging import print as _print
-from .logging import print_warn as _print_warn
 from .settings import settings
 from .utils.args_validators import SystemArgumentsValidator
 
-logger = get_logger(__name__)
-print = _print(logger=logger)
-print_warn = _print_warn(logger=logger)
-debug = _debug(logger=logger)
+logger = logging.getLogger(__name__)
 
 
 class MurmurConnectionSingleton:
@@ -65,11 +59,11 @@ class MurmurConnection:
 
     def _setup(self, connection_params: Optional[Dict[str, Union[str, bool]]] = None) -> None:
         if connection_params is None:
-            print_warn("Connection parameters have not been provided during Murmur initialization.")
+            logger.warning("Connection parameters have not been provided during Murmur initialization.")
             return
         self._validate_connection_params(connection_params)
         self._connection_params = connection_params
-        print("Validated murmur connection parameters.")
+        logger.info("Validated murmur connection parameters.")
 
     def connect(self, connection_params: Optional[Dict[str, Union[str, bool]]] = None) -> None:
         if self._connection_instance is not None:
@@ -86,20 +80,23 @@ class MurmurConnection:
                 self._thread_stop_event.set()
                 self._thread.join()
                 self._thread = threading.Thread(name="murmur-conn", target=self._loop, args=(self._thread_stop_event,))
-            debug(f"Connectivity thread: [{self._thread.name}] initialized.")
+            logger.debug(f"Connectivity thread: [{self._thread.name}] initialized.")
             self._thread.start()
-            debug(f"Connectivity thread: [{self._thread.name} | {self._thread.ident}] started.")
+            logger.debug(f"Connectivity thread: [{self._thread.name} | {self._thread.ident}] started.")
             return True
         return False
 
     def stop(self) -> bool:
         if self._connection_instance is not None:
             if self._thread is not None:
-                debug(f"Connectivity thread: [{self._thread.name} | {self._thread.ident}] closing...")
+                logger.debug(f"Connectivity thread: [{self._thread.name} | {self._thread.ident}] closing...")
                 self._thread_stop_event.set()
                 self._thread.join()
-                debug(f"Connectivity thread: [{self._thread.name}] closed.")
-            self._connection_instance.stop()
+                logger.debug(f"Connectivity thread: [{self._thread.name}] closed.")
+            try:
+                self._connection_instance.stop()
+            except AttributeError:
+                logger.debug("Connection instance closed prematurely.")
             self._is_connected = False
             self._connection_instance = None
             self._thread = None
@@ -148,7 +145,7 @@ class MurmurConnection:
             _client_state = settings.get_client_state()
         if _client_state is not None:
             self._connection_instance.callbacks.set_callback(PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, _client_state.cmd_service.process_cmd)
-            debug(f"Added mumble callback: {PYMUMBLE_CLBK_TEXTMESSAGERECEIVED}-{_client_state.cmd_service.process_cmd.__name__}")
+            logger.debug(f"Added mumble callback: {PYMUMBLE_CLBK_TEXTMESSAGERECEIVED}-{_client_state.cmd_service.process_cmd.__name__}")
 
     def _loop(self, stop_event: threading.Event) -> None:
         while True:

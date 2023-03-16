@@ -20,7 +20,7 @@ format = "[%(levelname)s]::%(message)s"
 # Please note that setting all redaction options to 'true' will prevent the entire message
 # from being logged to the console.
 [output.console.privacy]
-redact_message = true
+redact_message = false
 redact_commands = false
 redact_channel = false
 redact_user = false

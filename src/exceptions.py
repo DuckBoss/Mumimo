@@ -1,13 +1,11 @@
 import logging
 from typing import Optional
 
-from .logging import print
-
 
 class LoggedException(Exception):
     def __init__(self, msg: str, logger: Optional[logging.Logger] = None, *args) -> None:
         if isinstance(logger, logging.Logger):
-            print(logger)(str(msg), logging.ERROR)
+            logging.exception(str(msg))
         super().__init__(msg, *args)
 
 

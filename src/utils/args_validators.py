@@ -1,10 +1,11 @@
+import logging
+
 import validators
 
 from ..constants import VERBOSITY_MAX, VERBOSITY_MIN
 from ..exceptions import ValidationError
-from ..logging import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class SystemArgumentsValidator:
