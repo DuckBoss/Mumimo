@@ -2,7 +2,7 @@ import logging
 import time
 from typing import TYPE_CHECKING, Dict, Optional
 
-from .murmur_connection import MurmurConnection, MurmurConnectionSingleton
+from .murmur_connection import MurmurConnection
 from .services.init_service import MumimoInitService
 from .settings import settings
 from .utils import connection_utils
@@ -32,8 +32,7 @@ class MumimoService:
 
     def initialize_connection(self, connection_params) -> None:
         logger.info("Establishing Murmur connectivity...")
-        connection_singleton = MurmurConnectionSingleton(connection_params)
-        self._murmur_connection_instance = connection_singleton.instance()
+        self._murmur_connection_instance = MurmurConnection(connection_params)
         if self._murmur_connection_instance is not None:
             self._murmur_connection_instance.connect()
             if self._murmur_connection_instance.is_connected:

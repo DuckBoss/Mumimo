@@ -12,31 +12,12 @@ from .constants import VERBOSE_MAX, SysArgs
 from .exceptions import ConnectivityError, ServiceError, ValidationError
 from .settings import settings
 from .utils.args_validators import SystemArgumentsValidator
+from .corelib.singleton import singleton
 
 logger = logging.getLogger(__name__)
 
 
-class MurmurConnectionSingleton:
-    _murmur_connection_instance: Optional["MurmurConnection"] = None
-
-    def __new__(cls, *args, **kwargs) -> "MurmurConnectionSingleton":
-        if not hasattr(cls, "_instance"):
-            cls._instance = super().__new__(cls)
-            cls._instance._murmur_connection_instance = MurmurConnection(*args, **kwargs)
-        return cls._instance
-
-    @classmethod
-    def instance(cls) -> Optional["MurmurConnection"]:
-        if cls._instance is not None:
-            return cls._instance._murmur_connection_instance
-        return None
-
-    @classmethod
-    def clear(cls) -> None:
-        if cls._instance is not None:
-            del cls._instance
-
-
+@singleton
 class MurmurConnection:
     _thread: Optional[threading.Thread] = None
     _thread_stop_event: threading.Event = threading.Event()
