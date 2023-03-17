@@ -19,7 +19,7 @@ def init_logger(sys_args: Optional[Dict[str, str]] = None) -> bool:
     if _IS_INITIALIZED:
         return False
     if sys_args is None:
-        sys_args = {}
+        return False
     _log_config = log_utils.initialize_log_config(sys_args.get(SysArgs.SYS_LOG_CONFIG_FILE, None))
     _log_config.set(SysArgs.SYS_VERBOSE, int(sys_args.get(SysArgs.SYS_VERBOSE, VERBOSE_MIN)), create_keys_if_not_exists=True)
     _log_parent_directory: pathlib.Path = pathlib.Path.cwd() / _log_config.get(LogCfgFields.OUTPUT.FILE.PATH)
@@ -84,14 +84,23 @@ def log_privacy(msg: str, logger: logging.Logger, level: int = logging.INFO) -> 
         return
     if not logger.hasHandlers():
         return
-    if not _log_file_handler or not _log_console_handler:
-        return
-    _cached_file_level: int = _log_file_handler.level
-    _cached_console_level: int = _log_console_handler.level
-    if log_utils.privacy_file_redact_all_check():
-        _log_file_handler.setLevel(logging.CRITICAL)
-    if log_utils.privacy_console_redact_all_check():
-        _log_console_handler.setLevel(logging.CRITICAL)
-    logger.log(level, msg)
-    _log_file_handler.setLevel(_cached_file_level)
-    _log_console_handler.setLevel(_cached_console_level)
+
+    _file_redact_all: bool = log_utils.privacy_file_redact_all_check()
+    _console_redact_all: bool = log_utils.privacy_console_redact_all_check()
+
+    if _log_file_handler:
+        _cached_file_level: int = _log_file_handler.level
+        if _file_redact_all:
+            _log_file_handler.setLevel(logging.CRITICAL)
+    if _log_console_handler:
+        _cached_console_level: int = _log_console_handler.level
+        if _console_redact_all:
+            _log_console_handler.setLevel(logging.CRITICAL)
+
+    if not _file_redact_all and not _console_redact_all:
+        logger.log(level, msg)
+
+    if _log_file_handler:
+        _log_file_handler.setLevel(_cached_file_level)  # type: ignore
+    if _log_console_handler:
+        _log_console_handler.setLevel(_cached_console_level)  # type: ignore
