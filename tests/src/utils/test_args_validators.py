@@ -83,19 +83,64 @@ class TestSystemArgumentsValidators:
             with pytest.raises(ValidationError, match=r".*\ is not a valid host ip or url.$"):
                 validator.validate_host_param(host)
 
+        def test_host_is_valid_ipv4(self, host) -> None:
+            host = "127.0.0.1"
+            assert validator.validate_host_param(host) is None
+
+        def test_host_is_invalid_ipv4(self, host) -> None:
+            host = "127.0.0133.12"
+            with pytest.raises(ValidationError, match=r".*\ is not a valid host ip or url.$"):
+                validator.validate_host_param(host)
+
+        def test_host_is_valid_ipv6(self, host) -> None:
+            host = "0:0:0:0:0:0:0:1"
+            assert validator.validate_host_param(host) is None
+
+        def test_host_is_invalid_ipv6(self, host) -> None:
+            host = "1545:23:0:0:155"
+            with pytest.raises(ValidationError, match=r".*\ is not a valid host ip or url.$"):
+                validator.validate_host_param(host)
+
+        def test_host_is_valid_url(self, host) -> None:
+            host = "https://myhost.ddns.net"
+            assert validator.validate_host_param(host) is None
+
+        def test_host_is_invalid_url(self, host) -> None:
+            host = "localhost"
+            with pytest.raises(ValidationError, match=r".*\ is not a valid host ip or url.$"):
+                validator.validate_host_param(host)
+
     class TestPortParam:
+        def test_port_valid_number(self, port) -> None:
+            port = 64738
+            assert validator.validate_port_param(port) is None
+
+        def test_port_valid_string(self, port) -> None:
+            port = "64738"
+            assert validator.validate_port_param(port) is None
+
         def test_port_is_none(self, port) -> None:
             port = None
             with pytest.raises(ValidationError, match=r".*\ must be provided.$"):
-                validator.validate_port_param(port)
+                validator.validate_port_param(port)  # type: ignore
 
         def test_port_is_empty(self, port) -> None:
             port = ""
             with pytest.raises(ValidationError, match=r".*\ cannot be empty.$"):
                 validator.validate_port_param(port)
 
-        def test_port_is_invalid(self, port) -> None:
+        def test_port_is_invalid_string(self, port) -> None:
             port = "invalid_port"
+            with pytest.raises(ValidationError, match=r".*\ is not a valid port number.$"):
+                validator.validate_port_param(port)
+
+        def test_port_is_invalid_number_lower_range(self, port) -> None:
+            port = -64738
+            with pytest.raises(ValidationError, match=r".*\ is not a valid port number.$"):
+                validator.validate_port_param(port)
+
+        def test_port_is_invalid_number_upper_range(self, port) -> None:
+            port = 65536
             with pytest.raises(ValidationError, match=r".*\ is not a valid port number.$"):
                 validator.validate_port_param(port)
 
@@ -103,83 +148,83 @@ class TestSystemArgumentsValidators:
         def test_user_is_none(self, user) -> None:
             user = None
             with pytest.raises(ValidationError, match=r".*\ must be provided.$"):
-                validator.validate_user_param(user)
+                validator.validate_user_param(user)  # type: ignore
 
         def test_user_is_empty(self, user) -> None:
-            user = ""
+            user = " "
             with pytest.raises(ValidationError, match=r".*\ cannot be empty.$"):
                 validator.validate_user_param(user)
 
         def test_user_is_invalid(self, user) -> None:
             user = True
             with pytest.raises(ValidationError, match=r".*\ must be a valid string.$"):
-                validator.validate_user_param(user)
+                validator.validate_user_param(user)  # type: ignore
 
     class TestPasswordParam:
         def test_password_is_empty(self, password) -> None:
-            password = ""
+            password = " "
             with pytest.raises(ValidationError, match=r".*\ cannot be empty.$"):
                 validator.validate_password_param(password)
 
         def test_password_is_invalid(self, password) -> None:
             password = True
             with pytest.raises(ValidationError, match=r".*\ must be a valid string.$"):
-                validator.validate_password_param(password)
+                validator.validate_password_param(password)  # type: ignore
 
     class TestCertParam:
         def test_cert_is_empty(self, cert) -> None:
-            cert = ""
+            cert = " "
             with pytest.raises(ValidationError, match=r".*\ cannot be empty.$"):
                 validator.validate_cert_param(cert)
 
         def test_cert_is_invalid(self, cert) -> None:
             cert = True
             with pytest.raises(ValidationError, match=r".*\ must be a valid string.$"):
-                validator.validate_cert_param(cert)
+                validator.validate_cert_param(cert)  # type: ignore
 
     class TestKeyParam:
         def test_key_is_empty(self, key) -> None:
-            key = ""
+            key = " "
             with pytest.raises(ValidationError, match=r".*\ cannot be empty.$"):
                 validator.validate_key_param(key)
 
         def test_key_is_invalid(self, key) -> None:
             key = True
             with pytest.raises(ValidationError, match=r".*\ must be a valid string.$"):
-                validator.validate_key_param(key)
+                validator.validate_key_param(key)  # type: ignore
 
     class TestTokensParam:
         def test_tokens_is_empty(self, tokens) -> None:
-            tokens = ""
+            tokens = " "
             with pytest.raises(ValidationError, match=r".*\ cannot be empty.$"):
                 validator.validate_tokens_param(tokens)
 
         def test_tokens_is_invalid(self, tokens) -> None:
             tokens = True
             with pytest.raises(ValidationError, match=r".*\ must be a valid string.$"):
-                validator.validate_tokens_param(tokens)
+                validator.validate_tokens_param(tokens)  # type: ignore
 
     class TestAutoReconnectParam:
         def test_auto_reconnect_is_none(self, reconnect) -> None:
             reconnect = None
             with pytest.raises(ValidationError, match=r".*\ can only be True or False, not None.$"):
-                validator.validate_auto_reconnect_param(reconnect)
+                validator.validate_auto_reconnect_param(reconnect)  # type: ignore
 
         def test_auto_reconnect_is_invalid(self, reconnect) -> None:
             reconnect = "invalid_auto_reconnect"
             with pytest.raises(ValidationError, match=r".*\ can only be True or False.$"):
-                validator.validate_auto_reconnect_param(reconnect)
+                validator.validate_auto_reconnect_param(reconnect)  # type: ignore
 
     class TestVerboseParam:
         def test_verbose_is_empty(self, verbose) -> None:
             verbose = None
             with pytest.raises(ValidationError, match=r"^The verbose option can only be a number from"):
-                validator.validate_verbose_param(verbose)
+                validator.validate_verbose_param(verbose)  # type: ignore
 
         def test_verbose_is_invalid(self, verbose) -> None:
             verbose = "invalid_verbose"
             with pytest.raises(ValidationError, match=r"^The verbose option can only be a number from"):
-                validator.validate_verbose_param(verbose)
+                validator.validate_verbose_param(verbose)  # type: ignore
 
         def test_verbose_is_above_limit(self, verbose) -> None:
             verbose = 9999
