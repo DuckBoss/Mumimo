@@ -154,12 +154,12 @@ class MurmurConnection:
             time.sleep(0.1)
 
     def _validate_connection_params(self, params: Dict[str, Union[str, bool]]) -> None:
-        SystemArgumentsValidator.validate_host_param(params.get(SysArgs.SYS_HOST))
-        SystemArgumentsValidator.validate_port_param(params.get(SysArgs.SYS_PORT))
-        SystemArgumentsValidator.validate_user_param(params.get(SysArgs.SYS_USER))
-        SystemArgumentsValidator.validate_password_param(params.get(SysArgs.SYS_PASS))
-        SystemArgumentsValidator.validate_cert_param(params.get(SysArgs.SYS_CERT))
-        SystemArgumentsValidator.validate_key_param(params.get(SysArgs.SYS_KEY))
-        SystemArgumentsValidator.validate_tokens_param(params.get(SysArgs.SYS_TOKENS))
-        SystemArgumentsValidator.validate_auto_reconnect_param(params.get(SysArgs.SYS_RECONNECT))
-        SystemArgumentsValidator.validate_verbose_param(params.get(SysArgs.SYS_VERBOSE))
+        SystemArgumentsValidator.validate_host_param(params.get(SysArgs.SYS_HOST))  # type: ignore
+        SystemArgumentsValidator.validate_port_param(params.get(SysArgs.SYS_PORT))  # type: ignore
+        SystemArgumentsValidator.validate_user_param(params.get(SysArgs.SYS_USER))  # type: ignore
+        SystemArgumentsValidator.validate_password_param(params.get(SysArgs.SYS_PASS))  # type: ignore
+        SystemArgumentsValidator.validate_cert_param(params.get(SysArgs.SYS_CERT))  # type: ignore
+        SystemArgumentsValidator.validate_key_param(params.get(SysArgs.SYS_KEY))  # type: ignore
+        SystemArgumentsValidator.validate_tokens_param(params.get(SysArgs.SYS_TOKENS))  # type: ignore
+        SystemArgumentsValidator.validate_auto_reconnect_param(params.get(SysArgs.SYS_RECONNECT))  # type: ignore
+        SystemArgumentsValidator.validate_verbose_param(params.get(SysArgs.SYS_VERBOSE))  # type: ignore

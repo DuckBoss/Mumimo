@@ -71,7 +71,7 @@ class TestSystemArgumentsValidators:
         def test_host_is_none(self, host) -> None:
             host = None
             with pytest.raises(ValidationError, match=r".*\ must be provided.$"):
-                validator.validate_host_param(host)
+                validator.validate_host_param(host)  # type: ignore
 
         def test_host_is_empty(self, host) -> None:
             host = ""
