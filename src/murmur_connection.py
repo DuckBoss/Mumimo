@@ -101,7 +101,7 @@ class MurmurConnection:
             stereo=True,
         )
         self._connection_instance.set_codec_profile("audio")
-        self._connection_instance.set_receive_sound(False)  # Only set to False if testing on Windows
+        self._connection_instance.set_receive_sound(True)
 
         # Set up callbacks
         self._set_up_callbacks()
