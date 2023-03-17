@@ -4,14 +4,13 @@ from unittest.mock import patch
 import pytest
 
 from src.exceptions import ValidationError
-from src.murmur_connection import MurmurConnection, MurmurConnectionSingleton
+from src.murmur_connection import MurmurConnection
 
 
 class TestMurmurConnection:
     @pytest.fixture(autouse=True)
     def murmur_connection(self):
-        connection = MurmurConnectionSingleton()
-        instance = connection.instance()
+        instance = MurmurConnection()
         yield instance
         if instance is not None:
             if instance._thread is not None:
@@ -22,8 +21,6 @@ class TestMurmurConnection:
             instance._connection_instance = None
             instance._connection_params = None
             instance._is_connected = False
-        if hasattr(connection, "_instance"):
-            connection.clear()
 
     def test_murmur_connection_setup_without_init_params(self, murmur_connection) -> None:
         murmur_connection._setup()
