@@ -9,10 +9,10 @@ from pymumble_py3.errors import ConnectionRejectedError
 
 from .client_state import ClientState
 from .constants import VERBOSE_MAX, SysArgs
+from .corelib.singleton import singleton
 from .exceptions import ConnectivityError, ServiceError, ValidationError
 from .settings import settings
 from .utils.args_validators import SystemArgumentsValidator
-from .corelib.singleton import singleton
 
 logger = logging.getLogger(__name__)
 
