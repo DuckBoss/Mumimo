@@ -32,9 +32,10 @@ class MumimoService:
 
     def initialize_connection(self, connection_params) -> None:
         logger.info("Establishing Murmur connectivity...")
-        self._murmur_connection_instance = MurmurConnection(connection_params)
+        self._murmur_connection_instance = MurmurConnection()
         if self._murmur_connection_instance is not None:
-            self._murmur_connection_instance.connect()
+            self._murmur_connection_instance.setup(connection_params)
+            self._murmur_connection_instance.ready().connect()
             if self._murmur_connection_instance.is_connected:
                 _client_state: Optional["ClientState"] = settings.get_client_state()
                 if _client_state is not None:

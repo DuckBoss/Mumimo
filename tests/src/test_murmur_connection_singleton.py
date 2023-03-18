@@ -1,6 +1,7 @@
+from typing import Tuple
+
 import pytest
 
-from typing import Tuple
 from src.murmur_connection import MurmurConnection
 
 
