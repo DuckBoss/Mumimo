@@ -1,13 +1,13 @@
 [tool.black]
 line-length = 150
-target_version = ['py38', 'py39', 'py310']
+target_version = ['py38', 'py39', 'py310', 'py311']
 
 [tool.isort]
 profile = "black"
 line_length = 150
 
 [tool.pytest.ini_options]
-addopts = "-s -vv"
+addopts = "-s -vv --cov"
 pythonpath = "."
 testpaths = "tests"
 required_plugins = ['pytest-randomly', 'pytest-timeout']
@@ -16,6 +16,12 @@ log_date_format = "%Y-%m-%d %H:%M:%S"
 
 [tool.pyright]
 include = ["src"]
-exclude = ["**/__pycache__"]
+exclude = ["**/__pycache__", "**/.sh", ".coveragerc"]
 pythonVersion = "3.10"
 pythonPlatform = "Linux"
+
+[tool.flake8]
+exclude = ["**/__pycache__", "venv/", "build-tools/", "config/", "logs/", ".*"]
+extend-ignore = ["E203"]
+max-line-length = 150
+count = true

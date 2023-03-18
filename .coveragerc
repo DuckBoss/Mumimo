@@ -1,5 +1,23 @@
+# type: ignore
+
 [report]
 show_missing = true
+exclude_lines =
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+    # Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
+
+    # Don't complain about abstract methods, they aren't run:
+    @(abc\.)?abstractmethod
 
 [run]
-omit = tests/*
+omit = 
+    tests/*
+    build-tools/*
+    config/*
+    logs/*
+    .*
