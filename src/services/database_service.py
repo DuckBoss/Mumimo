@@ -128,9 +128,8 @@ class DatabaseService:
         )
 
     async def close(self, clean: bool = False) -> None:
+        logger.debug("Attempting to close mumimo database connection.")
         if self._engine is not None:
-            if self._session_factory is not None:
-                await self._session_factory.close_all()
             await self._engine.dispose(close=True)
             if clean:
                 self._connection_parameters = None

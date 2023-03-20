@@ -81,12 +81,15 @@ class MumimoService:
     async def _wait_for_interrupt(self) -> None:
         try:
             while True:
-                time.sleep(0.1)
-        except KeyboardInterrupt:
+                await asyncio.sleep(0.1)
+        except asyncio.exceptions.CancelledError:
             logger.info("Gracefully exiting Mumimo client...")
             if self._murmur_connection_instance is not None:
                 logger.info("Disconnecting from Murmur server...")
                 if self._murmur_connection_instance.stop():
                     logger.info("Disconnected from Murmur server.")
                 await DatabaseService().close(clean=True)
+            _async_runner = asyncio.get_running_loop()
+            if _async_runner.is_running():
+                _async_runner.stop()
             logger.info("Mumimo client closed.")
