@@ -24,6 +24,11 @@ class ServiceError(LoggedException):
         super().__init__(msg, logger=logger, *args)
 
 
+class DatabaseServiceError(ServiceError):
+    def __init__(self, msg: str, logger: Optional[logging.Logger] = None, *args) -> None:
+        super().__init__(msg, logger=logger, *args)
+
+
 class ConfigError(LoggedException):
     def __init__(self, msg: str, logger: Optional[logging.Logger] = None, *args) -> None:
         super().__init__(msg, logger=logger, *args)

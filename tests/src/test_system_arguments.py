@@ -1,6 +1,6 @@
 import pytest
 
-from src.constants import VERBOSITY_MIN
+from src.constants import VERBOSITY_MAX, VERBOSITY_MIN
 from src.system_arguments import args_parser
 
 
@@ -8,17 +8,6 @@ class TestSystemArguments:
     @pytest.fixture()
     def sys_args_parser(self):
         return args_parser
-
-    class TestOptionHeadless:
-        def test_option_headless(self, sys_args_parser):
-            options = ["-hl"]
-            parser = sys_args_parser.parse_args(options)
-            assert parser.headless is True
-
-        def test_option_no_headless(self, sys_args_parser):
-            options = []
-            parser = sys_args_parser.parse_args(options)
-            assert parser.headless is False
 
     class TestOptionConfigFile:
         def test_option_valid_config_file(self, sys_args_parser):
@@ -163,15 +152,20 @@ class TestSystemArguments:
             assert parser.auto_reconnect is False
 
     class TestOptionVerbose:
-        def test_option_verbose(self, sys_args_parser):
-            options = ["-v"]
-            parser = sys_args_parser.parse_args(options)
-            assert parser.verbose == 1
-
         def test_option_no_verbose(self, sys_args_parser):
             options = []
             parser = sys_args_parser.parse_args(options)
             assert parser.verbose == VERBOSITY_MIN
+
+        def test_option_min_verbose(self, sys_args_parser):
+            options = ["-v"]
+            parser = sys_args_parser.parse_args(options)
+            assert parser.verbose == 1
+
+        def test_option_max_verbose(self, sys_args_parser):
+            options = ["-vvvv"]
+            parser = sys_args_parser.parse_args(options)
+            assert parser.verbose == VERBOSITY_MAX
 
     class TestOptionGenerateCert:
         def test_option_generate_cert(self, sys_args_parser):
@@ -215,3 +209,39 @@ class TestSystemArguments:
             options = ["-e"]
             with pytest.raises(SystemExit):
                 sys_args_parser.parse_args(options)
+
+    class TestOptionDatabase:
+        def test_option_database_dialect(self, sys_args_parser):
+            options = ["-dbdi", "sqlite"]
+            parser = sys_args_parser.parse_args(options)
+            assert parser.db_dialect == "sqlite"
+
+        def test_option_database_driver(self, sys_args_parser):
+            options = ["-dbdr", "aiosqlite"]
+            parser = sys_args_parser.parse_args(options)
+            assert parser.db_driver == "aiosqlite"
+
+        def test_option_database_user(self, sys_args_parser):
+            options = ["-dbu", "mumimo"]
+            parser = sys_args_parser.parse_args(options)
+            assert parser.db_user == "mumimo"
+
+        def test_option_database_pass(self, sys_args_parser):
+            options = ["-dbp", "mumimo"]
+            parser = sys_args_parser.parse_args(options)
+            assert parser.db_pass == "mumimo"
+
+        def test_option_database_host(self, sys_args_parser):
+            options = ["-dbh", "mumimo.db"]
+            parser = sys_args_parser.parse_args(options)
+            assert parser.db_host == "mumimo.db"
+
+        def test_option_database_name(self, sys_args_parser):
+            options = ["-dbn", "mumimo"]
+            parser = sys_args_parser.parse_args(options)
+            assert parser.db_name == "mumimo"
+
+        def test_option_database_query(self, sys_args_parser):
+            options = ["-dbq", "mumimo"]
+            parser = sys_args_parser.parse_args(options)
+            assert parser.db_query == "mumimo"

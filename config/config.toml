@@ -14,6 +14,10 @@ max_multi_command_length = 200
 max_command_queue_length = 500
 command_history_length = 25
 
+### Database Settings ###
+[settings.database]
+default_permission_groups = ["none", "guest", "regular", "admin"]
+
 ### Media Settings ###
 [settings.media]
 volume = 0.1

@@ -2,7 +2,8 @@
 VERBOSE_NONE: int = 0
 VERBOSE_MIN: int = 1
 VERBOSE_STANDARD: int = 2
-VERBOSE_MAX: int = 3
+VERBOSE_HIGH: int = 3
+VERBOSE_MAX: int = 4
 VERBOSITY_MIN: int = VERBOSE_NONE
 VERBOSITY_MAX: int = VERBOSE_MAX
 
@@ -17,11 +18,17 @@ class EnvArgs:
     ENV_KEY: str = "MUMIMO_KEY"
     ENV_TOKENS: str = "MUMIMO_TOKENS"
     ENV_SUPER_USER: str = "MUMIMO_SUPER_USER"
+    ENV_DB_DIALECT: str = "MUMIMO_DB_DIALECT"
+    ENV_DB_DRIVER: str = "MUMIMO_DB_DRIVER"
+    ENV_DB_USER: str = "MUMIMO_DB_USER"
+    ENV_DB_PASS: str = "MUMIMO_DB_PASS"
+    ENV_DB_HOST: str = "MUMIMO_DB_HOST"
+    ENV_DB_NAME: str = "MUMIMO_DB_NAME"
+    ENV_DB_QUERY: str = "MUMIMO_DB_QUERY"
 
 
 # Sys Args Constants
 class SysArgs:
-    SYS_HEADLESS: str = "headless"
     SYS_HOST: str = "host"
     SYS_PORT: str = "port"
     SYS_USER: str = "user"
@@ -36,6 +43,13 @@ class SysArgs:
     SYS_ENV_FILE: str = "env_file"
     SYS_CONFIG_FILE: str = "config_file"
     SYS_LOG_CONFIG_FILE: str = "log_config_file"
+    SYS_DB_DIALECT: str = "db_dialect"
+    SYS_DB_DRIVER: str = "db_driver"
+    SYS_DB_USER: str = "db_user"
+    SYS_DB_PASS: str = "db_pass"
+    SYS_DB_HOST: str = "db_host"
+    SYS_DB_NAME: str = "db_name"
+    SYS_DB_QUERY: str = "db_query"
 
 
 # Config Constants
@@ -84,6 +98,7 @@ class MumimoCfgSections:
     SETTINGS: str = "settings"
     SETTINGS_MEDIA: str = f"{SETTINGS}.media"
     SETTINGS_CONNECTION: str = f"{SETTINGS}.connection"
+    SETTINGS_DATABASE: str = f"{SETTINGS}.database"
     SETTINGS_COMMANDS: str = f"{SETTINGS}.commands"
     SETTINGS_MEDIA: str = f"{SETTINGS}.media"
     SETTINGS_MEDIA_AUDIODUCKING: str = f"{SETTINGS_MEDIA}.audio_ducking"
@@ -106,6 +121,9 @@ class MumimoCfgFields:
             COMMENT: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.comment"
             DEFAULT_CHANNEL: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.default_channel"
             AUTO_RECONNECT: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.auto_reconnect"
+
+        class DATABASE:
+            DEFAULT_PERMISSION_GROUPS: str = f"{MumimoCfgSections.SETTINGS_DATABASE}.default_permission_groups"
 
         class COMMANDS:
             TOKEN: str = f"{MumimoCfgSections.SETTINGS_COMMANDS}.command_token"

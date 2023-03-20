@@ -3,7 +3,7 @@ import pathlib
 import sys
 from typing import Dict, Optional
 
-from .constants import VERBOSE_MIN, VERBOSE_STANDARD, LogCfgFields, SysArgs
+from .constants import VERBOSE_HIGH, VERBOSE_MIN, VERBOSE_STANDARD, LogCfgFields, SysArgs
 from .settings import settings
 from .utils import log_utils
 from .version import version
@@ -43,6 +43,13 @@ def init_logger(sys_args: Optional[Dict[str, str]] = None) -> bool:
             if console_handler is not None:
                 logger.root.addHandler(console_handler)
                 _log_console_handler = console_handler
+    # Disable logging for asyncio/aiosqlite libraries unless the verbose level is max:
+    if _log_config.get(SysArgs.SYS_VERBOSE) >= VERBOSE_HIGH:
+        logging.getLogger("asyncio").setLevel(logging.DEBUG)
+        logging.getLogger("aiosqlite").setLevel(logging.DEBUG)
+    else:
+        logging.getLogger("asyncio").setLevel(logging.ERROR)
+        logging.getLogger("aiosqlite").setLevel(logging.ERROR)
     _IS_INITIALIZED = True
     return _IS_INITIALIZED
 
