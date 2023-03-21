@@ -12,4 +12,4 @@ if [ -f "$DB_FILE" ] ; then
 fi
 
 echo "Running Mumimo..."
-./mumimo.py -vv --env-file='.env'
+./mumimo.py -vv --env-file='.env' --config-file='.config/config.toml' --log-config-file='.config/logging.toml'
