@@ -5,8 +5,8 @@ class DatabaseConnectionParameters:
     def __init__(
         self,
         dialect: str,
-        database: str,
         host: str,
+        database: Optional[str] = None,
         username: Optional[str] = None,
         password: Optional[str] = None,
         drivername: Optional[str] = None,
@@ -62,7 +62,7 @@ class DatabaseConnectionParameters:
         if not no_credentials:
             if self.username is None or self.username == "":
                 return False, f"username={self.username}"
-            if self.password is not None or self.password == "":
+            if self.password is None or self.password == "":
                 return False, f"password={self.password}"
         return True, ""
 

@@ -33,7 +33,6 @@ class TestLogging:
                     "format": "(%(asctime)s)[%(name)s][%(levelname)s]::%(message)s",
                     "name": "mumimo_test_%s.log",
                     "message_privacy": True,
-                    "enable_stack_trace": False,
                 },
                 "console": {
                     "format": "[%(levelname)s]::%(message)s",

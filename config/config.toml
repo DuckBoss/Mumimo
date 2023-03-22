@@ -14,10 +14,6 @@ max_multi_command_length = 200
 max_command_queue_length = 500
 command_history_length = 25
 
-### Database Settings ###
-[settings.database]
-default_permission_groups = ["none", "guest", "regular", "admin"]
-
 ### Media Settings ###
 [settings.media]
 volume = 0.1
@@ -58,3 +54,28 @@ standard_text_color = "Snow"
 header_text_color = "red"
 sub_header_text_color = "yellow"
 index_text_color = "cyan"
+
+### Database Settings ###
+[settings.database]
+# Default permission groups format:
+#     - default_permission_groups = [
+#           "permission_group_1", 
+#           "permission_group_2", 
+#           ...
+#       ]
+# As shown in the example above, the default permission groups must be a list of strings.
+# Each string represents the name of a permission group that can control user access to commands.
+# Default values: ["none", "guest", "regular", "admin"]
+default_permission_groups = ["none", "guest", "regular", "admin"]
+
+# Default aliases format:
+#     - default_aliases = [
+#           ["myalias", "mycommand", "list,of,permission,groups"],
+#           ...
+#       ]
+# As shown in the example above, each item must contain 4 elements:
+#     1. Index 0: The name of the alias as a string value.
+#     2. Index 1: The command that the alias should execute as a string value.
+#     3. Index 2: The list of permission groups the alias belongs to as a comma-separated string value.
+# Default values: Too long to list here, please check the wiki.
+default_aliases = [ ["say", "echo", "guest,regular,admin"], ["quit", "exit", "guest,regular,admin"] ]

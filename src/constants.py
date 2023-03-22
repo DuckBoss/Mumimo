@@ -8,6 +8,13 @@ VERBOSITY_MIN: int = VERBOSE_NONE
 VERBOSITY_MAX: int = VERBOSE_MAX
 
 
+# Logging Output Identifier Constants
+class LogOutputIdentifiers:
+    DB: str = "Database"
+    DB_PERMISSIONS: str = f"{DB}.Permissions"
+    DB_ALIASES: str = f"{DB}.Aliases"
+
+
 # Env Args Constants
 class EnvArgs:
     ENV_HOST: str = "MUMIMO_HOST"
@@ -75,7 +82,6 @@ class LogCfgFields:
             PATH: str = f"{LogCfgSections.OUTPUT_FILE}.path"
             FORMAT: str = f"{LogCfgSections.OUTPUT_FILE}.format"
             NAME: str = f"{LogCfgSections.OUTPUT_FILE}.name"
-            ENABLE_STACK_TRACE: str = f"{LogCfgSections.OUTPUT_FILE}.enable_stack_trace"
 
             class PRIVACY:
                 REDACT_MESSAGE: str = f"{LogCfgSections.OUTPUT_FILE_PRIVACY}.redact_message"
@@ -124,6 +130,7 @@ class MumimoCfgFields:
 
         class DATABASE:
             DEFAULT_PERMISSION_GROUPS: str = f"{MumimoCfgSections.SETTINGS_DATABASE}.default_permission_groups"
+            DEFAULT_ALIASES: str = f"{MumimoCfgSections.SETTINGS_DATABASE}.default_aliases"
 
         class COMMANDS:
             TOKEN: str = f"{MumimoCfgSections.SETTINGS_COMMANDS}.command_token"

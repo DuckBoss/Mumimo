@@ -1,12 +1,13 @@
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, List
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from .. import metadata
 
 if TYPE_CHECKING:
+    from .alias import AliasTable
     from .permission_group import PermissionGroupTable
 
 
@@ -15,9 +16,12 @@ class UserTable(metadata.Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    permission_group_id: Mapped[int] = mapped_column(ForeignKey("permission_group.id"))
 
-    permission_groups: Mapped["PermissionGroupTable"] = relationship(back_populates="users")
+    # One to many to permission groups
+    permission_groups: Mapped[List["PermissionGroupTable"]] = relationship(back_populates="user")
+    # One to many to aliases
+    aliases: Mapped[List["AliasTable"]] = relationship(back_populates="user")
+
     created_on: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=func.now(), server_default=func.now(), nullable=False)
     updated_on: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False)
 
@@ -25,10 +29,10 @@ class UserTable(metadata.Base):
         return {
             "id": self.id,
             "name": self.name,
-            "permission_group_id": self.permission_group_id,
+            "permission_groups": [group.to_dict() for group in self.permission_groups],
             "created_on": self.created_on,
             "updated_on": self.updated_on,
         }
 
     def __repr__(self) -> str:
-        return f"User(id={self.id!r}, name={self.name!r}, permission_group_id={self.permission_group_id!r})"
+        return f"User(id={self.id!r}, name={self.name!r}, permission_groups={self.permission_groups!r})"

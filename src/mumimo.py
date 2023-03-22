@@ -51,7 +51,7 @@ class MumimoService:
             username=_prioritized_env_opts.get(SysArgs.SYS_DB_USER, ""),
             host=_prioritized_env_opts.get(SysArgs.SYS_DB_HOST, ""),
             password=_prioritized_env_opts.get(SysArgs.SYS_DB_PASS, None),
-            database=_prioritized_env_opts.get(SysArgs.SYS_DB_NAME, ""),
+            database=_prioritized_env_opts.get(SysArgs.SYS_DB_NAME, None),
             drivername=_prioritized_env_opts.get(SysArgs.SYS_DB_DRIVER, None),
             query=_prioritized_env_opts.get(SysArgs.SYS_DB_QUERY, None),
         )

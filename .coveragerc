@@ -21,3 +21,4 @@ omit =
     config/*
     logs/*
     .*
+    conftest.py
