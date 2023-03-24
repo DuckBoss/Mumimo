@@ -5,8 +5,8 @@ import pytest
 
 from src.config import Config
 from src.constants import LogCfgFields
-from src.corelib.command import Command
 from src.exceptions import ServiceError
+from src.lib.command import Command
 from src.log_config import LogConfig
 from src.services.cmd_processing_service import CommandProcessingService
 
@@ -95,7 +95,7 @@ class TestCommandProcessingService:
         @patch("src.services.cmd_processing_service.CommandProcessingService.OutputPrivacyFilter._redact_channel")
         @patch("src.services.cmd_processing_service.CommandProcessingService.OutputPrivacyFilter._redact_actor")
         @patch("src.services.cmd_processing_service.CommandProcessingService.OutputPrivacyFilter._redact_commands")
-        @patch("src.corelib.command.Command")
+        @patch("src.lib.command.Command")
         @patch("src.log_config.LogConfig")
         @patch("pymumble_py3.mumble.Mumble")
         def test_get_privacy_checked_output(
@@ -129,7 +129,7 @@ class TestCommandProcessingService:
             assert all("Redacted" in val for val in result["file"].values()) is True
             assert all("Redacted" in val for val in result["console"].values()) is True
 
-        @patch("src.corelib.command.Command")
+        @patch("src.lib.command.Command")
         @patch("src.log_config.LogConfig")
         def test__redact_commands(self, mock_log_cfg, mock_cmd, get_privacy_filter) -> None:
             mock_log_cfg.set(LogCfgFields.OUTPUT.FILE.PRIVACY.REDACT_COMMANDS, True)
@@ -142,7 +142,7 @@ class TestCommandProcessingService:
             assert result["file"]["parameters"] == "Redacted"
 
         @patch("src.utils.parsers.cmd_parser.parse_actor_name")
-        @patch("src.corelib.command.Command")
+        @patch("src.lib.command.Command")
         @patch("src.log_config.LogConfig")
         @patch("pymumble_py3.mumble.Mumble")
         def test__redact_actor(self, mock_connection_instance, mock_log_cfg, mock_cmd, mock_parser, get_privacy_filter) -> None:
@@ -155,7 +155,7 @@ class TestCommandProcessingService:
             assert result["file"]["actor"] == "Redacted"
 
         @patch("src.utils.parsers.cmd_parser.parse_channel_name")
-        @patch("src.corelib.command.Command")
+        @patch("src.lib.command.Command")
         @patch("src.log_config.LogConfig")
         @patch("pymumble_py3.mumble.Mumble")
         def test__redact_channel(self, mock_connection_instance, mock_log_cfg, mock_cmd, mock_parser, get_privacy_filter) -> None:
@@ -169,7 +169,7 @@ class TestCommandProcessingService:
 
         @patch("src.utils.parsers.cmd_parser.parse_message_hyperlink_data")
         @patch("src.utils.parsers.cmd_parser.parse_message_image_data")
-        @patch("src.corelib.command.Command")
+        @patch("src.lib.command.Command")
         @patch("src.log_config.LogConfig")
         def test__redact_message(self, mock_log_cfg, mock_cmd, mock_image_parser, mock_link_parser, get_privacy_filter) -> None:
             msg = "test_redacted_message"

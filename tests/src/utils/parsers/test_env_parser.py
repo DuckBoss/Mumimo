@@ -22,6 +22,13 @@ class TestEnvParserIO:
             EnvArgs.ENV_KEY: "test_key",
             EnvArgs.ENV_TOKENS: "test_token_1 test_token2",
             EnvArgs.ENV_SUPER_USER: "test_super_user",
+            EnvArgs.ENV_DB_DIALECT: "sqlite",
+            EnvArgs.ENV_DB_DRIVER: "aiosqlite",
+            EnvArgs.ENV_DB_USER: "test_mumimo",
+            EnvArgs.ENV_DB_PASS: "test_mumimo",
+            EnvArgs.ENV_DB_HOST: "test_mumimo_db",
+            EnvArgs.ENV_DB_NAME: "test_mumimo",
+            EnvArgs.ENV_DB_QUERY: "test_mumimo_query",
         }
 
     class TestGetEnvFile:

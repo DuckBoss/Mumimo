@@ -20,6 +20,10 @@ class TestExceptions:
         with pytest.raises(exceptions.ServiceError, match="test"):
             raise exceptions.ServiceError("test", logger=None)
 
+    def test_raise_database_service_error(self):
+        with pytest.raises(exceptions.DatabaseServiceError, match="test"):
+            raise exceptions.DatabaseServiceError("test", logger=None)
+
     def test_raise_config_error(self):
         with pytest.raises(exceptions.ConfigError, match="test"):
             raise exceptions.ConfigError("test", logger=None)

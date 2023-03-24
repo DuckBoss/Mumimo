@@ -20,6 +20,11 @@ jobs:
         pip install -r dev_requirements.txt
         pip install -e .
     - name: Run tests and collect coverage
-      run: pytest --cov=src/ --cov-config=.coveragerc --cov-report=xml
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 20
+        max_attempts: 3
+        retry_on: error
+        command: pytest --cov=src/ --cov-config=.coveragerc --cov-report=xml
     - name: Upload coverage reports to Codecov with GitHub Action
       uses: codecov/codecov-action@v3

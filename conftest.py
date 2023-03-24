@@ -7,6 +7,7 @@ import pytest
 pytest_plugins = [
     "tests.fixtures.config_fixtures",
     "tests.fixtures.connection_fixtures",
+    "tests.src.lib.database.models.fixtures",
 ]
 
 
