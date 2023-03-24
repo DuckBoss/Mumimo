@@ -25,7 +25,7 @@ jobs:
     - name: Run tests and collect coverage
       uses: nick-fields/retry@v2
       with:
-        timeout_miunutes: 20
+        timeout_minutes: 20
         max_attempts: 3
         retry_on: error
         command: pytest --cov=src/ --cov-config=.coveragerc --cov-report=xml
