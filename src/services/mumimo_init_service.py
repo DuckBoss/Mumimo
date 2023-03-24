@@ -24,9 +24,9 @@ class MumimoInitService:
         - get_prioritized_env_options() to get required options for database connection.
     """
 
-    _sys_args: Dict[str, str]
-    _prioritized_env_opts: Dict[str, Any]
-    _prioritized_cfg_opts: Dict[str, Any]
+    _sys_args: Dict[str, str] = {}
+    _prioritized_env_opts: Dict[str, Any] = {}
+    _prioritized_cfg_opts: Dict[str, Any] = {}
 
     def __init__(self, sys_args: Dict[str, str]) -> None:
         self._sys_args = sys_args
@@ -44,19 +44,23 @@ class MumimoInitService:
         self._prioritized_env_opts = self._get_prioritized_client_env_options()
 
     def get_connection_parameters(self) -> Dict[str, Any]:
-        if not self._prioritized_cfg_opts or not self._prioritized_env_opts:
+        _prioritized_env_opts = self.get_prioritized_env_options()
+        _prioritized_cfg_opts = self.get_prioritized_cfg_options()
+        if not _prioritized_cfg_opts or not _prioritized_env_opts:
             return {}
+
+        _sys_args = self._get_sys_args()
         return {
-            SysArgs.SYS_HOST: self._prioritized_env_opts.get(SysArgs.SYS_HOST),
-            SysArgs.SYS_PORT: self._prioritized_env_opts.get(SysArgs.SYS_PORT),
-            SysArgs.SYS_USER: self._prioritized_env_opts.get(SysArgs.SYS_USER),
-            SysArgs.SYS_PASS: self._prioritized_env_opts.get(SysArgs.SYS_PASS),
-            SysArgs.SYS_CERT: self._prioritized_env_opts.get(SysArgs.SYS_CERT),
-            SysArgs.SYS_KEY: self._prioritized_env_opts.get(SysArgs.SYS_KEY),
-            SysArgs.SYS_TOKENS: self._prioritized_env_opts.get(SysArgs.SYS_TOKENS),
-            SysArgs.SYS_SUPER_USER: self._prioritized_env_opts.get(SysArgs.SYS_SUPER_USER),
-            SysArgs.SYS_VERBOSE: self._get_sys_args().get(SysArgs.SYS_VERBOSE) or VERBOSITY_MIN,
-            SysArgs.SYS_RECONNECT: self._prioritized_cfg_opts.get(SysArgs.SYS_RECONNECT, False),
+            SysArgs.SYS_HOST: _prioritized_env_opts.get(SysArgs.SYS_HOST),
+            SysArgs.SYS_PORT: _prioritized_env_opts.get(SysArgs.SYS_PORT),
+            SysArgs.SYS_USER: _prioritized_env_opts.get(SysArgs.SYS_USER),
+            SysArgs.SYS_PASS: _prioritized_env_opts.get(SysArgs.SYS_PASS),
+            SysArgs.SYS_CERT: _prioritized_env_opts.get(SysArgs.SYS_CERT),
+            SysArgs.SYS_KEY: _prioritized_env_opts.get(SysArgs.SYS_KEY),
+            SysArgs.SYS_TOKENS: _prioritized_env_opts.get(SysArgs.SYS_TOKENS),
+            SysArgs.SYS_SUPER_USER: _prioritized_env_opts.get(SysArgs.SYS_SUPER_USER),
+            SysArgs.SYS_VERBOSE: _sys_args.get(SysArgs.SYS_VERBOSE) or VERBOSITY_MIN,
+            SysArgs.SYS_RECONNECT: _prioritized_cfg_opts.get(SysArgs.SYS_RECONNECT, False),
         }
 
     def get_prioritized_cfg_options(self) -> Dict[str, Any]:

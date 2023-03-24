@@ -14,20 +14,20 @@ class TestMumimoInitService:
     def get_init_service(self):
         yield MumimoInitService({})
 
-    def test__get_sys_args(self, get_init_service):
+    def test__get_sys_args(self, get_init_service) -> None:
         init_service: MumimoInitService = get_init_service
         init_service._sys_args = {"test": "test"}
         assert init_service._get_sys_args() == {"test": "test"}
 
     class TestInitializeConfig:
         @patch.object(config_utils, "initialize_mumimo_config")
-        def test_initialize_config(self, mumimo_cfg_mock, get_init_service):
+        def test_initialize_config(self, mumimo_cfg_mock, get_init_service) -> None:
             init_service: MumimoInitService = get_init_service
             mumimo_cfg_mock.return_value = {}
             assert init_service.initialize_config() == {}
 
         @patch.object(config_utils, "initialize_mumimo_config")
-        def test_initialize_config_failed(self, mumimo_cfg_mock, get_init_service):
+        def test_initialize_config_failed(self, mumimo_cfg_mock, get_init_service) -> None:
             init_service: MumimoInitService = get_init_service
             mumimo_cfg_mock.return_value = None
             with pytest.raises(ConfigError, match="^An unexpected error"):
@@ -66,7 +66,7 @@ class TestMumimoInitService:
             get_init_service,
             get_expected_prioritized_env_opts,
             get_expected_prioritized_client_opts,
-        ):
+        ) -> None:
             init_service: MumimoInitService = get_init_service
             mock_init_mumimo_cfg.return_value = initialize_mumimo_config()
             if mock_init_mumimo_cfg.return_value is None:
@@ -85,6 +85,70 @@ class TestMumimoInitService:
                 **mock_sys_args.return_value,
             }
             assert expected_connection_opts is not None
+
+    class TestGetPrioritizedOptions:
+        def test_get_prioritized_cfg_options_empty(self, get_init_service) -> None:
+            init_service: MumimoInitService = get_init_service
+            init_service._prioritized_cfg_opts = {}
+            assert init_service.get_prioritized_cfg_options() == {}
+
+        def test_get_prioritized_cfg_options(self, get_init_service) -> None:
+            init_service: MumimoInitService = get_init_service
+            init_service._prioritized_cfg_opts = {"test": "test"}
+            assert init_service.get_prioritized_cfg_options() == {"test": "test"}
+
+        def test_get_prioritized_env_options_empty(self, get_init_service) -> None:
+            init_service: MumimoInitService = get_init_service
+            init_service._prioritized_env_opts = {}
+            assert init_service.get_prioritized_env_options() == {}
+
+        def test_get_prioritized_env_options(self, get_init_service) -> None:
+            init_service: MumimoInitService = get_init_service
+            init_service._prioritized_env_opts = {"test": "test"}
+            assert init_service.get_prioritized_env_options() == {"test": "test"}
+
+    class TestGetConnectionParameters:
+        @patch("src.services.mumimo_init_service.MumimoInitService.get_prioritized_cfg_options")
+        @patch("src.services.mumimo_init_service.MumimoInitService.get_prioritized_env_options")
+        def test_get_connection_parameters_prioritized_options_are_none(self, mock_env_opts, mock_cfg_opts, get_init_service) -> None:
+            mock_env_opts.return_value = {}
+            mock_cfg_opts.return_value = {}
+            init_service: MumimoInitService = get_init_service
+            assert init_service.get_connection_parameters() == {}
+
+        @patch("src.services.mumimo_init_service.MumimoInitService._get_sys_args")
+        @patch("src.services.mumimo_init_service.MumimoInitService.get_prioritized_cfg_options")
+        @patch("src.services.mumimo_init_service.MumimoInitService.get_prioritized_env_options")
+        def test_get_connection_parameters_prioritized_options(self, mock_env_opts, mock_cfg_opts, mock_sys_args, get_init_service) -> None:
+            mock_env_opts.return_value = {
+                SysArgs.SYS_HOST: "host",
+                SysArgs.SYS_PORT: 12345,
+                SysArgs.SYS_USER: "mumimo",
+                SysArgs.SYS_PASS: "pass",
+                SysArgs.SYS_SUPER_USER: "superuser",
+                SysArgs.SYS_CERT: "cert",
+                SysArgs.SYS_TOKENS: "token1 token2",
+                SysArgs.SYS_KEY: "key",
+            }
+            mock_sys_args.return_value = {
+                SysArgs.SYS_VERBOSE: 0,
+            }
+            mock_cfg_opts.return_value = {
+                SysArgs.SYS_RECONNECT: True,
+            }
+            init_service: MumimoInitService = get_init_service
+            assert init_service.get_connection_parameters() == {
+                SysArgs.SYS_HOST: "host",
+                SysArgs.SYS_PORT: 12345,
+                SysArgs.SYS_USER: "mumimo",
+                SysArgs.SYS_PASS: "pass",
+                SysArgs.SYS_SUPER_USER: "superuser",
+                SysArgs.SYS_CERT: "cert",
+                SysArgs.SYS_TOKENS: "token1 token2",
+                SysArgs.SYS_KEY: "key",
+                SysArgs.SYS_RECONNECT: True,
+                SysArgs.SYS_VERBOSE: 0,
+            }
 
     class TestPrioritizedOptions:
         @pytest.fixture(autouse=True)
@@ -129,7 +193,7 @@ class TestMumimoInitService:
 
         @patch.object(config_utils, "initialize_mumimo_config")
         @patch.object(MumimoInitService, "_get_sys_args")
-        def test__get_prioritized_client_config_options_with_sys_args(self, mock_sys_args, mock_init_mumimo_cfg, get_init_service):
+        def test__get_prioritized_client_config_options_with_sys_args(self, mock_sys_args, mock_init_mumimo_cfg, get_init_service) -> None:
             init_service: MumimoInitService = get_init_service
             mock_init_mumimo_cfg.return_value = initialize_mumimo_config()
             mock_sys_args.return_value = {SysArgs.SYS_RECONNECT: True}
@@ -137,7 +201,7 @@ class TestMumimoInitService:
             assert client_settings == {SysArgs.SYS_RECONNECT: True}
 
         @patch.object(MumimoInitService, "_get_sys_args")
-        def test__get_prioritized_client_config_options_without_sys_args(self, mock_sys_args, get_init_service):
+        def test__get_prioritized_client_config_options_without_sys_args(self, mock_sys_args, get_init_service) -> None:
             init_service: MumimoInitService = get_init_service
             mock_cfg = initialize_mumimo_config()
             mock_sys_args.return_value = {}
@@ -150,7 +214,7 @@ class TestMumimoInitService:
         @patch("src.utils.parsers.env_parser.read_env_file")
         def test__get_prioritized_client_env_options_with_sys_args(
             self, mock_env_args, mock_sys_args, get_init_service, get_expected_env_mock_sys_args
-        ):
+        ) -> None:
             init_service: MumimoInitService = get_init_service
             mock_env_args.return_value = {}
             mock_sys_args.return_value = get_expected_env_mock_sys_args
@@ -177,7 +241,7 @@ class TestMumimoInitService:
         @patch("src.utils.parsers.env_parser.read_env_file")
         def test__get_prioritized_client_env_options_without_sys_args(
             self, mock_env_args, mock_sys_args, get_init_service, get_expected_env_mock_no_sys_args
-        ):
+        ) -> None:
             init_service: MumimoInitService = get_init_service
             mock_env_args.return_value = get_expected_env_mock_no_sys_args
             mock_sys_args.return_value = {SysArgs.SYS_ENV_FILE: "data/test.env"}
