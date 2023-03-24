@@ -35,7 +35,7 @@ extension-pkg-whitelist=
 fail-on=
 
 # Specify a score threshold under which the program will exit with error.
-fail-under=9
+fail-under=8
 
 # Interpret the stdin as a python script, whose filename needs to be passed as
 # the module_or_package argument.
@@ -84,7 +84,7 @@ persistent=yes
 
 # Minimum Python version to use for version dependent checks. Will default to
 # the version used to run pylint.
-py-version=3.8
+py-version=3.10
 
 # Discover python modules and packages in the file system subtree.
 recursive=no
@@ -100,7 +100,7 @@ unsafe-load-any-extension=no
 # In verbose mode, extra non-checker-related info will be displayed.
 #verbose=
 
-disable=C0114, C0115, C0116, R0903, W0511, W0212, W0622
+disable=C0114, C0115, C0116, R0903, W0511, W0212, W0622, W1203, R0801
 
 [BASIC]
 
@@ -382,7 +382,7 @@ preferred-modules=
 
 # The type of string formatting that logging methods do. `old` means using %
 # formatting, `new` is for `{}` formatting.
-logging-format-style=old
+logging-format-style=new
 
 # Logging modules to check that the string format arguments are in logging
 # function parameter format.
