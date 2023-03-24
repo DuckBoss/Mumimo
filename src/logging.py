@@ -11,7 +11,7 @@ from .version import version
 _IS_INITIALIZED: bool = False
 _log_file_handler: Optional[logging.Handler] = None
 _log_console_handler: Optional[logging.Handler] = None
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 def init_logger(sys_args: Optional[Dict[str, str]] = None) -> bool:
@@ -29,19 +29,19 @@ def init_logger(sys_args: Optional[Dict[str, str]] = None) -> bool:
         pathlib.Path.mkdir(_log_parent_directory, exist_ok=True)
         pathlib.Path.mkdir(_log_version_directory, exist_ok=True)
     _enable_console_log = _log_config.get(SysArgs.SYS_VERBOSE) >= VERBOSE_MIN
-    logger.root.setLevel(logging.DEBUG)
-    if not logger.root.hasHandlers():
+    _logger.root.setLevel(logging.DEBUG)
+    if not _logger.root.hasHandlers():
         if _enable_file_log:
             file_handler = get_file_handler()
             if file_handler is not None:
-                logger.root.addHandler(file_handler)
+                _logger.root.addHandler(file_handler)
                 _log_file_handler = file_handler
             else:
                 print("File handler unable to initialize.")
         if _enable_console_log:
             console_handler = get_console_handler()
             if console_handler is not None:
-                logger.root.addHandler(console_handler)
+                _logger.root.addHandler(console_handler)
                 _log_console_handler = console_handler
     # Disable logging for asyncio/aiosqlite libraries unless the verbose level is max:
     if _log_config.get(SysArgs.SYS_VERBOSE) >= VERBOSE_HIGH:

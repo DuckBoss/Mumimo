@@ -31,9 +31,8 @@ class SystemArgumentsValidator:
             int_port: int = int(port)
         except ValueError as exc:
             raise ValidationError(f"The server port: '{port}' is not a valid port number.", logger) from exc
-        else:
-            if int_port < 1 or int_port > 65535:
-                raise ValidationError(f"The server port: '{port}' is not a valid port number.", logger)
+        if int_port < 1 or int_port > 65535:
+            raise ValidationError(f"The server port: '{port}' is not a valid port number.", logger)
 
     @staticmethod
     def validate_user_param(user: str) -> None:

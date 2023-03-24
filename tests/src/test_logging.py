@@ -48,8 +48,8 @@ class TestLogging:
         log._IS_INITIALIZED = True
         assert log.init_logger() is False
 
-    @patch("src.logging.logger.root.addHandler")
-    @patch("src.logging.logger.root.hasHandlers")
+    @patch("src.logging._logger.root.addHandler")
+    @patch("src.logging._logger.root.hasHandlers")
     def test_init_logger(self, mock_logger_handlers, mock_add_handler):
         log._IS_INITIALIZED = False
         mock_logger_handlers.return_value = False
@@ -60,8 +60,8 @@ class TestLogging:
         log._IS_INITIALIZED = False
         assert log.init_logger() is False
 
-    @patch("src.logging.logger.root.addHandler")
-    @patch("src.logging.logger.root.hasHandlers")
+    @patch("src.logging._logger.root.addHandler")
+    @patch("src.logging._logger.root.hasHandlers")
     def test_init_logger_no_handlers(self, mock_logger_handlers, mock_add_handler):
         log._IS_INITIALIZED = False
         mock_logger_handlers.return_value = True
