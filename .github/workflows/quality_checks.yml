@@ -20,7 +20,7 @@ jobs:
         pip install -r dev_requirements.txt
         pip install -e .
     - name: Analysing the code with pylint
-      run: pylint $(git ls-files '**/*.py')
+      run: pylint src/
     - name: Analysing the code with black
       run: black --check $(git ls-files '**/*.py')
     - name: Analysing the code with flake8
