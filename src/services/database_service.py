@@ -9,15 +9,15 @@ from sqlalchemy.exc import NoSuchModuleError
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session, async_sessionmaker, create_async_engine
 
 from ..constants import LogOutputIdentifiers, MumimoCfgFields
-from ..corelib.database import metadata
-from ..corelib.database.database_connection_parameters import DatabaseConnectionParameters
-from ..corelib.database.models.alias import AliasTable  # noqa
-from ..corelib.database.models.command import CommandTable  # noqa
-from ..corelib.database.models.permission_group import PermissionGroupTable  # noqa
-from ..corelib.database.models.plugin import PluginTable  # noqa
-from ..corelib.database.models.user import UserTable  # noqa
-from ..corelib.singleton import singleton
 from ..exceptions import DatabaseServiceError
+from ..lib.database import metadata
+from ..lib.database.database_connection_parameters import DatabaseConnectionParameters
+from ..lib.database.models.alias import AliasTable  # noqa
+from ..lib.database.models.command import CommandTable  # noqa
+from ..lib.database.models.permission_group import PermissionGroupTable  # noqa
+from ..lib.database.models.plugin import PluginTable  # noqa
+from ..lib.database.models.user import UserTable  # noqa
+from ..lib.singleton import singleton
 from ..settings import settings
 from ..utils.parsers.db_url_parser import get_url
 
@@ -60,6 +60,14 @@ class DatabaseService:
         _default_permission_groups: List[str] = cfg.get(MumimoCfgFields.SETTINGS.DATABASE.DEFAULT_PERMISSION_GROUPS, [])
         async with self.session() as session:
             for permission_group in _default_permission_groups:
+                # Check if the permission group is a valid string:
+                if not isinstance(permission_group, str) or permission_group.strip() == "":
+                    logger.warning(
+                        f"[{LogOutputIdentifiers.DB_PERMISSIONS}]: Unable to import default permission group. Invalid string - "
+                        f"'{permission_group}'"
+                    )
+                    continue
+                permission_group = permission_group.strip()
                 # Check if the permission group already exists to prevent duplicate imports.
                 exists = await session.execute(select(PermissionGroupTable).filter_by(name=permission_group))
                 if len(exists.scalars().all()) > 0:
@@ -77,7 +85,7 @@ class DatabaseService:
 
     async def _import_default_aliases(self, cfg):
         logger.debug(f"[{LogOutputIdentifiers.DB_ALIASES}]: Importing default aliases...")
-        _default_aliases: List[str] = cfg.get(MumimoCfgFields.SETTINGS.DATABASE.DEFAULT_ALIASES, "")
+        _default_aliases: List[List[str]] = cfg.get(MumimoCfgFields.SETTINGS.DATABASE.DEFAULT_ALIASES, "")
         async with self.session() as session:
             for alias in _default_aliases:
                 # Validate the alias parameters provided in the config file.
@@ -127,6 +135,10 @@ class DatabaseService:
                             f"[{LogOutputIdentifiers.DB_ALIASES}]: Added permission group for imported default alias - "
                             f"'{alias[0]}':[{permission_group.name}]"
                         )
+                # Do not attempt to add imported alias if no valid permission groups are found.
+                if len(_new_alias.permission_groups) == 0:
+                    logger.warning(f"[{LogOutputIdentifiers.DB_ALIASES}]: Unable to add default alias. No valid permission groups detected.")
+                    continue
                 # Add the new imported alias.
                 session.add(_new_alias)
                 await session.commit()

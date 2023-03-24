@@ -2,7 +2,7 @@ from typing import Tuple
 
 import pytest
 
-from src.corelib.database.database_connection_parameters import DatabaseConnectionParameters
+from src.lib.database.database_connection_parameters import DatabaseConnectionParameters
 
 
 class TestDatabaseConnectionParameters:

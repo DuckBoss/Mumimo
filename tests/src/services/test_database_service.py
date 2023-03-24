@@ -3,10 +3,13 @@ from typing import Dict, Tuple
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session, async_sessionmaker
 
-from src.corelib.database.database_connection_parameters import DatabaseConnectionParameters
 from src.exceptions import DatabaseServiceError
+from src.lib.database.database_connection_parameters import DatabaseConnectionParameters
+from src.lib.database.models.alias import AliasTable
+from src.lib.database.models.permission_group import PermissionGroupTable
 from src.services.database_service import DatabaseService
 
 
@@ -16,7 +19,7 @@ class TestDatabaseService:
         return {
             "dialect": "sqlite",  # dialect
             "database": "mumimo",  # database
-            "host": "/tmp/mumimo_test.db",  # host
+            "host": "tests/data/generated/mumimo_test.db",  # host
             "drivername": "aiosqlite",  # drivername
         }
 
@@ -341,7 +344,225 @@ class TestDatabaseService:
             await _db_service.import_default_values()
 
     class TestImportDefaultPermissionGroups:
-        pass
+        @pytest.mark.asyncio
+        @patch.object(DatabaseService, "session")
+        @patch("src.config.Config")
+        async def test_import_success_does_not_exist(
+            self, mock_cfg, mock_session, get_db_session_factory: async_scoped_session, get_database_service: DatabaseService
+        ) -> None:
+            mock_cfg.get.return_value = ["test1", "test2", "test3"]
+            mock_session.return_value = get_db_session_factory()
+            _db_service: DatabaseService = get_database_service
+            await _db_service._import_default_permission_groups(mock_cfg)
+            session: async_scoped_session
+            async with get_db_session_factory() as session:
+                _query = select(PermissionGroupTable).filter(PermissionGroupTable.name.in_(["test1", "test2", "test3"]))
+                _result = await session.execute(_query)
+                _result = _result.scalars().all()
+                if _result is None:
+                    pytest.fail("permissions not found, aborting test.")
+                assert len(_result) == 3
+                assert [x.name.startswith("test") for x in _result]
+
+        @pytest.mark.asyncio
+        @patch.object(DatabaseService, "session")
+        @patch("src.config.Config")
+        async def test_import_permission_exists_already(
+            self, mock_cfg, mock_session, get_db_session_factory: async_scoped_session, get_database_service: DatabaseService
+        ) -> None:
+            mock_cfg.get.return_value = ["test1", "test2", "test3"]
+            mock_session.return_value = get_db_session_factory()
+            _db_service: DatabaseService = get_database_service
+            async with get_db_session_factory() as session:
+                for i in range(1, 3):
+                    _permission_group = PermissionGroupTable(name=f"test{i}")
+                    session.add(_permission_group)
+                await session.commit()
+            await _db_service._import_default_permission_groups(mock_cfg)
+            session: async_scoped_session
+            async with get_db_session_factory() as session:
+                _query = select(PermissionGroupTable).filter(PermissionGroupTable.name.in_(["test1", "test2", "test3"]))
+                _result = await session.execute(_query)
+                _result = _result.scalars().all()
+                if _result is None:
+                    pytest.fail("permissions not found, aborting test.")
+                assert len(_result) == 3
+                assert [x.name.startswith("test") for x in _result]
+
+        @pytest.mark.asyncio
+        @patch.object(DatabaseService, "session")
+        @patch("src.config.Config")
+        async def test_import_no_default_permissions(
+            self, mock_cfg, mock_session, get_db_session_factory: async_scoped_session, get_database_service: DatabaseService
+        ) -> None:
+            mock_cfg.get.return_value = []
+            mock_session.return_value = get_db_session_factory()
+            _db_service: DatabaseService = get_database_service
+            await _db_service._import_default_permission_groups(mock_cfg)
+            session: async_scoped_session
+            async with get_db_session_factory() as session:
+                _query = select(PermissionGroupTable).filter(PermissionGroupTable.name.in_(["test1", "test2", "test3"]))
+                _result = await session.execute(_query)
+                _result = _result.scalars().all()
+                if _result is None:
+                    pytest.fail("permissions not found, aborting test.")
+                assert len(_result) == 0
+
+        @pytest.mark.asyncio
+        @patch.object(DatabaseService, "session")
+        @patch("src.config.Config")
+        async def test_import_invalid_default_permissions(
+            self, mock_cfg, mock_session, get_db_session_factory: async_scoped_session, get_database_service: DatabaseService
+        ) -> None:
+            mock_cfg.get.return_value = [True, None, 15]
+            mock_session.return_value = get_db_session_factory()
+            _db_service: DatabaseService = get_database_service
+            await _db_service._import_default_permission_groups(mock_cfg)
+            session: async_scoped_session
+            async with get_db_session_factory() as session:
+                _query = select(PermissionGroupTable).filter(PermissionGroupTable.name.in_(["test1", "test2", "test3"]))
+                _result = await session.execute(_query)
+                _result = _result.scalars().all()
+                if _result is None:
+                    pytest.fail("permissions not found, aborting test.")
+                assert len(_result) == 0
 
     class TestImportDefaultAliases:
-        pass
+        class TestImportDefaultAliasesInvalidParameters:
+            @pytest.mark.asyncio
+            @patch.object(DatabaseService, "session")
+            @patch("src.config.Config")
+            async def test_import_invalid_alias_parameters_count(
+                self, mock_cfg, mock_session, get_db_session_factory: async_scoped_session, get_database_service: DatabaseService
+            ) -> None:
+                mock_cfg.get.return_value = [["test1", "test1"]]
+                mock_session.return_value = get_db_session_factory()
+                _db_service: DatabaseService = get_database_service
+                await _db_service._import_default_aliases(mock_cfg)
+                async with get_db_session_factory() as session:
+                    _query = select(AliasTable).filter(AliasTable.name.in_(["test1", "test2", "test3"]))
+                    _result = await session.execute(_query)
+                    _result = _result.scalars().all()
+                    if _result is None:
+                        pytest.fail("aliases not found, aborting test.")
+                    assert len(_result) == 0
+
+            @pytest.mark.asyncio
+            @patch.object(DatabaseService, "session")
+            @patch("src.config.Config")
+            async def test_import_invalid_alias_name(
+                self, mock_cfg, mock_session, get_db_session_factory: async_scoped_session, get_database_service: DatabaseService
+            ) -> None:
+                mock_cfg.get.return_value = [[5, "test1", "test1"]]
+                mock_session.return_value = get_db_session_factory()
+                _db_service: DatabaseService = get_database_service
+                await _db_service._import_default_aliases(mock_cfg)
+                async with get_db_session_factory() as session:
+                    _query = select(AliasTable).filter(AliasTable.name.in_(["test1", "test2", "test3"]))
+                    _result = await session.execute(_query)
+                    _result = _result.scalars().all()
+                    if _result is None:
+                        pytest.fail("aliases not found, aborting test.")
+                    assert len(_result) == 0
+
+            @pytest.mark.asyncio
+            @patch.object(DatabaseService, "session")
+            @patch("src.config.Config")
+            async def test_import_invalid_alias_command(
+                self, mock_cfg, mock_session, get_db_session_factory: async_scoped_session, get_database_service: DatabaseService
+            ) -> None:
+                mock_cfg.get.return_value = [["test1", 5, "test1"]]
+                mock_session.return_value = get_db_session_factory()
+                _db_service: DatabaseService = get_database_service
+                await _db_service._import_default_aliases(mock_cfg)
+                async with get_db_session_factory() as session:
+                    _query = select(AliasTable).filter(AliasTable.name.in_(["test1", "test2", "test3"]))
+                    _result = await session.execute(_query)
+                    _result = _result.scalars().all()
+                    if _result is None:
+                        pytest.fail("aliases not found, aborting test.")
+                    assert len(_result) == 0
+
+            @pytest.mark.asyncio
+            @patch.object(DatabaseService, "session")
+            @patch("src.config.Config")
+            async def test_import_invalid_alias_permissions(
+                self, mock_cfg, mock_session, get_db_session_factory: async_scoped_session, get_database_service: DatabaseService
+            ) -> None:
+                mock_cfg.get.return_value = [["test1", "test1", 5]]
+                mock_session.return_value = get_db_session_factory()
+                _db_service: DatabaseService = get_database_service
+                await _db_service._import_default_aliases(mock_cfg)
+                async with get_db_session_factory() as session:
+                    _query = select(AliasTable).filter(AliasTable.name.in_(["test1", "test2", "test3"]))
+                    _result = await session.execute(_query)
+                    _result = _result.scalars().all()
+                    if _result is None:
+                        pytest.fail("aliases not found, aborting test.")
+                    assert len(_result) == 0
+
+        @pytest.mark.asyncio
+        @patch.object(DatabaseService, "session")
+        @patch("src.config.Config")
+        async def test_import_aliases_already_exist(
+            self, mock_cfg, mock_session, get_db_session_factory: async_scoped_session, get_database_service: DatabaseService
+        ) -> None:
+            mock_cfg.get.return_value = [["test1", "test1", "test1,test2,test3"]]
+            mock_session.return_value = get_db_session_factory()
+            async with get_db_session_factory() as session:
+                _alias = AliasTable(name="test1", command="test1")
+                session.add(_alias)
+                await session.commit()
+
+            _db_service: DatabaseService = get_database_service
+            await _db_service._import_default_aliases(mock_cfg)
+            session: async_scoped_session
+            async with get_db_session_factory() as session:
+                _query = select(AliasTable).filter_by(name="test1")
+                _result = await session.execute(_query)
+                _result = _result.scalar()
+                if _result is None:
+                    pytest.fail("aliases not found, aborting test.")
+                assert _result.name == "test1"
+
+        @pytest.mark.asyncio
+        @patch.object(DatabaseService, "session")
+        @patch("src.config.Config")
+        async def test_import_aliases_permissions_do_not_exist(
+            self, mock_cfg, mock_session, get_db_session_factory: async_scoped_session, get_database_service: DatabaseService
+        ) -> None:
+            mock_cfg.get.return_value = [["test1", "test1", "test1,test2,test3"]]
+            mock_session.return_value = get_db_session_factory()
+            _db_service: DatabaseService = get_database_service
+            await _db_service._import_default_aliases(mock_cfg)
+            session: async_scoped_session
+            async with get_db_session_factory() as session:
+                _query = select(AliasTable).filter_by(name="test1")
+                _result = await session.execute(_query)
+                _result = _result.scalar()
+                assert _result is None
+
+        @pytest.mark.asyncio
+        @patch.object(DatabaseService, "session")
+        @patch("src.config.Config")
+        async def test_import_aliases_permissions_exist(
+            self, mock_cfg, mock_session, get_db_session_factory: async_scoped_session, get_database_service: DatabaseService
+        ) -> None:
+            mock_cfg.get.return_value = [["test1", "test1", "test1,test2,test3"]]
+            mock_session.return_value = get_db_session_factory()
+            async with get_db_session_factory() as session:
+                for i in range(1, 3):
+                    _alias = PermissionGroupTable(name=f"test{i}")
+                    session.add(_alias)
+                await session.commit()
+
+            _db_service: DatabaseService = get_database_service
+            await _db_service._import_default_aliases(mock_cfg)
+            session: async_scoped_session
+            async with get_db_session_factory() as session:
+                _query = select(AliasTable).filter_by(name="test1")
+                _result = await session.execute(_query)
+                _result = _result.scalar()
+                if _result is None:
+                    pytest.fail("aliases not found, aborting test.")
+                assert _result.name == "test1"

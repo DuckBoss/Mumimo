@@ -9,8 +9,8 @@ from pymumble_py3.errors import ConnectionRejectedError
 
 from .client_state import ClientState
 from .constants import VERBOSE_MAX, SysArgs
-from .corelib.singleton import singleton
 from .exceptions import ConnectivityError, ServiceError
+from .lib.singleton import singleton
 from .settings import settings
 from .utils.args_validators import SystemArgumentsValidator
 

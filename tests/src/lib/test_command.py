@@ -1,6 +1,6 @@
 import pytest
 
-from src.corelib.command import Command
+from src.lib.command import Command
 
 
 class TestCommand:

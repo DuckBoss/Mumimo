@@ -5,20 +5,20 @@ import pytest
 import sqlalchemy_utils
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session, async_sessionmaker, create_async_engine
 
-from src.corelib.database.database_connection_parameters import DatabaseConnectionParameters
-from src.corelib.database.metadata import Base
+from src.lib.database.database_connection_parameters import DatabaseConnectionParameters
+from src.lib.database.metadata import Base
+
+# Imports are required here so tables can be created for tests.
+from src.lib.database.models.alias import AliasTable  # noqa
+from src.lib.database.models.command import CommandTable  # noqa
+from src.lib.database.models.permission_group import PermissionGroupTable  # noqa
+from src.lib.database.models.plugin import PluginTable  # noqa
+from src.lib.database.models.user import UserTable  # noqa
 from src.utils.parsers.db_url_parser import get_url
 
 
 @pytest.fixture(scope="function")
 async def get_db_session_factory() -> AsyncGenerator[async_scoped_session, None]:
-    # Imports are required here so tables can be created for tests.
-    from src.corelib.database.models.alias import AliasTable  # noqa
-    from src.corelib.database.models.command import CommandTable  # noqa
-    from src.corelib.database.models.permission_group import PermissionGroupTable  # noqa
-    from src.corelib.database.models.plugin import PluginTable  # noqa
-    from src.corelib.database.models.user import UserTable  # noqa
-
     _dialect: str = "sqlite"
     _host: str = "tests/data/generated/mumimo_test.db"
     _drivername: str = "aiosqlite"

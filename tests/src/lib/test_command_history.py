@@ -2,8 +2,8 @@ from typing import List, Optional
 
 import pytest
 
-from src.corelib.command import Command
-from src.corelib.command_history import CommandHistory
+from src.lib.command import Command
+from src.lib.command_history import CommandHistory
 
 
 class TestCommandHistory:

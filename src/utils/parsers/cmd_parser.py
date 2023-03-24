@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, List, Optional
 
 from ...constants import MumimoCfgFields
-from ...corelib.command import Command
 from ...exceptions import ServiceError
+from ...lib.command import Command
 from ...settings import settings
 
 if TYPE_CHECKING:

@@ -2,7 +2,7 @@ import pathlib
 
 from sqlalchemy.engine.url import URL
 
-from ...corelib.database.database_connection_parameters import DatabaseConnectionParameters
+from ...lib.database.database_connection_parameters import DatabaseConnectionParameters
 
 
 def get_url(connection_params: DatabaseConnectionParameters, use_driver: bool = True, use_database: bool = True) -> str:

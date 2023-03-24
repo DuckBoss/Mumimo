@@ -8,21 +8,22 @@ from .. import metadata
 
 if TYPE_CHECKING:
     from .permission_group import PermissionGroupTable
-    from .plugin import PluginTable
+    from .user import UserTable
 
 
-class CommandTable(metadata.Base):
-    __tablename__ = "command"
+class AliasTable(metadata.Base):
+    __tablename__ = "alias"
 
     id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
+    command: Mapped[str] = mapped_column(String(1024), nullable=False)
 
     # One to many to permission groups
-    permission_groups: Mapped[List["PermissionGroupTable"]] = relationship(back_populates="command")
+    permission_groups: Mapped[List["PermissionGroupTable"]] = relationship(back_populates="alias")
 
-    # Nullable many-to-one to plugins
-    plugin: Mapped[Optional["PluginTable"]] = relationship(back_populates="commands")
-    plugin_id: Mapped[Optional[int]] = mapped_column(ForeignKey("plugin.id"))
+    # Nullable many-to-one to users
+    user: Mapped[Optional["UserTable"]] = relationship(back_populates="aliases")
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"))
 
     created_on: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=func.now(), server_default=func.now(), nullable=False)
     updated_on: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False)
@@ -31,11 +32,14 @@ class CommandTable(metadata.Base):
         return {
             "id": self.id,
             "name": self.name,
+            "command": self.command,
             "permission_groups": [group.to_dict() for group in self.permission_groups],
             "created_on": self.created_on,
             "updated_on": self.updated_on,
         }
 
     def __repr__(self) -> str:
-        return f"User(id={self.id!r}, name={self.name!r}), permission_groups={self.permission_groups!r}, \
-            created_on={self.created_on!r}, updated_on={self.updated_on!r})"
+        return (
+            f"Alias(id={self.id!r}, name={self.name!r}, command={self.command!r}, permission_groups={self.permission_groups!r}, "
+            f"created_on={self.created_on!r}, updated_on={self.updated_on!r})"
+        )

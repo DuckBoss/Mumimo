@@ -7,20 +7,17 @@ from sqlalchemy.sql import func
 from .. import metadata
 
 if TYPE_CHECKING:
-    from .alias import AliasTable
-    from .permission_group import PermissionGroupTable
+    from .command import CommandTable
 
 
-class UserTable(metadata.Base):
-    __tablename__ = "user"
+class PluginTable(metadata.Base):
+    __tablename__ = "plugin"
 
     id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
 
-    # One to many to permission groups
-    permission_groups: Mapped[List["PermissionGroupTable"]] = relationship(back_populates="user")
-    # One to many to aliases
-    aliases: Mapped[List["AliasTable"]] = relationship(back_populates="user")
+    # One to many to commands
+    commands: Mapped[List["CommandTable"]] = relationship(back_populates="plugin", cascade="all, delete")
 
     created_on: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=func.now(), server_default=func.now(), nullable=False)
     updated_on: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False)
@@ -29,10 +26,13 @@ class UserTable(metadata.Base):
         return {
             "id": self.id,
             "name": self.name,
-            "permission_groups": [group.to_dict() for group in self.permission_groups],
+            "commands": [command.to_dict() for command in self.commands],
             "created_on": self.created_on,
             "updated_on": self.updated_on,
         }
 
     def __repr__(self) -> str:
-        return f"User(id={self.id!r}, name={self.name!r}, permission_groups={self.permission_groups!r})"
+        return (
+            f"Plugin(id={self.id!r}, name={self.name!r}, commands={self.commands!r}, "
+            f"created_on={self.created_on!r}, updated_on={self.updated_on!r})"
+        )

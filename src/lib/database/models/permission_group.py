@@ -42,5 +42,4 @@ class PermissionGroupTable(metadata.Base):
         }
 
     def __repr__(self) -> str:
-        return f"PermissionGroup(id={self.id!r}, name={self.name!r}, \
-            created_on={self.created_on!r}, updated_on={self.updated_on!r})"
+        return f"PermissionGroup(id={self.id!r}, name={self.name!r}, created_on={self.created_on!r}, updated_on={self.updated_on!r})"

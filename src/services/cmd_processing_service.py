@@ -2,8 +2,8 @@ import logging
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from ..constants import LogCfgFields, MumimoCfgFields
-from ..corelib.command_history import CommandHistory
 from ..exceptions import ServiceError
+from ..lib.command_history import CommandHistory
 from ..logging import log_privacy
 from ..settings import settings
 from ..utils.parsers import cmd_parser
@@ -11,7 +11,7 @@ from ..utils.parsers import cmd_parser
 if TYPE_CHECKING:
     from pymumble_py3.mumble import Mumble
 
-    from ..corelib.command import Command
+    from ..lib.command import Command
     from ..log_config import LogConfig
 
 
