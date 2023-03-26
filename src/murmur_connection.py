@@ -127,7 +127,7 @@ class MurmurConnection:
 
     def _post_connection_actions(self) -> None:
         if self._connection_instance is None:
-            raise ServiceError("Unable to set up mumble callbacks: there is no active murmur connection.", logger=logger)
+            raise ServiceError("Unable to conduct post connection actions: there is no active murmur connection.", logger=logger)
 
         _client_state: Optional[ClientState] = settings.get_client_state()
         if _client_state is None:
