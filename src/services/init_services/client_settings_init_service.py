@@ -1,42 +1,24 @@
 import logging
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from ..constants import VERBOSITY_MIN, EnvArgs, MumimoCfgFields, SysArgs
-from ..exceptions import ConfigError
-from ..utils import config_utils, connection_utils
-from ..utils.parsers import env_parser
+from ...constants import VERBOSITY_MIN, EnvArgs, MumimoCfgFields, SysArgs
+from ...utils import connection_utils
+from ...utils.parsers import env_parser
 
 if TYPE_CHECKING:
-    from ..config import Config
+    from ...config import Config
 
 
 logger = logging.getLogger(__name__)
 
 
-class MumimoInitService:
-    """
-    To initialize the mumimo service the following methods need to be run in order:
-        Initializations:
-        - initialize_config()
-        - initialize_client_settings()
-        Next Steps:
-        - get_connection_parameters() for establishing a murmur connection.
-        - get_prioritized_env_options() to get required options for database connection.
-    """
-
+class ClientSettingsInitService:
     _sys_args: Dict[str, str] = {}
     _prioritized_env_opts: Dict[str, Any] = {}
     _prioritized_cfg_opts: Dict[str, Any] = {}
 
     def __init__(self, sys_args: Dict[str, str]) -> None:
         self._sys_args = sys_args
-
-    def initialize_config(self) -> "Config":
-        # Initialize mumimo config.
-        cfg_instance: "Config" = config_utils.initialize_mumimo_config(self._get_sys_args().get(SysArgs.SYS_CONFIG_FILE))
-        if cfg_instance is None:
-            raise ConfigError("An unexpected error occurred where the config file was not read during initialization.", logger=logger)
-        return cfg_instance
 
     def initialize_client_settings(self, cfg_instance: "Config") -> None:
         # Initialize client settings.
