@@ -6,7 +6,7 @@ python-dotenv==1.0.0
 validators==0.20.0
 toml==0.10.2
 aiosqlite==0.18.0
-SqlAlchemy==2.0.6
+SqlAlchemy==2.0.8
 SQLAlchemy-Utils==0.40.0
 
 fuzzywuzzy
