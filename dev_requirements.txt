@@ -10,4 +10,4 @@ pytest-timeout==2.1.0
 pytest-cov==4.0.0
 pytest-clarity==1.0.1
 pytest-asyncio==0.21.0
-Flake8-pyproject==1.2.2
+Flake8-pyproject==1.2.3
