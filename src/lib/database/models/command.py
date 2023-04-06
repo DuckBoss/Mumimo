@@ -15,7 +15,7 @@ class CommandTable(metadata.Base):
     __tablename__ = "command"
 
     id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
 
     # One to many to permission groups
     permission_groups: Mapped[List["PermissionGroupTable"]] = relationship(back_populates="command")
