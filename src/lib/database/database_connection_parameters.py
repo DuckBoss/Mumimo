@@ -4,8 +4,8 @@ from typing import Any, Dict, Optional, Tuple
 class DatabaseConnectionParameters:
     def __init__(
         self,
-        dialect: str,
-        host: str,
+        dialect: Optional[str] = None,
+        host: Optional[str] = None,
         port: Optional[str] = None,
         database_name: Optional[str] = None,
         username: Optional[str] = None,
@@ -60,7 +60,7 @@ class DatabaseConnectionParameters:
             "drivername": self.drivername,
             "host": self.host,
             "port": self.port,
-            "name": self.database_name,
+            "database": self.database_name,
             "username": self.username,
             "password": self.password,
             "use_remote": self.use_remote,

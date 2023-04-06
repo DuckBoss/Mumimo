@@ -35,8 +35,8 @@ class DatabaseService:
 
     async def initialize_database(
         self,
-        dialect: str,
-        host: str,
+        dialect: Optional[str] = None,
+        host: Optional[str] = None,
         port: Optional[str] = None,
         database_name: Optional[str] = None,
         username: Optional[str] = None,
