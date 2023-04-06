@@ -52,21 +52,21 @@ class Config(dict):
 
     def save(
         self,
-        file_name: Optional[str] = None,
+        file_path: Optional[pathlib.Path] = None,
         modified_only: bool = False,
         modified_field_name: Optional[str] = None,
     ) -> str:
         target_path = None
-        if file_name is not None:
-            target_path = file_name
+        if file_path is not None:
+            target_path = file_path
         elif self._config_file_path is not None:
-            target_path = str(self._config_file_path)
+            target_path = self._config_file_path
         else:
             raise ConfigWriteError("Unable to save data to a config file because no file was specified.", _logger)
 
         try:
             saved_data = None
-            with open(target_path, "w", encoding="utf-8") as file_handler:
+            with open(str(target_path), "w", encoding="utf-8") as file_handler:
                 if not modified_only:
                     saved_data = toml.dump(self, file_handler)
                 else:
