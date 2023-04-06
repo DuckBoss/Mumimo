@@ -25,6 +25,7 @@ class ConfigInitService:
             _cfg_instance.read()
             settings.set_mumimo_config(_cfg_instance)
 
+        _cfg_instance = settings.get_mumimo_config()
         if _cfg_instance is None:
             raise ConfigError("An unexpected error occurred where the config file was not read during initialization.", logger=logger)
         return _cfg_instance

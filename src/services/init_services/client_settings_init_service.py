@@ -67,9 +67,43 @@ class ClientSettingsInitService:
         reconnect = self._get_sys_args().get(SysArgs.SYS_RECONNECT) or cfg_instance.get(
             MumimoCfgFields.SETTINGS.CONNECTION.AUTO_RECONNECT, fallback=False
         )
-        if reconnect is not None:
-            prioritized_options[SysArgs.SYS_RECONNECT] = reconnect
-            cfg_instance.set(MumimoCfgFields.SETTINGS.CONNECTION.AUTO_RECONNECT, reconnect)
+        prioritized_options[SysArgs.SYS_RECONNECT] = reconnect
+        cfg_instance.set(MumimoCfgFields.SETTINGS.CONNECTION.AUTO_RECONNECT, reconnect)
+
+        # Prioritize database parameters from system arguments over config options.
+        use_remote_db = self._get_sys_args().get(SysArgs.SYS_DB_USEREMOTEDB) or cfg_instance.get(
+            MumimoCfgFields.SETTINGS.DATABASE.USE_REMOTE_DB, fallback=False
+        )
+        prioritized_options[SysArgs.SYS_DB_USEREMOTEDB] = use_remote_db
+        cfg_instance.set(MumimoCfgFields.SETTINGS.DATABASE.USE_REMOTE_DB, use_remote_db)
+
+        db_local_path = self._get_sys_args().get(SysArgs.SYS_DB_LOCALDBPATH) or cfg_instance.get(MumimoCfgFields.SETTINGS.DATABASE.LOCAL_DB_PATH)
+        prioritized_options[SysArgs.SYS_DB_LOCALDBPATH] = db_local_path
+        cfg_instance.set(MumimoCfgFields.SETTINGS.DATABASE.LOCAL_DB_PATH, db_local_path)
+
+        db_local_dialect = self._get_sys_args().get(SysArgs.SYS_DB_LOCALDBDIALECT) or cfg_instance.get(
+            MumimoCfgFields.SETTINGS.DATABASE.LOCAL_DB_DIALECT
+        )
+        prioritized_options[SysArgs.SYS_DB_LOCALDBDIALECT] = db_local_dialect
+        cfg_instance.set(MumimoCfgFields.SETTINGS.DATABASE.LOCAL_DB_DIALECT, db_local_dialect)
+
+        db_local_drivername = self._get_sys_args().get(SysArgs.SYS_DB_LOCALDBDRIVER) or cfg_instance.get(
+            MumimoCfgFields.SETTINGS.DATABASE.LOCAL_DB_DRIVERNAME
+        )
+        prioritized_options[SysArgs.SYS_DB_LOCALDBDRIVER] = db_local_drivername
+        cfg_instance.set(MumimoCfgFields.SETTINGS.DATABASE.LOCAL_DB_DIALECT, db_local_drivername)
+
+        # Prioritize plugins-path from system argument over config option.
+        plugins_path = self._get_sys_args().get(SysArgs.SYS_PLUGINS_PATH) or cfg_instance.get(MumimoCfgFields.SETTINGS.PLUGINS.PLUGINS_PATH)
+        prioritized_options[SysArgs.SYS_PLUGINS_PATH] = plugins_path
+        cfg_instance.set(MumimoCfgFields.SETTINGS.PLUGINS.PLUGINS_PATH, plugins_path)
+
+        # Prioritize plugins-config-path from system argument over config option.
+        plugins_config_path = self._get_sys_args().get(SysArgs.SYS_PLUGINS_CONFIG_PATH) or cfg_instance.get(
+            MumimoCfgFields.SETTINGS.PLUGINS.PLUGINS_CONFIG_PATH
+        )
+        prioritized_options[SysArgs.SYS_PLUGINS_CONFIG_PATH] = plugins_config_path
+        cfg_instance.set(MumimoCfgFields.SETTINGS.PLUGINS.PLUGINS_CONFIG_PATH, plugins_config_path)
 
         return prioritized_options
 
@@ -106,8 +140,8 @@ class ClientSettingsInitService:
                 SysArgs.SYS_DB_USER: self._get_sys_args().get(SysArgs.SYS_DB_USER) or env_args.get(EnvArgs.ENV_DB_USER),
                 SysArgs.SYS_DB_PASS: self._get_sys_args().get(SysArgs.SYS_DB_PASS) or env_args.get(EnvArgs.ENV_DB_PASS),
                 SysArgs.SYS_DB_HOST: self._get_sys_args().get(SysArgs.SYS_DB_HOST) or env_args.get(EnvArgs.ENV_DB_HOST),
+                SysArgs.SYS_DB_PORT: self._get_sys_args().get(SysArgs.SYS_DB_PORT) or env_args.get(EnvArgs.ENV_DB_PORT),
                 SysArgs.SYS_DB_NAME: self._get_sys_args().get(SysArgs.SYS_DB_NAME) or env_args.get(EnvArgs.ENV_DB_NAME),
-                SysArgs.SYS_DB_QUERY: self._get_sys_args().get(SysArgs.SYS_DB_QUERY) or env_args.get(EnvArgs.ENV_DB_QUERY),
             }
         )
 

@@ -175,6 +175,9 @@ class CommandProcessingService:
             raise ServiceError("Received text message with a 'None' value.", logger=logger)
         parsed_cmd: Optional["Command"] = cmd_parser.parse_command(text)
         if parsed_cmd is not None:
+            # Map command to registered command callbacks to execute command:
+            # if self.cmd_callbacks.get()
+
             # Handle the redaction of actor names, commands, messages, and channel names:
             _log_cfg = settings.get_log_config()
             if _log_cfg is None:

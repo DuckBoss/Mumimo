@@ -35,8 +35,12 @@ cookie_file = ""
 
 ### Plugin Settings ###
 [settings.plugins]
+plugins_path = "src/plugins/"
+plugins_config_path = "config/plugins/"
+custom_plugins_path = ""
 disabled_plugins = []
 safe_mode_plugins = []
+
 
 ### GUI Settings ###
 [output.gui]
@@ -57,6 +61,18 @@ index_text_color = "cyan"
 
 ### Database Settings ###
 [settings.database]
+# Database connection string format:
+#   - dialect+driver://username:password@host/name
+#   - dialect+driver:///host.db
+# Database connection string examples:
+#   - sqlite+aiosqlite://test:test@localhost:8000/mydatabase
+# The database dialect, driver, username, password, host, and database name must be specified in an environment file if 'use_remote_database' is used.
+use_remote_database = false
+# If 'use_remote_database' is set to false, the 'local_database_path' must specify the full path of the database file.
+local_database_path = "config/mumimo.sqlite"
+local_database_dialect = "sqlite"
+local_database_driver = "aiosqlite"
+
 # Default permission groups format:
 #     - default_permission_groups = [
 #           "permission_group_1", 
@@ -66,6 +82,7 @@ index_text_color = "cyan"
 # As shown in the example above, the default permission groups must be a list of strings.
 # Each string represents the name of a permission group that can control user access to commands.
 # Default values: ["none", "guest", "regular", "admin"]
+# It is highly recommended not to remove the default permission groups, but feel free to add more.
 default_permission_groups = ["none", "guest", "regular", "admin"]
 
 # Default aliases format:

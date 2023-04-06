@@ -6,64 +6,52 @@ class DatabaseConnectionParameters:
         self,
         dialect: str,
         host: str,
-        database: Optional[str] = None,
+        port: Optional[str] = None,
+        database_name: Optional[str] = None,
         username: Optional[str] = None,
         password: Optional[str] = None,
         drivername: Optional[str] = None,
-        query: Optional[str] = None,
+        use_remote: bool = False,
+        local_database_dialect: Optional[str] = None,
+        local_database_path: Optional[str] = None,
+        local_database_driver: Optional[str] = None,
     ) -> None:
         self.drivername = drivername
         self.dialect = dialect
         self.username = username
         self.host = host
-        self.database = database
+        self.port = port
+        self.database_name = database_name
         self.password = password
-        self.query = query
+        self.use_remote = use_remote
+        self.local_database_dialect = local_database_dialect
+        self.local_database_path = local_database_path
+        self.local_database_driver = local_database_driver
 
-    def set_drivername(self, drivername: str) -> None:
-        self.drivername = drivername.strip()
-
-    def set_dialect(self, dialect: str) -> None:
-        self.dialect = dialect.strip()
-
-    def set_username(self, username: str) -> None:
-        self.username = username.strip()
-
-    def set_host(self, host: str) -> None:
-        self.host = host.strip()
-
-    def set_database(self, database: str) -> None:
-        self.database = database.strip()
-
-    def set_password(self, password: str) -> None:
-        self.password = password.strip()
-
-    def set_query(self, query: str) -> None:
-        self.query = query.strip()
-
-    def validate_parameters(
-        self, no_database_name: bool = False, no_credentials: bool = False, no_driver: bool = False, no_query: bool = False
-    ) -> Tuple[bool, str]:
-        if self.dialect is None or self.dialect == "":
-            return False, f"dialect={self.dialect}"
-        if self.host is None or self.host == "":
-            return False, f"host={self.host}"
-
-        if not no_database_name:
-            if self.database is None or self.database == "":
-                return False, f"database={self.database}"
-        if not no_driver:
-            if self.drivername is None or self.drivername == "":
-                return False, f"drivername={self.drivername}"
-        if not no_query:
-            if self.query is None or self.query == "":
-                return False, f"query={self.query}"
-
-        if not no_credentials:
+    def validate_parameters(self) -> Tuple[bool, str]:
+        if self.use_remote:
+            if self.database_name is None or self.database_name == "":
+                return False, f"database_name={self.database_name}"
             if self.username is None or self.username == "":
                 return False, f"username={self.username}"
             if self.password is None or self.password == "":
                 return False, f"password={self.password}"
+            if self.port is None or int(self.port) <= 0:
+                return False, f"port={self.port}"
+            if self.dialect is None or self.dialect == "":
+                return False, f"dialect={self.dialect}"
+            if self.drivername is None or self.drivername == "":
+                return False, f"drivername={self.drivername}"
+            if self.host is None or self.host == "":
+                return False, f"host={self.host}"
+        else:
+            if self.local_database_path is None or self.local_database_path == "":
+                return False, f"local_database_path={self.local_database_path}"
+            if self.local_database_dialect is None or self.local_database_dialect == "":
+                return False, f"local_database_dialect={self.local_database_dialect}"
+            if self.local_database_driver is None or self.local_database_driver == "":
+                return False, f"local_database_driver={self.local_database_driver}"
+
         return True, ""
 
     def to_dict(self) -> Dict[str, Any]:
@@ -71,8 +59,12 @@ class DatabaseConnectionParameters:
             "dialect": self.dialect,
             "drivername": self.drivername,
             "host": self.host,
-            "database": self.database,
+            "port": self.port,
+            "name": self.database_name,
             "username": self.username,
             "password": self.password,
-            "query": self.query,
+            "use_remote": self.use_remote,
+            "local_database_path": self.local_database_path,
+            "local_database_dialect": self.local_database_dialect,
+            "local_database_driver": self.local_database_driver,
         }

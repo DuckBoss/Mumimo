@@ -37,20 +37,28 @@ class DatabaseService:
         self,
         dialect: str,
         host: str,
-        database: Optional[str] = None,
+        port: Optional[str] = None,
+        database_name: Optional[str] = None,
         username: Optional[str] = None,
         password: Optional[str] = None,
         drivername: Optional[str] = None,
-        query: Optional[str] = None,
+        use_remote: bool = False,
+        local_database_path: Optional[str] = None,
+        local_database_dialect: Optional[str] = None,
+        local_database_driver: Optional[str] = None,
     ) -> None:
         db_connection_opts: DatabaseConnectionParameters = DatabaseConnectionParameters(
             dialect=dialect,
             drivername=drivername,
-            database=database,
+            database_name=database_name,
             host=host,
+            port=port,
             username=username,
             password=password,
-            query=query,
+            use_remote=use_remote,
+            local_database_path=local_database_path,
+            local_database_dialect=local_database_dialect,
+            local_database_driver=local_database_driver,
         )
         await self.setup(db_connection_opts)
         await self.import_default_values()
@@ -137,7 +145,9 @@ class DatabaseService:
                         )
                 # Do not attempt to add imported alias if no valid permission groups are found.
                 if len(_new_alias.permission_groups) == 0:
-                    logger.warning(f"[{LogOutputIdentifiers.DB_ALIASES}]: Unable to add default alias. No valid permission groups detected.")
+                    logger.warning(
+                        f"[{LogOutputIdentifiers.DB_ALIASES}]: Unable to add default alias '{alias[0]}'. No valid permission groups detected."
+                    )
                     continue
                 # Add the new imported alias.
                 session.add(_new_alias)
@@ -178,23 +188,26 @@ class DatabaseService:
             raise DatabaseServiceError(f"[{LogOutputIdentifiers.DB}]: Connection parameters are invalid - '{_validation_result[1]}'.", logger=logger)
         self._connection_parameters = connection_parameters
 
-        # Create the database, initialize the async engine and create all missing tables.
-        _create_db_url: str = get_url(self._connection_parameters, use_driver=False, use_database=False)
-        _async_url: str = get_url(self._connection_parameters)
+        # Create or connect to the database, initialize the async engine and create all missing tables.
+        _create_db_url: str = get_url(self._connection_parameters, create_url=True)
+        _async_url: str = get_url(self._connection_parameters, create_url=False)
         try:
-            if not sqlalchemy_utils.database_exists(_create_db_url):
-                sqlalchemy_utils.create_database(_create_db_url)
+            if not self._connection_parameters.use_remote:
+                if not sqlalchemy_utils.database_exists(_create_db_url):
+                    sqlalchemy_utils.create_database(_create_db_url)
             self._engine = create_async_engine(_async_url, echo=False)
             async with self._engine.begin() as conn:
                 await conn.run_sync(metadata.Base.metadata.create_all)
         except NoSuchModuleError as exc:
             raise DatabaseServiceError(
-                f"[{LogOutputIdentifiers.DB}]: Database connection dialect could not be found. Please check your dialect connection parameters.",
+                f"[{LogOutputIdentifiers.DB}]: Database connection dialect could not be found. Please check your dialect connection parameters.\n"
+                f"Create DB Url: {_create_db_url}\nConnect DB Url: {_async_url}",
                 logger=logger,
             ) from exc
         except Exception as exc:
             raise DatabaseServiceError(
-                f"[{LogOutputIdentifiers.DB}]: Database could not be opened. Please check your connection parameters.",
+                f"[{LogOutputIdentifiers.DB}]: Database could not be opened. Please check your connection parameters.\n"
+                f"Create DB Url: {_create_db_url}\nConnect DB Url: {_async_url}",
                 logger=logger,
             ) from exc
 
@@ -205,16 +218,7 @@ class DatabaseService:
         )
 
     async def _validate_connection_parameters(self, connection_parameters: DatabaseConnectionParameters) -> Tuple[bool, str]:
-        _check_credentials: bool = connection_parameters.password is None or connection_parameters.username is None
-        _check_driver: bool = connection_parameters.drivername is None
-        _check_query: bool = connection_parameters.query is None
-        _check_database_name: bool = connection_parameters.database is None
-        _validation_result: Tuple[bool, str] = connection_parameters.validate_parameters(
-            no_database_name=_check_database_name,
-            no_credentials=_check_credentials,
-            no_driver=_check_driver,
-            no_query=_check_query,
-        )
+        _validation_result: Tuple[bool, str] = connection_parameters.validate_parameters()
         return _validation_result
 
     async def close(self, clean: bool = False) -> None:

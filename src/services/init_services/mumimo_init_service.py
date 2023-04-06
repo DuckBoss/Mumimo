@@ -5,6 +5,7 @@ from ...constants import SysArgs
 from ...services.database_service import DatabaseService
 from ...services.init_services.cfg_init_service import ConfigInitService
 from ...services.init_services.client_settings_init_service import ClientSettingsInitService
+from ...services.init_services.plugins_init_service import PluginsInitService
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ class MumimoInitService:
         self._cfg_init_service: ConfigInitService = ConfigInitService(sys_args)
         self._client_settings_init_service: ClientSettingsInitService = ClientSettingsInitService(sys_args)
         self._db_init_service: DatabaseService = DatabaseService()
+        self._plugins_init_service: PluginsInitService = PluginsInitService(sys_args)
 
     async def initialize(self) -> None:
         # Initialize the mumimo configuration file.
@@ -30,17 +32,28 @@ class MumimoInitService:
         logger.info("Mumimo client settings initialized.")
         # Initialize the internal database.
         logger.info("Initializing internal database...")
+        print(cfg)
+        _prioritized_cfg_opts = self._client_settings_init_service.get_prioritized_cfg_options()
+        print(_prioritized_cfg_opts)
         _prioritized_env_opts = self._client_settings_init_service.get_prioritized_env_options()
         await self._db_init_service.initialize_database(
-            dialect=_prioritized_env_opts.get(SysArgs.SYS_DB_DIALECT, ""),
-            username=_prioritized_env_opts.get(SysArgs.SYS_DB_USER, ""),
-            host=_prioritized_env_opts.get(SysArgs.SYS_DB_HOST, ""),
+            dialect=_prioritized_env_opts.get(SysArgs.SYS_DB_DIALECT, None),
+            username=_prioritized_env_opts.get(SysArgs.SYS_DB_USER, None),
+            host=_prioritized_env_opts.get(SysArgs.SYS_DB_HOST, None),
+            port=_prioritized_env_opts.get(SysArgs.SYS_DB_PORT, None),
             password=_prioritized_env_opts.get(SysArgs.SYS_DB_PASS, None),
-            database=_prioritized_env_opts.get(SysArgs.SYS_DB_NAME, None),
+            database_name=_prioritized_env_opts.get(SysArgs.SYS_DB_NAME, None),
             drivername=_prioritized_env_opts.get(SysArgs.SYS_DB_DRIVER, None),
-            query=_prioritized_env_opts.get(SysArgs.SYS_DB_QUERY, None),
+            use_remote=_prioritized_cfg_opts.get(SysArgs.SYS_DB_USEREMOTEDB, None),
+            local_database_dialect=_prioritized_cfg_opts.get(SysArgs.SYS_DB_LOCALDBDIALECT, None),
+            local_database_path=_prioritized_cfg_opts.get(SysArgs.SYS_DB_LOCALDBPATH, None),
+            local_database_driver=_prioritized_cfg_opts.get(SysArgs.SYS_DB_LOCALDBDRIVER, None),
         )
         logger.info("Mumimo internal database initialized.")
+        # Initialize the plugins.
+        logger.info("Mumimo plugins initializing...")
+        await self._plugins_init_service.initialize_plugins(self._db_init_service)
+        logger.info("Mumimo plugins initialized.")
 
     async def get_connection_parameters(self) -> Dict[str, Any]:
         return self._client_settings_init_service.get_connection_parameters()

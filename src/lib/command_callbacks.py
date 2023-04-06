@@ -1,11 +1,15 @@
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 
 class CommandCallbacks(Dict[str, Dict[str, Any]]):
-    def register_command(self, callback_name: str, plugin_name: str, command_func: Callable) -> Dict[str, Dict[str, Any]]:
+    def register_command(
+        self, callback_name: str, plugin_name: str, command_func: Callable, command_parameters: Optional[List[str]]
+    ) -> Dict[str, Dict[str, Any]]:
         if self.get(callback_name) is None:
             self[callback_name] = {}
-        self[callback_name] = {"func": command_func, "plugin": plugin_name}
+        if command_parameters is None:
+            command_parameters = []
+        self[callback_name] = {"func": command_func, "plugin": plugin_name, "parameters": command_parameters}
         return self
 
     def remove_command(self, callback_name: str) -> bool:
@@ -14,6 +18,13 @@ class CommandCallbacks(Dict[str, Dict[str, Any]]):
             return True
         except KeyError:
             return False
+
+    def get_command_parameters(self, callback_name: str) -> List[str]:
+        callback: Optional[Dict[str, Any]] = self.get(callback_name, None)
+        if callback is None:
+            return []
+        parameters: List[str] = callback.get("parameters", [])
+        return parameters
 
     def get_command(self, callback_name: str) -> Optional[Callable]:
         callback: Optional[Dict[str, Any]] = self.get(callback_name, None)
