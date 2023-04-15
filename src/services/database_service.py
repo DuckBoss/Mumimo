@@ -200,14 +200,7 @@ class DatabaseService:
                 await conn.run_sync(metadata.Base.metadata.create_all)
         except NoSuchModuleError as exc:
             raise DatabaseServiceError(
-                f"[{LogOutputIdentifiers.DB}]: Database connection dialect could not be found. Please check your dialect connection parameters.\n"
-                f"Create DB Url: {_create_db_url}\nConnect DB Url: {_async_url}",
-                logger=logger,
-            ) from exc
-        except Exception as exc:
-            raise DatabaseServiceError(
-                f"[{LogOutputIdentifiers.DB}]: Database could not be opened. Please check your connection parameters.\n"
-                f"Create DB Url: {_create_db_url}\nConnect DB Url: {_async_url}",
+                f"[{LogOutputIdentifiers.DB}]: Database connection dialect could not be found. Please check your dialect connection parameters.",
                 logger=logger,
             ) from exc
 

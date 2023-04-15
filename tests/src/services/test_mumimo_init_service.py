@@ -23,6 +23,7 @@ class TestMumimoInitService:
         assert init_service._client_settings_init_service is not None
 
     @pytest.mark.asyncio
+    @patch("src.services.init_services.plugins_init_service.PluginsInitService.initialize_plugins")
     @patch("src.services.init_services.client_settings_init_service.ClientSettingsInitService.get_prioritized_env_options")
     @patch("src.services.database_service.DatabaseService.initialize_database")
     @patch("src.services.init_services.client_settings_init_service.ClientSettingsInitService.initialize_client_settings")
@@ -33,6 +34,7 @@ class TestMumimoInitService:
         mock_init_settings,
         mock_db_init,
         mock_prioritized_env,
+        mock_init_plugins,
         get_config: Dict[str, Any],
         get_service: MumimoInitService,
     ) -> None:
@@ -43,6 +45,7 @@ class TestMumimoInitService:
         mock_init_settings.return_value = None
         mock_prioritized_env.return_value = {}
         mock_db_init.return_value = None
+        mock_init_plugins.return_value = None
 
         await init_service.initialize()
 

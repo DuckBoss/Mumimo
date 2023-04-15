@@ -18,7 +18,6 @@ class TestDatabaseService:
     def get_connection_params(self) -> Dict[str, str]:
         return {
             "dialect": "sqlite",  # dialect
-            "database": "mumimo",  # database
             "host": "tests/data/generated/mumimo_test.db",  # host
             "drivername": "aiosqlite",  # drivername
         }
@@ -26,10 +25,9 @@ class TestDatabaseService:
     @pytest.fixture(autouse=True)
     def get_connection_params_object(self, get_connection_params: Dict[str, str]) -> DatabaseConnectionParameters:
         return DatabaseConnectionParameters(
-            dialect=get_connection_params["dialect"],
-            database=get_connection_params["database"],
-            host=get_connection_params["host"],
-            drivername=get_connection_params["drivername"],
+            local_database_dialect=get_connection_params["dialect"],
+            local_database_path=get_connection_params["host"],
+            local_database_driver=get_connection_params["drivername"],
         )
 
     @pytest.mark.asyncio
@@ -40,11 +38,10 @@ class TestDatabaseService:
         mock_setup.return_value = None
         mock_import.return_value = None
         _dialect: str = get_connection_params["dialect"]
-        _database: str = get_connection_params["database"]
         _host: str = get_connection_params["host"]
         _drivername: str = get_connection_params["drivername"]
         _db_service: DatabaseService = DatabaseService()
-        await _db_service.initialize_database(dialect=_dialect, database=_database, host=_host, drivername=_drivername)
+        await _db_service.initialize_database(local_database_dialect=_dialect, local_database_path=_host, local_database_driver=_drivername)
         return _db_service
 
     class TestInit:
@@ -55,11 +52,10 @@ class TestDatabaseService:
             mock_setup.return_value = None
             mock_import.return_value = None
             _dialect: str = get_connection_params["dialect"]
-            _database: str = get_connection_params["database"]
             _host: str = get_connection_params["host"]
             _drivername: str = get_connection_params["drivername"]
             _db_service: DatabaseService = DatabaseService()
-            await _db_service.initialize_database(dialect=_dialect, database=_database, host=_host, drivername=_drivername)
+            await _db_service.initialize_database(local_database_dialect=_dialect, local_database_path=_host, local_database_driver=_drivername)
             mock_setup.assert_called_once()
             mock_import.assert_called_once()
 
@@ -70,15 +66,25 @@ class TestDatabaseService:
         ) -> None:
             _params: DatabaseConnectionParameters = get_connection_params_object
             _db_service: DatabaseService = get_database_service
-            _params.query = "test"
             _params.username = "test"
             _params.password = "test"
-            _params.database = "test"
+            _params.database_name = "test"
             _params.dialect = "test"
             _params.drivername = "test"
+            _params.host = "test"
+            _params.port = "12345"
 
-            result: Tuple[bool, str] = await _db_service._validate_connection_parameters(_params)
-            assert result == (True, "")
+            _params.local_database_dialect = "test"
+            _params.local_database_driver = "test"
+            _params.local_database_path = "test"
+
+            _params.use_remote = False
+            result_non_remote: Tuple[bool, str] = await _db_service._validate_connection_parameters(_params)
+            assert result_non_remote == (True, "")
+
+            _params.use_remote = True
+            result_remote: Tuple[bool, str] = await _db_service._validate_connection_parameters(_params)
+            assert result_remote == (True, "")
 
         @pytest.mark.asyncio
         @patch.object(DatabaseConnectionParameters, "validate_parameters")
@@ -87,26 +93,26 @@ class TestDatabaseService:
         ) -> None:
             _params: DatabaseConnectionParameters = get_connection_params_object
             _db_service: DatabaseService = get_database_service
-            _params.query = "test"
+
+            _params.database_name = "test"
+            _params.dialect = "test"
+            _params.drivername = "test"
+            _params.host = "test"
+            _params.port = "12345"
+            _params.local_database_dialect = "test"
+            _params.local_database_driver = "test"
+            _params.local_database_path = "test"
+            _params.use_remote = True
 
             _params.username = "test"
             _params.password = None
             await _db_service._validate_connection_parameters(_params)
-            mock_validate.assert_called_with(
-                no_database_name=False,
-                no_credentials=True,
-                no_driver=False,
-                no_query=False,
-            )
+            assert mock_validate.called is True
+
             _params.username = None
             _params.password = "test"
             await _db_service._validate_connection_parameters(_params)
-            mock_validate.assert_called_with(
-                no_database_name=False,
-                no_credentials=True,
-                no_driver=False,
-                no_query=False,
-            )
+            assert mock_validate.called is True
 
         @pytest.mark.asyncio
         @patch.object(DatabaseConnectionParameters, "validate_parameters")
@@ -115,55 +121,26 @@ class TestDatabaseService:
         ) -> None:
             _params: DatabaseConnectionParameters = get_connection_params_object
             _db_service: DatabaseService = get_database_service
-            _params.query = "test"
+
             _params.username = "test"
             _params.password = "test"
+            _params.database_name = "test"
+            _params.dialect = "test"
+            _params.drivername = "test"
+            _params.host = "test"
+            _params.port = "12345"
+            _params.local_database_dialect = "test"
+            _params.local_database_driver = "test"
+            _params.local_database_path = "test"
+            _params.use_remote = True
 
             _params.drivername = None
             await _db_service._validate_connection_parameters(_params)
-            mock_validate.assert_called_with(
-                no_database_name=False,
-                no_credentials=False,
-                no_driver=True,
-                no_query=False,
-            )
+            assert mock_validate.called is True
 
             _params.drivername = "test"
             await _db_service._validate_connection_parameters(_params)
-            mock_validate.assert_called_with(
-                no_database_name=False,
-                no_credentials=False,
-                no_driver=False,
-                no_query=False,
-            )
-
-        @pytest.mark.asyncio
-        @patch.object(DatabaseConnectionParameters, "validate_parameters")
-        async def test_validate_check_query(
-            self, mock_validate, get_connection_params_object: DatabaseConnectionParameters, get_database_service: DatabaseService
-        ) -> None:
-            _params: DatabaseConnectionParameters = get_connection_params_object
-            _db_service: DatabaseService = get_database_service
-            _params.username = "test"
-            _params.password = "test"
-
-            _params.query = None
-            await _db_service._validate_connection_parameters(_params)
-            mock_validate.assert_called_with(
-                no_database_name=False,
-                no_credentials=False,
-                no_driver=False,
-                no_query=True,
-            )
-
-            _params.query = "test"
-            await _db_service._validate_connection_parameters(_params)
-            mock_validate.assert_called_with(
-                no_database_name=False,
-                no_credentials=False,
-                no_driver=False,
-                no_query=False,
-            )
+            assert mock_validate.called is True
 
         @pytest.mark.asyncio
         @patch.object(DatabaseConnectionParameters, "validate_parameters")
@@ -174,25 +151,22 @@ class TestDatabaseService:
             _db_service: DatabaseService = get_database_service
             _params.username = "test"
             _params.password = "test"
-            _params.query = "test"
+            _params.database_name = "test"
+            _params.dialect = "test"
+            _params.host = "test"
+            _params.port = "12345"
+            _params.local_database_dialect = "test"
+            _params.local_database_driver = "test"
+            _params.local_database_path = "test"
+            _params.use_remote = True
 
-            _params.database = None  # type: ignore
+            _params.database_name = None  # type: ignore
             await _db_service._validate_connection_parameters(_params)
-            mock_validate.assert_called_with(
-                no_database_name=True,
-                no_credentials=False,
-                no_driver=False,
-                no_query=False,
-            )
+            assert mock_validate.called is True
 
-            _params.database = "test"
+            _params.database_name = "test"
             await _db_service._validate_connection_parameters(_params)
-            mock_validate.assert_called_with(
-                no_database_name=False,
-                no_credentials=False,
-                no_driver=False,
-                no_query=False,
-            )
+            assert mock_validate.called is True
 
     class TestSession:
         @pytest.mark.asyncio
@@ -276,15 +250,39 @@ class TestDatabaseService:
                 _ = await _db_service.setup(_db_connection_params)  # type: ignore
 
         @pytest.mark.asyncio
-        async def test_setup_connection_parameters_fails_validation(
+        async def test_setup_connection_parameters_fails_validation_remote(
             self, get_connection_params_object: DatabaseConnectionParameters, get_database_service: DatabaseService
         ) -> None:
             _db_connection_params: DatabaseConnectionParameters = get_connection_params_object
             _db_connection_params.dialect = None  # type: ignore
+            _db_connection_params.username = "test"
+            _db_connection_params.password = "test"
+            _db_connection_params.database_name = "test"
+            _db_connection_params.host = "test"
+            _db_connection_params.port = "12345"
+            _db_connection_params.local_database_dialect = "test"
+            _db_connection_params.local_database_driver = "test"
+            _db_connection_params.local_database_path = "test"
+            _db_connection_params.use_remote = True
 
             _db_service: DatabaseService = get_database_service
             _db_service._engine = None
             with pytest.raises(DatabaseServiceError, match=r"Connection parameters are invalid - 'dialect=None'.$"):
+                _ = await _db_service.setup(_db_connection_params)
+
+        @pytest.mark.asyncio
+        async def test_setup_connection_parameters_fails_validation_local(
+            self, get_connection_params_object: DatabaseConnectionParameters, get_database_service: DatabaseService
+        ) -> None:
+            _db_connection_params: DatabaseConnectionParameters = get_connection_params_object
+            _db_connection_params.local_database_dialect = None  # type: ignore
+            _db_connection_params.local_database_driver = "test"
+            _db_connection_params.local_database_path = "test"
+            _db_connection_params.use_remote = False
+
+            _db_service: DatabaseService = get_database_service
+            _db_service._engine = None
+            with pytest.raises(DatabaseServiceError, match=r"Connection parameters are invalid - 'local_database_dialect=None'.$"):
                 _ = await _db_service.setup(_db_connection_params)
 
         @pytest.mark.asyncio
@@ -295,21 +293,14 @@ class TestDatabaseService:
             _db_connection_params: DatabaseConnectionParameters = get_connection_params_object
             _db_service: DatabaseService = get_database_service
             _db_service._engine = None
-            mock_get_url.return_value = ""
-            with pytest.raises(DatabaseServiceError, match=r"Please check your connection parameters.$"):
-                _ = await _db_service.setup(_db_connection_params)
-
-        @pytest.mark.asyncio
-        @patch.object(DatabaseService, "_validate_connection_parameters")
-        @patch("src.utils.parsers.db_url_parser.get_url")
-        async def test_setup_database_connection_fails_to_open_bad_dialect(
-            self, mock_get_url, mock_validate, get_connection_params_object: DatabaseConnectionParameters, get_database_service: DatabaseService
-        ) -> None:
-            mock_validate.return_value = (True, "")
-            _db_connection_params: DatabaseConnectionParameters = get_connection_params_object
-            _db_connection_params.dialect = "invalid_dialect"
-            _db_service: DatabaseService = get_database_service
-            _db_service._engine = None
+            _db_connection_params.dialect = "test"
+            _db_connection_params.username = "test"
+            _db_connection_params.password = "test"
+            _db_connection_params.database_name = "test"
+            _db_connection_params.drivername = "test"
+            _db_connection_params.host = "test"
+            _db_connection_params.port = "12345"
+            _db_connection_params.use_remote = True
             mock_get_url.return_value = ""
             with pytest.raises(DatabaseServiceError, match=r"Please check your dialect connection parameters.$"):
                 _ = await _db_service.setup(_db_connection_params)

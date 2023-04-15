@@ -64,7 +64,6 @@ class SysArgs:
     SYS_DB_PORT: str = "db_port"
     SYS_DB_NAME: str = "db_name"
     SYS_PLUGINS_PATH: str = "plugins_path"
-    SYS_PLUGINS_CUSTOM_PATH: str = "custom_plugins_path"
     SYS_PLUGINS_CONFIG_PATH: str = "plugins_config_path"
 
 

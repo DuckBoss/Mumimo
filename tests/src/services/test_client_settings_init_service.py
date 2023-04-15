@@ -150,8 +150,8 @@ class TestClientSettingsInitService:
                 SysArgs.SYS_DB_USER: "mumimo",
                 SysArgs.SYS_DB_PASS: "pass",
                 SysArgs.SYS_DB_HOST: "mumimo_db",
+                SysArgs.SYS_DB_PORT: 12345,
                 SysArgs.SYS_DB_NAME: "mumimo",
-                SysArgs.SYS_DB_QUERY: "mumimo_query",
             }
 
         @pytest.fixture(autouse=True)
@@ -171,7 +171,7 @@ class TestClientSettingsInitService:
                 EnvArgs.ENV_DB_PASS: "test_mumimo",
                 EnvArgs.ENV_DB_HOST: "test_mumimo_db",
                 EnvArgs.ENV_DB_NAME: "test_mumimo",
-                EnvArgs.ENV_DB_QUERY: "test_mumimo_query",
+                EnvArgs.ENV_DB_PORT: 12345,
             }
 
         @patch.object(ClientSettingsInitService, "_get_sys_args")
@@ -181,9 +181,17 @@ class TestClientSettingsInitService:
             get_config: Config,
             get_service: ClientSettingsInitService,
         ) -> None:
-            mock_sys_args.return_value = {SysArgs.SYS_RECONNECT: True}
+            mock_sys_args.return_value = {
+                SysArgs.SYS_RECONNECT: True,
+                SysArgs.SYS_DB_LOCALDBDIALECT: None,
+                SysArgs.SYS_DB_LOCALDBDRIVER: None,
+                SysArgs.SYS_DB_LOCALDBPATH: None,
+                SysArgs.SYS_PLUGINS_CONFIG_PATH: None,
+                SysArgs.SYS_PLUGINS_PATH: None,
+                SysArgs.SYS_DB_USEREMOTEDB: False,
+            }
             client_settings = get_service._get_prioritized_client_config_options(get_config)
-            assert client_settings == {SysArgs.SYS_RECONNECT: True}
+            assert client_settings == mock_sys_args.return_value
 
         @patch.object(ClientSettingsInitService, "_get_sys_args")
         def test__get_prioritized_client_config_options_without_sys_args(
@@ -225,7 +233,7 @@ class TestClientSettingsInitService:
                 SysArgs.SYS_DB_PASS: mock_sys_args.return_value[SysArgs.SYS_DB_PASS],
                 SysArgs.SYS_DB_HOST: mock_sys_args.return_value[SysArgs.SYS_DB_HOST],
                 SysArgs.SYS_DB_NAME: mock_sys_args.return_value[SysArgs.SYS_DB_NAME],
-                SysArgs.SYS_DB_QUERY: mock_sys_args.return_value[SysArgs.SYS_DB_QUERY],
+                SysArgs.SYS_DB_PORT: mock_sys_args.return_value[SysArgs.SYS_DB_PORT],
             }
 
         @patch.object(ClientSettingsInitService, "_get_sys_args")
@@ -255,5 +263,5 @@ class TestClientSettingsInitService:
                 SysArgs.SYS_DB_PASS: mock_env_args.return_value[EnvArgs.ENV_DB_PASS],
                 SysArgs.SYS_DB_HOST: mock_env_args.return_value[EnvArgs.ENV_DB_HOST],
                 SysArgs.SYS_DB_NAME: mock_env_args.return_value[EnvArgs.ENV_DB_NAME],
-                SysArgs.SYS_DB_QUERY: mock_env_args.return_value[EnvArgs.ENV_DB_QUERY],
+                SysArgs.SYS_DB_PORT: mock_env_args.return_value[EnvArgs.ENV_DB_PORT],
             }
