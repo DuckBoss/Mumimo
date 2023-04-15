@@ -23,7 +23,7 @@ def parse_command(text) -> Optional[Command]:
     session_id = text.session
     if session_id:
         session_id = session_id[0]
-    message = message.strip()
+    message: str = message.strip()
     if not message:
         return None
 
@@ -34,9 +34,9 @@ def parse_command(text) -> Optional[Command]:
         return Command(message=message, actor=actor, channel_id=channel_id, session_id=session_id)
 
     text_parse_list: List[str] = message.split(" ", 1)
-    cmd_parse_list = text_parse_list[0].split(".", 1)
+    cmd_parse_list: List[str] = text_parse_list[0].split(".", 1)
 
-    cmd = cmd_parse_list[0][1:]
+    cmd: Optional[str] = cmd_parse_list[0][1:]
     if not cmd:
         cmd = None
 

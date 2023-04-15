@@ -1,0 +1,11 @@
+[plugin]
+enable = true
+
+[plugin.about]
+name = "Core"
+version = "0.0.1"
+description = "Provides core functionality to Mumimo."
+
+[plugin.commands]
+disable_commands = []
+default_permission_groups = ["guest", "regular", "admin"]

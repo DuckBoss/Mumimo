@@ -27,8 +27,8 @@ async def get_db_session_factory() -> AsyncGenerator[async_scoped_session, None]
         host=_host,
         drivername=_drivername,
     )
-    _create_db_url: str = get_url(_connection_parameters, use_driver=False, use_database=False)
-    _async_url: str = get_url(_connection_parameters)
+    _create_db_url: str = get_url(_connection_parameters, create_url=True)
+    _async_url: str = get_url(_connection_parameters, create_url=False)
     if not sqlalchemy_utils.database_exists(_create_db_url):
         sqlalchemy_utils.create_database(_create_db_url)
     _engine = create_async_engine(_async_url, echo=False)

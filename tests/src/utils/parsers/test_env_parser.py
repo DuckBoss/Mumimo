@@ -28,7 +28,7 @@ class TestEnvParserIO:
             EnvArgs.ENV_DB_PASS: "test_mumimo",
             EnvArgs.ENV_DB_HOST: "test_mumimo_db",
             EnvArgs.ENV_DB_NAME: "test_mumimo",
-            EnvArgs.ENV_DB_QUERY: "test_mumimo_query",
+            EnvArgs.ENV_DB_PORT: "12345",
         }
 
     class TestGetEnvFile:

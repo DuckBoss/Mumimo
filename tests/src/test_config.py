@@ -20,24 +20,24 @@ class TestConfig:
         return Config()
 
     @pytest.fixture(autouse=True)
-    def config_path(self) -> str:
-        return "tests/data/config/test_config.toml"
+    def config_path(self) -> pathlib.Path:
+        return pathlib.Path.cwd() / "tests/data/config/test_config.toml"
 
     @pytest.fixture(autouse=True)
-    def alt_config_path(self) -> str:
-        return "tests/data/config/test_config_alt.toml"
+    def alt_config_path(self) -> pathlib.Path:
+        return pathlib.Path.cwd() / "tests/data/config/test_config_alt.toml"
 
     @pytest.fixture(autouse=True)
-    def broken_config_path(self) -> str:
-        return "tests/data/config/test_config_broken.toml"
+    def broken_config_path(self) -> pathlib.Path:
+        return pathlib.Path.cwd() / "tests/data/config/test_config_broken.toml"
 
     @pytest.fixture(autouse=True)
-    def invalid_config_path(self) -> str:
-        return "invalid/path/to/config/test_config.toml"
+    def invalid_config_path(self) -> pathlib.Path:
+        return pathlib.Path.cwd() / "invalid/path/to/config/test_config.toml"
 
     @pytest.fixture(autouse=True)
-    def save_config_path(self) -> str:
-        return "tests/data/generated/generated_config.toml"
+    def save_config_path(self) -> pathlib.Path:
+        return pathlib.Path.cwd() / "tests/data/generated/generated_config.toml"
 
     @pytest.fixture(autouse=True)
     def expected_config_data(self) -> Dict[str, Any]:
@@ -103,7 +103,7 @@ class TestConfig:
             config = config.read()
             assert config.items() == expected_config_data.items()
 
-        def test_config_read_from_valid_path(self, empty_config: Config, config_path: str, expected_config_data: Dict[str, Any]) -> None:
+        def test_config_read_from_valid_path(self, empty_config: Config, config_path: pathlib.Path, expected_config_data: Dict[str, Any]) -> None:
             empty_config = empty_config.read(config_path)
             assert empty_config.items() == expected_config_data.items()
 
@@ -112,11 +112,7 @@ class TestConfig:
             with pytest.raises(ConfigReadError, match=r".*\ no file was specified.$"):
                 empty_config.read()
 
-        def test_config_read_from_empty_path(self, empty_config: Config) -> None:
-            with pytest.raises(ConfigReadError, match=r"^Unable to read config file"):
-                empty_config.read("")
-
-        def test_config_read_from_invalid_path(self, empty_config: Config, invalid_config_path: str) -> None:
+        def test_config_read_from_invalid_path(self, empty_config: Config, invalid_config_path: pathlib.Path) -> None:
             with pytest.raises(ConfigReadError, match=r"^Unable to read config file at:"):
                 empty_config.read(invalid_config_path)
 

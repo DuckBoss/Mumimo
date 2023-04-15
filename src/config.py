@@ -1,7 +1,7 @@
 import copy
 import logging
 import pathlib
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 import toml
 
@@ -14,26 +14,28 @@ class Config(dict):
     _config_file_path: Optional[pathlib.Path] = None
     _initial_config: Optional["Config"] = None
 
-    def __init__(self, file_name: Optional[str] = None) -> None:
+    def __init__(self, file_name: Optional[Union[str, pathlib.Path]] = None) -> None:
         super().__init__()
         if file_name is not None:
-            self._config_file_path = (pathlib.Path.cwd() / file_name).resolve()
+            if isinstance(file_name, str):
+                self._config_file_path = (pathlib.Path.cwd() / file_name).resolve()
+            else:
+                self._config_file_path = file_name.resolve()
 
-    def read(self, file_name: Optional[str] = None) -> "Config":
+    def read(self, file_name: Optional[pathlib.Path] = None) -> "Config":
         if not file_name:
             if not self._config_file_path:
                 raise ConfigReadError("Unable to read config file because no file was specified.", _logger)
             self._read_from_file(self._config_file_path)
             return self
-        search_path = pathlib.Path.cwd() / file_name
-        if search_path.resolve().is_file():
-            self._read_from_file(search_path)
+        if file_name.is_file():
+            self._read_from_file(file_name)
             return self
-        raise ConfigReadError(f"Unable to read config file at: {search_path}", _logger)
+        raise ConfigReadError(f"Unable to read config file at: {file_name}", _logger)
 
     def _read_from_file(self, file_path: pathlib.Path):
         try:
-            with open(str(file_path.resolve()), "r", encoding="utf-8") as file_handler:
+            with open(str(file_path), "r", encoding="utf-8") as file_handler:
                 contents: Dict[str, Any] = toml.load(file_handler, _dict=dict)
                 self.clear()
                 self.update(contents)
@@ -50,21 +52,21 @@ class Config(dict):
 
     def save(
         self,
-        file_name: Optional[str] = None,
+        file_path: Optional[pathlib.Path] = None,
         modified_only: bool = False,
         modified_field_name: Optional[str] = None,
     ) -> str:
         target_path = None
-        if file_name is not None:
-            target_path = file_name
+        if file_path is not None:
+            target_path = file_path
         elif self._config_file_path is not None:
-            target_path = str(self._config_file_path.resolve())
+            target_path = self._config_file_path
         else:
             raise ConfigWriteError("Unable to save data to a config file because no file was specified.", _logger)
 
         try:
             saved_data = None
-            with open(target_path, "w", encoding="utf-8") as file_handler:
+            with open(str(target_path), "w", encoding="utf-8") as file_handler:
                 if not modified_only:
                     saved_data = toml.dump(self, file_handler)
                 else:

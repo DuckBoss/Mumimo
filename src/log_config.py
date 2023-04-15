@@ -1,11 +1,8 @@
 import copy
-import logging
 import pathlib
 from typing import Any, Optional
 
 import toml
-
-_logger = logging.getLogger(__name__)
 
 
 class LogConfig(dict):
@@ -76,7 +73,7 @@ class LogConfig(dict):
             if saved_data is None:
                 raise IOError(f"Unable to save data to a config file at: {target_path}")
         except IOError as exc:
-            raise IOError(f"Unable to save config file at: {target_path}", _logger) from exc
+            raise IOError(f"Unable to save config file at: {target_path}") from exc
         return saved_data
 
     def reset(self, field_name: str) -> bool:

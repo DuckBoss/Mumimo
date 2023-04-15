@@ -183,11 +183,13 @@ class TestCommandProcessingService:
             assert result["file"]["message"] == "[Redacted Message]"
 
     class TestServiceInit:
+        @patch("src.settings.MumimoSettings.get_mumimo_config")
         @patch("src.settings.MumimoSettings.get_log_config")
         @patch("src.config.Config")
         @patch("pymumble_py3.mumble.Mumble")
-        def test_init_command_processing_service(self, mock_mumble, mock_mumimo_config, mock_log_cfg) -> None:
+        def test_init_command_processing_service(self, mock_mumble, mock_mumimo_config, mock_log_cfg, mock_config) -> None:
             mock_mumimo_config.get.return_value = 10
+            mock_config.return_value = Config("tests/data/config/test_config.toml")
             mock_log_cfg.return_value = LogConfig("tests/data/config/test_logging.toml")
             service: CommandProcessingService = CommandProcessingService(mock_mumble)
             assert service is not None

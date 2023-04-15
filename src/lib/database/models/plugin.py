@@ -14,7 +14,7 @@ class PluginTable(metadata.Base):
     __tablename__ = "plugin"
 
     id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
 
     # One to many to commands
     commands: Mapped[List["CommandTable"]] = relationship(back_populates="plugin", cascade="all, delete")

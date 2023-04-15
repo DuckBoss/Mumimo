@@ -13,6 +13,8 @@ class LogOutputIdentifiers:
     DB: str = "Database"
     DB_PERMISSIONS: str = f"{DB}.Permissions"
     DB_ALIASES: str = f"{DB}.Aliases"
+    DB_PLUGINS: str = f"{DB}.Plugins"
+    DB_COMMANDS: str = f"{DB}.Commands"
 
 
 # Env Args Constants
@@ -30,8 +32,8 @@ class EnvArgs:
     ENV_DB_USER: str = "MUMIMO_DB_USER"
     ENV_DB_PASS: str = "MUMIMO_DB_PASS"
     ENV_DB_HOST: str = "MUMIMO_DB_HOST"
+    ENV_DB_PORT: str = "MUMIMO_DB_PORT"
     ENV_DB_NAME: str = "MUMIMO_DB_NAME"
-    ENV_DB_QUERY: str = "MUMIMO_DB_QUERY"
 
 
 # Sys Args Constants
@@ -50,18 +52,52 @@ class SysArgs:
     SYS_ENV_FILE: str = "env_file"
     SYS_CONFIG_FILE: str = "config_file"
     SYS_LOG_CONFIG_FILE: str = "log_config_file"
+    SYS_DB_LOCALDBPATH: str = "local_database_path"
+    SYS_DB_LOCALDBDIALECT: str = "local_database_dialect"
+    SYS_DB_LOCALDBDRIVER: str = "local_database_driver"
+    SYS_DB_USEREMOTEDB: str = "use_remote_database"
     SYS_DB_DIALECT: str = "db_dialect"
     SYS_DB_DRIVER: str = "db_driver"
     SYS_DB_USER: str = "db_user"
     SYS_DB_PASS: str = "db_pass"
     SYS_DB_HOST: str = "db_host"
+    SYS_DB_PORT: str = "db_port"
     SYS_DB_NAME: str = "db_name"
-    SYS_DB_QUERY: str = "db_query"
+    SYS_PLUGINS_PATH: str = "plugins_path"
+    SYS_PLUGINS_CONFIG_PATH: str = "plugins_config_path"
 
 
 # Config Constants
 DEFAULT_PATH_CONFIG_FILE: str = "config/config.toml"
 DEFAULT_PATH_LOGGING_CONFIG_FILE: str = "config/logging.toml"
+
+
+class PluginCfgSections:
+    PLUGIN: str = "plugin"
+    PLUGIN_ABOUT: str = f"{PLUGIN}.about"
+    PLUGIN_SETTINGS: str = f"{PLUGIN}.settings"
+    PLUGIN_COMMANDS: str = f"{PLUGIN}.commands"
+    PLUGIN_HELP: str = f"{PLUGIN}.help"
+
+
+class PluginCfgFields:
+    class PLUGIN:
+        ENABLE: str = f"{PluginCfgSections.PLUGIN}.enable"
+
+        class ABOUT:
+            NAME: str = f"{PluginCfgSections.PLUGIN_ABOUT}.name"
+            VERSION: str = f"{PluginCfgSections.PLUGIN_ABOUT}.version"
+            DESCRIPTION: str = f"{PluginCfgSections.PLUGIN_ABOUT}.description"
+
+        class SETTINGS:
+            pass
+
+        class COMMANDS:
+            DISABLE_COMMANDS: str = f"{PluginCfgSections.PLUGIN_COMMANDS}.disable_commands"
+            DEFAULT_PERMISSION_GROUPS: str = f"{PluginCfgSections.PLUGIN_COMMANDS}.default_permission_groups"
+
+        class HELP:
+            COMMANDS_HELP_TEXT: str = f"{PluginCfgSections.PLUGIN_HELP}.commands_help_text"
 
 
 class LogCfgSections:
@@ -129,6 +165,10 @@ class MumimoCfgFields:
             AUTO_RECONNECT: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.auto_reconnect"
 
         class DATABASE:
+            USE_REMOTE_DB: str = f"{MumimoCfgSections.SETTINGS_DATABASE}.use_remote_database"
+            LOCAL_DB_PATH: str = f"{MumimoCfgSections.SETTINGS_DATABASE}.local_database_path"
+            LOCAL_DB_DIALECT: str = f"{MumimoCfgSections.SETTINGS_DATABASE}.local_database_dialect"
+            LOCAL_DB_DRIVERNAME: str = f"{MumimoCfgSections.SETTINGS_DATABASE}.local_database_driver"
             DEFAULT_PERMISSION_GROUPS: str = f"{MumimoCfgSections.SETTINGS_DATABASE}.default_permission_groups"
             DEFAULT_ALIASES: str = f"{MumimoCfgSections.SETTINGS_DATABASE}.default_aliases"
 
@@ -158,6 +198,9 @@ class MumimoCfgFields:
                 COOKIE_FILE: str = f"{MumimoCfgSections.SETTINGS_MEDIA_YOUTUBEDL}.cookie_file"
 
         class PLUGINS:
+            PLUGINS_PATH: str = f"{MumimoCfgSections.SETTINGS_PLUGINS}.plugins_path"
+            PLUGINS_CUSTOM_PATH: str = f"{MumimoCfgSections.SETTINGS_PLUGINS}.custom_plugins_path"
+            PLUGINS_CONFIG_PATH: str = f"{MumimoCfgSections.SETTINGS_PLUGINS}.plugins_config_path"
             DISABLED_PLUGINS: str = f"{MumimoCfgSections.SETTINGS_PLUGINS}.disabled_plugins"
             SAFE_MODE_PLUGINS: str = f"{MumimoCfgSections.SETTINGS_PLUGINS}.safe_mode_plugins"
 

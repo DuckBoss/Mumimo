@@ -78,17 +78,17 @@ class TestSystemArguments:
 
     class TestOptionPassword:
         def test_option_valid_password(self, sys_args_parser):
-            options = ["-p", "testpassword"]
+            options = ["-ps", "testpassword"]
             parser = sys_args_parser.parse_args(options)
             assert parser.password == "testpassword"
 
         def test_option_invalid_password_value(self, sys_args_parser):
-            options = ["-p", 99]
+            options = ["-ps", 99]
             with pytest.raises(TypeError):
                 sys_args_parser.parse_args(options)
 
         def test_option_invalid_password_empty(self, sys_args_parser):
-            options = ["-p"]
+            options = ["-ps"]
             with pytest.raises(SystemExit):
                 sys_args_parser.parse_args(options)
 
@@ -211,37 +211,59 @@ class TestSystemArguments:
                 sys_args_parser.parse_args(options)
 
     class TestOptionDatabase:
-        def test_option_database_dialect(self, sys_args_parser):
-            options = ["-dbdi", "sqlite"]
+        def test_option_database_use_remote(self, sys_args_parser):
+            options = ["-rdb"]
             parser = sys_args_parser.parse_args(options)
-            assert parser.db_dialect == "sqlite"
+            assert parser.use_remote_database is True
 
-        def test_option_database_driver(self, sys_args_parser):
-            options = ["-dbdr", "aiosqlite"]
-            parser = sys_args_parser.parse_args(options)
-            assert parser.db_driver == "aiosqlite"
+        class Remote:
+            def test_option_database_dialect(self, sys_args_parser):
+                options = ["-dbdi", "sqlite"]
+                parser = sys_args_parser.parse_args(options)
+                assert parser.db_dialect == "sqlite"
 
-        def test_option_database_user(self, sys_args_parser):
-            options = ["-dbu", "mumimo"]
-            parser = sys_args_parser.parse_args(options)
-            assert parser.db_user == "mumimo"
+            def test_option_database_driver(self, sys_args_parser):
+                options = ["-dbdr", "aiosqlite"]
+                parser = sys_args_parser.parse_args(options)
+                assert parser.db_driver == "aiosqlite"
 
-        def test_option_database_pass(self, sys_args_parser):
-            options = ["-dbp", "mumimo"]
-            parser = sys_args_parser.parse_args(options)
-            assert parser.db_pass == "mumimo"
+            def test_option_database_user(self, sys_args_parser):
+                options = ["-dbus", "mumimo"]
+                parser = sys_args_parser.parse_args(options)
+                assert parser.db_user == "mumimo"
 
-        def test_option_database_host(self, sys_args_parser):
-            options = ["-dbh", "mumimo.db"]
-            parser = sys_args_parser.parse_args(options)
-            assert parser.db_host == "mumimo.db"
+            def test_option_database_pass(self, sys_args_parser):
+                options = ["-dbps", "mumimo"]
+                parser = sys_args_parser.parse_args(options)
+                assert parser.db_pass == "mumimo"
 
-        def test_option_database_name(self, sys_args_parser):
-            options = ["-dbn", "mumimo"]
-            parser = sys_args_parser.parse_args(options)
-            assert parser.db_name == "mumimo"
+            def test_option_database_host(self, sys_args_parser):
+                options = ["-dbh", "mumimo.db"]
+                parser = sys_args_parser.parse_args(options)
+                assert parser.db_host == "mumimo.db"
 
-        def test_option_database_query(self, sys_args_parser):
-            options = ["-dbq", "mumimo"]
-            parser = sys_args_parser.parse_args(options)
-            assert parser.db_query == "mumimo"
+            def test_option_database_name(self, sys_args_parser):
+                options = ["-dbn", "mumimo"]
+                parser = sys_args_parser.parse_args(options)
+                assert parser.db_name == "mumimo"
+
+            def test_option_database_port(self, sys_args_parser):
+                options = ["-dbp", "12345"]
+                parser = sys_args_parser.parse_args(options)
+                assert parser.db_port == 12345
+
+        class Local:
+            def test_option_local_database_path(self, sys_args_parser):
+                options = ["-ldbp", "mumimo.db"]
+                parser = sys_args_parser.parse_args(options)
+                assert parser.local_database_path == "mumimo.db"
+
+            def test_option_local_database_dialect(self, sys_args_parser):
+                options = ["-ldbdi", "sqlite"]
+                parser = sys_args_parser.parse_args(options)
+                assert parser.local_database_dialect == "sqlite"
+
+            def test_option_local_database_driver(self, sys_args_parser):
+                options = ["-ldbdr", "aiosqlite"]
+                parser = sys_args_parser.parse_args(options)
+                assert parser.local_database_driver == "aiosqlite"

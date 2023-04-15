@@ -15,7 +15,7 @@ class AliasTable(metadata.Base):
     __tablename__ = "alias"
 
     id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     command: Mapped[str] = mapped_column(String(1024), nullable=False)
 
     # One to many to permission groups
