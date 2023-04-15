@@ -1,4 +1,4 @@
-from typing import Tuple, Any
+from typing import Any, Tuple
 
 import pytest
 
@@ -24,11 +24,11 @@ class TestDatabaseConnectionParameters:
 
     @pytest.fixture(autouse=True)
     def get_params_object(self, get_connection_params: Tuple[str, ...]) -> DatabaseConnectionParameters:
-        _params: DatabaseConnectionParameters = DatabaseConnectionParameters(*get_connection_params)
+        _params: DatabaseConnectionParameters = DatabaseConnectionParameters(*get_connection_params)  # type: ignore
         return _params
 
     def test_init_database_connection_parameters(self, get_connection_params: Tuple[str, ...]) -> None:
-        _params: DatabaseConnectionParameters = DatabaseConnectionParameters(*get_connection_params)
+        _params: DatabaseConnectionParameters = DatabaseConnectionParameters(*get_connection_params)  # type: ignore
         assert _params.dialect == get_connection_params[0]
         assert _params.host == get_connection_params[1]
         assert _params.port == get_connection_params[2]
@@ -48,7 +48,7 @@ class TestDatabaseConnectionParameters:
             "drivername": _params.drivername,
             "host": _params.host,
             "port": _params.port,
-            "database": _params.database_name,
+            "database_name": _params.database_name,
             "username": _params.username,
             "password": _params.password,
             "use_remote": _params.use_remote,
@@ -58,8 +58,52 @@ class TestDatabaseConnectionParameters:
         }
 
     class TestValidateParameters:
+        @pytest.fixture(autouse=True)
+        def get_params(self, get_params_object: DatabaseConnectionParameters) -> DatabaseConnectionParameters:
+            _params: DatabaseConnectionParameters = get_params_object
+            _params.database_name = "test"
+            _params.dialect = "test"
+            _params.host = "test"
+            _params.port = "12345"
+            _params.username = "test"
+            _params.password = "test"
+            _params.drivername = "test"
+            _params.local_database_dialect = "test"
+            _params.local_database_driver = "test"
+            _params.local_database_path = "test"
+            _params.use_remote = False
+            return _params
+
         def test_validate_parameters_default(self, get_params_object: DatabaseConnectionParameters) -> None:
             _params: DatabaseConnectionParameters = get_params_object
+            _params.use_remote = False
+            assert _params.validate_parameters() == (True, "")
+            _params.use_remote = True
             assert _params.validate_parameters() == (True, "")
 
-        # TODO: Test cases of individual connection parameters...
+        class TestRemote:
+            remote_vars = ["database_name", "username", "password", "port", "dialect", "drivername", "host"]
+
+            @pytest.mark.parametrize("name", remote_vars)
+            def test_validate_parameters_remote_invalid_parameters(self, name: str, get_params: DatabaseConnectionParameters) -> None:
+                _params: DatabaseConnectionParameters = get_params
+                _params.use_remote = True
+
+                print(_params.to_dict(), name)
+                setattr(_params, name, None)
+                assert _params.validate_parameters() == (False, f"{name}=None")
+                setattr(_params, name, "")
+                assert _params.validate_parameters() == (False, f"{name}=")
+
+        class TestLocal:
+            local_vars = ["local_database_path", "local_database_dialect", "local_database_driver"]
+
+            @pytest.mark.parametrize("name", local_vars)
+            def test_validate_parameters_local_invalid_parameters(self, name: str, get_params: DatabaseConnectionParameters) -> None:
+                _params: DatabaseConnectionParameters = get_params
+                _params.use_remote = False
+
+                setattr(_params, name, None)
+                assert _params.validate_parameters() == (False, f"{name}=None")
+                setattr(_params, name, "")
+                assert _params.validate_parameters() == (False, f"{name}=")

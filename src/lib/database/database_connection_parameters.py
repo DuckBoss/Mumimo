@@ -36,7 +36,7 @@ class DatabaseConnectionParameters:
                 return False, f"username={self.username}"
             if self.password is None or self.password == "":
                 return False, f"password={self.password}"
-            if self.port is None or int(self.port) <= 0:
+            if self.port is None or self.port == "" or int(self.port) <= 0:
                 return False, f"port={self.port}"
             if self.dialect is None or self.dialect == "":
                 return False, f"dialect={self.dialect}"
@@ -60,7 +60,7 @@ class DatabaseConnectionParameters:
             "drivername": self.drivername,
             "host": self.host,
             "port": self.port,
-            "database": self.database_name,
+            "database_name": self.database_name,
             "username": self.username,
             "password": self.password,
             "use_remote": self.use_remote,
