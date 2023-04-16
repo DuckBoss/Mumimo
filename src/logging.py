@@ -55,7 +55,7 @@ def init_logger(sys_args: Optional[Dict[str, str]] = None) -> bool:
 
 
 def get_console_handler() -> Optional[logging.StreamHandler]:
-    _log_config = settings.get_log_config()
+    _log_config = settings.configs.get_log_config()
     if _log_config is None:
         return None
     console_handler = logging.StreamHandler(sys.stdout)
@@ -71,7 +71,7 @@ def get_console_handler() -> Optional[logging.StreamHandler]:
 
 
 def get_file_handler() -> Optional[logging.FileHandler]:
-    _log_config = settings.get_log_config()
+    _log_config = settings.configs.get_log_config()
     if _log_config is None:
         return None
     _logging_formatter = logging.Formatter(_log_config.get(LogCfgFields.OUTPUT.FILE.FORMAT))

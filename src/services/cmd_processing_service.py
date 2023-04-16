@@ -1,16 +1,19 @@
 import logging
-from typing import TYPE_CHECKING, Any, Dict, Optional
+import threading
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 from ..constants import LogCfgFields, MumimoCfgFields
 from ..exceptions import ServiceError
 from ..lib.command_history import CommandHistory
 from ..logging import log_privacy
 from ..settings import settings
+from ..utils import mumble_utils
 from ..utils.parsers import cmd_parser
 
 if TYPE_CHECKING:
     from pymumble_py3.mumble import Mumble
 
+    from ..config import Config
     from ..lib.command import Command
     from ..log_config import LogConfig
 
@@ -40,14 +43,14 @@ class CommandProcessingService:
 
         def compile_file_privacy_checked_message(self, redacted_output: Dict[str, Any]):
             return (
-                f"{redacted_output['file']['channel']}::{redacted_output['file']['actor']}::"
+                f"Command Received::{redacted_output['file']['channel']}::{redacted_output['file']['actor']}::"
                 f"[Cmd:{redacted_output['file']['command']} | Params:{redacted_output['file']['parameters']}]::"
                 f"{redacted_output['file']['message']}"
             )
 
         def compile_console_privacy_checked_message(self, redacted_output: Dict[str, Any]):
             return (
-                f"{redacted_output['console']['channel']}::{redacted_output['console']['actor']}::"
+                f"Command Received::{redacted_output['console']['channel']}::{redacted_output['console']['actor']}::"
                 f"[Cmd:{redacted_output['console']['command']} | Params:{redacted_output['console']['parameters']}]::"
                 f"{redacted_output['console']['message']}"
             )
@@ -147,6 +150,8 @@ class CommandProcessingService:
     _connection_instance: "Mumble"
     _cmd_history: "CommandHistory"
     _privacy_filter: "OutputPrivacyFilter"
+    _cfg_instance: "Config"
+    _log_cfg: "LogConfig"
 
     @property
     def connection_instance(self) -> "Mumble":
@@ -156,14 +161,18 @@ class CommandProcessingService:
     def cmd_history(self) -> "CommandHistory":
         return self._cmd_history
 
+    @property
+    def log_cfg(self) -> "LogConfig":
+        return self._log_cfg
+
     def __init__(self, murmur_connection: "Mumble") -> None:
         self._connection_instance = murmur_connection
         if self.connection_instance is None:
             raise ServiceError("Unable to retrieve murmur connection: the murmur instance is not connected to a server.", logger=logger)
-        _cfg_instance = settings.get_mumimo_config()
+        _cfg_instance: Optional["Config"] = settings.configs.get_mumimo_config()
         if _cfg_instance is None:
             raise ServiceError("Unable to create command processing service: mumimo config could not be retrieved.", logger=logger)
-        _log_cfg = settings.get_log_config()
+        _log_cfg: Optional["LogConfig"] = settings.configs.get_log_config()
         if _log_cfg is None:
             raise ServiceError("Unable to create command processing service: log config could not be retrieved.", logger=logger)
         self._log_cfg = _log_cfg
@@ -175,14 +184,56 @@ class CommandProcessingService:
             raise ServiceError("Received text message with a 'None' value.", logger=logger)
         parsed_cmd: Optional["Command"] = cmd_parser.parse_command(text)
         if parsed_cmd is not None:
-            # Map command to registered command callbacks to execute command:
-            # if self.cmd_callbacks.get()
+            # Exit command processing if the user message does not contain a command.
+            _cmd_name = parsed_cmd.command
+            if _cmd_name is None:
+                return
+
+            # Retrieve all the registered command callbacks to process the command.
+            _callbacks = settings.commands.get_command_callbacks()
+            if _callbacks is None:
+                raise ServiceError("Unable to process command: cannot retrieve registered command callbacks.", logger=logger)
+
+            # Retrieve the registered command information.
+            _cmd_info: Optional[Dict[str, Any]] = _callbacks.get(_cmd_name)
+            if _cmd_info is None:
+                logger.warning(f"The command: [{_cmd_name}] is not a registered command.")
+                return
+
+            # Check if the plugin is currently active/running:
+            _plugin_name: Optional[str] = _cmd_info.get("plugin", None)
+            if _plugin_name is None:
+                raise ServiceError(f"Unable to process command: registered command [{_cmd_name}] is missing a registered plugin name.", logger=logger)
+            _registered_plugins = settings.plugins.get_registered_plugins()
+            if _registered_plugins is None:
+                raise ServiceError("Unable to process command: could not find any registered plugins.", logger=logger)
+            if not _registered_plugins[_plugin_name].is_running:
+                logger.warning(f"The command: [{_cmd_name}] could not be executed because the plugin is not running.")
+                return
+
+            # Retrieve the callable method for the command.
+            _cmd_callable: Optional[Callable] = _cmd_info.get("func", None)
+            if _cmd_callable is None:
+                raise ServiceError(f"The command: [{_cmd_name}] does not contain a registered callable method.", logger=logger)
+
+            # Ignore the command if the provided parameters are invalid:
+            if parsed_cmd.parameters:
+                _cmd_params: Optional[List[str]] = _cmd_info.get("parameters", [])
+                if not any(param in _cmd_params for param in parsed_cmd.parameters):
+                    logger.warning(f"The command: [{_cmd_name}] could not be executed because one or more provided parameters do not exist.")
+                    mumble_utils.echo(
+                        f"""Invalid command. Please use one of the available parameters: {'", "'.join(_cmd_params)}""",
+                        target_type="me",
+                        user_id=parsed_cmd.actor,
+                    )
+                    return
 
             # Handle the redaction of actor names, commands, messages, and channel names:
-            _log_cfg = settings.get_log_config()
-            if _log_cfg is None:
+            if self.log_cfg is None:
                 raise ServiceError("Unable to process command privacy checks: log config could not be retrieved.", logger=logger)
-            _privacy_checked_output: Dict[str, Any] = self._privacy_filter.get_privacy_checked_output(parsed_cmd, _log_cfg, self._connection_instance)
+            _privacy_checked_output: Dict[str, Any] = self._privacy_filter.get_privacy_checked_output(
+                parsed_cmd, self.log_cfg, self._connection_instance
+            )
 
             # Add command to command history:
             if self.cmd_history is None:
@@ -190,9 +241,23 @@ class CommandProcessingService:
             if self.cmd_history.add(parsed_cmd) is None:
                 logger.warning(f"The command: [{parsed_cmd.message}] could not be added to the command history.")
 
-            # Debug the processed command:
+            # Debug the command:
             log_privacy(
                 msg=self._privacy_filter.compile_file_privacy_checked_message(_privacy_checked_output),
                 logger=logger,
                 level=logging.DEBUG,
             )
+
+            # Execute the command's callable method in a new thread and pass in all command data.
+            _cmd_thread = threading.Thread(
+                name=f"mumimo-{_plugin_name}-{_cmd_name}",
+                target=_cmd_callable,
+                args=(_registered_plugins[_plugin_name], parsed_cmd),
+            )
+            logger.debug(f"Command thread: [{_cmd_thread.name}] initialized.")
+            logger.debug(f"Command thread: [{_cmd_thread.name} | {_cmd_thread.ident}] starting...")
+            _cmd_thread.start()
+
+            logger.debug(f"Command thread: [{_cmd_thread.name} | {_cmd_thread.ident}] closing...")
+            _cmd_thread.join()
+            logger.debug(f"Command thread: [{_cmd_thread.name}] closed.")

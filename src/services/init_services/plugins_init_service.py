@@ -15,6 +15,7 @@ from ...lib.database.models.plugin import PluginTable
 from ...settings import settings
 
 if TYPE_CHECKING:
+    from ...lib.plugins.plugin import PluginBase
     from ...services.database_service import DatabaseService
 
 
@@ -29,7 +30,7 @@ class PluginsInitService:
 
     async def initialize_plugins(self, db_service: "DatabaseService"):
         # Ensure the config and client state are both initialized.
-        _cfg = settings.get_mumimo_config()
+        _cfg = settings.configs.get_mumimo_config()
         if _cfg is None:
             raise ServiceError("Unable to initialize plugins: the mumimo config is uninitialized.", logger=logger)
         # Ensure the plugin path exists.
@@ -39,7 +40,6 @@ class PluginsInitService:
                 f"Unable to initialize plugins: the plugins path is invalid. Please check your config settings: '{_plugin_path}'", logger=logger
             )
 
-        _registered_plugins = settings.get_registered_plugins()
         # Retrieve all the plugin directories in the root plugin folder.
         _plugin_dirs: List[pathlib.Path] = []
         for dir in _plugin_path.iterdir():
@@ -85,7 +85,7 @@ class PluginsInitService:
                         command_parameters=command_value[1],
                     )
                     logger.debug(f"Registered '{_plugin_name}.{command_name}.[{'|'.join(command_value[1])}]' plugin command.")
-                settings.set_command_callbacks(_plugin_commands)
+                settings.commands.set_command_callbacks(_plugin_commands)
             except AttributeError as exc:
                 raise ServiceError(
                     f"Unable to initialize '{_plugin_name}' plugin. The command attribute does not exist in the plugin class.", logger=logger
@@ -129,7 +129,9 @@ class PluginsInitService:
                         f"No new database imports conducted."
                     )
 
-            _registered_plugins[_plugin_name] = _registered_plugin()
+            _plugin = _registered_plugin()
+            _plugin.start()
+            settings.plugins.set_registered_plugin(_plugin_name, _plugin)
 
         sys.path.pop(0)
         logger.info("Initialized all plugins.")

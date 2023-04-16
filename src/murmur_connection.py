@@ -129,10 +129,10 @@ class MurmurConnection:
         if self._connection_instance is None:
             raise ServiceError("Unable to conduct post connection actions: there is no active murmur connection.", logger=logger)
 
-        _client_state: Optional[ClientState] = settings.get_client_state()
+        _client_state: Optional[ClientState] = settings.state.get_client_state()
         if _client_state is None:
-            settings.set_client_state(ClientState(self._connection_instance))
-            _client_state = settings.get_client_state()
+            settings.state.set_client_state(ClientState(self._connection_instance))
+            _client_state = settings.state.get_client_state()
         if _client_state is not None:
             self._connection_instance.callbacks.set_callback(PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, _client_state.cmd_service.process_cmd)
             logger.debug(f"Added murmur callback: {PYMUMBLE_CLBK_TEXTMESSAGERECEIVED}-{_client_state.cmd_service.process_cmd.__name__}")

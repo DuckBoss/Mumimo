@@ -161,7 +161,7 @@ class DatabaseService:
             raise DatabaseServiceError(
                 f"[{LogOutputIdentifiers.DB}]: Cannot import default values. Database connection engine is not initialized.", logger=logger
             )
-        _cfg = settings.get_mumimo_config()
+        _cfg = settings.configs.get_mumimo_config()
         if _cfg is None:
             raise DatabaseServiceError(
                 f"[{LogOutputIdentifiers.DB}]: Cannot import default values. The mumimo config has not been initialized.", logger=logger

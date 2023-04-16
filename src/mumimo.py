@@ -42,7 +42,8 @@ class MumimoService:
             self._murmur_connection_instance.setup(connection_params)
             self._murmur_connection_instance.ready().connect()
             if self._murmur_connection_instance.is_connected:
-                _client_state: Optional["ClientState"] = settings.get_client_state()
+                settings.connection.set_murmur_connection(self._murmur_connection_instance)
+                _client_state: Optional["ClientState"] = settings.state.get_client_state()
                 if _client_state is not None:
                     _client_state.audio_properties.mute()
             if self._murmur_connection_instance.start():
@@ -60,6 +61,10 @@ class MumimoService:
                 await asyncio.sleep(0.1)
         except asyncio.exceptions.CancelledError:
             logger.info("Gracefully exiting Mumimo client...")
+            all_plugins: Dict[str, Any] = settings.plugins.get_registered_plugins()
+            logger.info("Gracefully exiting plugins...")
+            for _, plugin in all_plugins.items():
+                plugin.quit()
             if self._murmur_connection_instance is not None:
                 logger.info("Disconnecting from Murmur server...")
                 if self._murmur_connection_instance.stop():

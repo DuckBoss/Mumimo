@@ -26,14 +26,14 @@ class TestCmdParser:
             channel_id: Optional[int]
             session: Optional[int]
 
-        @patch("src.settings.MumimoSettings.get_mumimo_config")
+        @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
         def test_parse_command_cfg_does_not_exist(self, mock_cfg, std_mock_text):
             mock_cfg.return_value = None
             mock_text = std_mock_text
             with pytest.raises(ServiceError, match="^Unable to process commands:"):
                 _ = cmd_parser.parse_command(mock_text)
 
-        @patch("src.settings.MumimoSettings.get_mumimo_config")
+        @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
         def test_parse_command_valid_text_channel(self, mock_cfg_instance, std_mock_text) -> None:
             mock_text = std_mock_text
             mock_cfg_instance.return_value = {MumimoCfgFields.SETTINGS.COMMANDS.TOKEN: "!"}
@@ -44,7 +44,7 @@ class TestCmdParser:
             assert cmd_result.session_id == -1
             assert cmd_result.message == "test_message"
 
-        @patch("src.settings.MumimoSettings.get_mumimo_config")
+        @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
         def test_parse_command_valid_text_private(self, mock_cfg_instance, std_mock_text) -> None:
             mock_text = std_mock_text
             mock_text.channel_id = None
@@ -60,7 +60,7 @@ class TestCmdParser:
         def test_parse_command_text_is_none(self) -> None:
             assert cmd_parser.parse_command(None) is None
 
-        @patch("src.settings.MumimoSettings.get_mumimo_config")
+        @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
         def test_parse_command_message_is_none(self, mock_cfg_instance) -> None:
             mock_text = self.MockText()
             mock_text.message = None
@@ -68,7 +68,7 @@ class TestCmdParser:
             cmd_result = cmd_parser.parse_command(mock_text)
             assert cmd_result is None
 
-        @patch("src.settings.MumimoSettings.get_mumimo_config")
+        @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
         def test_parse_command_message_is_not_command(self, mock_cfg_instance, std_mock_text) -> None:
             mock_text = std_mock_text
             mock_text.message = "test_message"
@@ -78,7 +78,7 @@ class TestCmdParser:
             assert cmd_result is not None
             assert cmd_result.message == mock_text.message
 
-        @patch("src.settings.MumimoSettings.get_mumimo_config")
+        @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
         def test_parse_command_message_is_empty_spaces(self, mock_cfg_instance, std_mock_text) -> None:
             mock_text = std_mock_text
             mock_text.message = "  "
@@ -87,7 +87,7 @@ class TestCmdParser:
             cmd_result = cmd_parser.parse_command(mock_text)
             assert cmd_result is None
 
-        @patch("src.settings.MumimoSettings.get_mumimo_config")
+        @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
         def test_parse_command_message_command_parse_error(self, mock_cfg_instance, std_mock_text) -> None:
             mock_text = std_mock_text
             mock_text.message = "!"
@@ -97,7 +97,7 @@ class TestCmdParser:
             assert cmd_result is not None
             assert cmd_result.command is None
 
-        @patch("src.settings.MumimoSettings.get_mumimo_config")
+        @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
         def test_parse_command_message_parameters_parse_error(self, mock_cfg_instance, std_mock_text) -> None:
             mock_text = std_mock_text
             mock_text.message = "!test.param"
@@ -107,7 +107,7 @@ class TestCmdParser:
             assert cmd_result is not None
             assert cmd_result.parameters == ["param"]
 
-        @patch("src.settings.MumimoSettings.get_mumimo_config")
+        @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
         def test_parse_command_message_body_parse_error(self, mock_cfg_instance, std_mock_text) -> None:
             mock_text = std_mock_text
             mock_text.message = "!test"

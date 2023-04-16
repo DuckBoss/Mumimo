@@ -27,7 +27,7 @@ def parse_command(text) -> Optional[Command]:
     if not message:
         return None
 
-    _cfg_instance = settings.get_mumimo_config()
+    _cfg_instance = settings.configs.get_mumimo_config()
     if _cfg_instance is None:
         raise ServiceError("Unable to process commands: mumimo config is not initialized.")
     if message[0] != _cfg_instance.get(MumimoCfgFields.SETTINGS.COMMANDS.TOKEN, "!"):

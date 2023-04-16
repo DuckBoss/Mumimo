@@ -11,5 +11,5 @@
 #     4. Index 3: The description/help text to help users understand what the command does.
 # Default values: Too long to list here, please check the wiki.
 commands_help_text = [
-    ["echo", "<broadcast> | <channel> | <me>", "<message>", "Repeats the provided message with the selected output method. Using the 'echo' command with a 'channel' parameter for example repeats the command to all users in the bot's channel."]
+    ["plugin", "<active>", "<plugin_name>", "Displays a message containing the active/inactive status of a registered plugin."]
 ]
