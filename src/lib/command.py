@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 
 class Command:
@@ -87,3 +87,14 @@ class Command:
     @property
     def is_private(self) -> bool:
         return self._session_id > -1 and self._channel_id == -1
+
+    def to_dict(self) -> Dict[str, Optional[Any]]:
+        return {
+            "command": self.command,
+            "parameters": self.parameters,
+            "message": self.message,
+            "actor": self.actor,
+            "channel_id": self.channel_id,
+            "session_id": self.session_id,
+            "is_private": self.is_private,
+        }
