@@ -5,7 +5,6 @@ cd "${0%/*}"
 cd ..
 
 DB_FILE=".config/mumimo.sqlite"
-PLUGIN_CONFIG_DIR=".config/plugins"
 ENV_FILE=".config/.env"
 LOG_DIR=".config/logs/"
 
@@ -27,14 +26,6 @@ if [ -f "$DB_FILE" ] ; then
     else
         echo "Removed '$DB_FILE'"
     fi
-fi
-
-echo "Removing plugin config folder.."
-rm -r "$PLUGIN_CONFIG_DIR"
-if [ $? -ne 0 ] ; then
-    echo "Encountered an error removing the plugin config folder."
-else
-    echo "Removed '$PLUGIN_CONFIG_DIR'"
 fi
 
 # Thanks to V.Gamula/Gulzar on stackoverflow for this convenient command:
