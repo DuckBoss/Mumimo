@@ -116,13 +116,20 @@ class ClientSettingsInitService:
             if env_args is None:
                 env_args = {}
 
+        # Prioritize system args from system arguments over environment file.
         prioritized_options: Dict[str, Any] = {}
 
-        # Prioritize system args from system argument over environment file.
+        # Prioritize channel access tokens.
         sys_tokens = self._get_sys_args().get(SysArgs.SYS_TOKENS) or env_args.get(EnvArgs.ENV_TOKENS)
         if isinstance(sys_tokens, str):
             sys_tokens = connection_utils.parse_channel_tokens(sys_tokens)
         prioritized_options[SysArgs.SYS_TOKENS] = sys_tokens
+
+        # Prioritize cert/key files.
+        sys_cert_file = self._get_sys_args().get(SysArgs.SYS_CERT) or env_args.get(EnvArgs.ENV_CERT)
+        prioritized_options[SysArgs.SYS_CERT] = sys_cert_file
+        sys_key_file = self._get_sys_args().get(SysArgs.SYS_KEY) or env_args.get(EnvArgs.ENV_KEY)
+        prioritized_options[SysArgs.SYS_KEY] = sys_key_file
 
         prioritized_options.update(
             {

@@ -125,7 +125,6 @@ class ClientState:
 
     def __init__(self, mumble_instance: "Mumble") -> None:
         self._audio_properties = self.AudioProperties(mumble_instance)
-        self._murmur_callbacks = {}
         self._cmd_service = CommandProcessingService(mumble_instance)
 
     @property
