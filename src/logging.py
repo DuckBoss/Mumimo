@@ -1,7 +1,7 @@
 import logging
 import pathlib
 import sys
-from typing import Dict, Optional
+from typing import Dict, Optional, TYPE_CHECKING, Mapping, Any
 
 from .constants import VERBOSE_HIGH, VERBOSE_MIN, VERBOSE_STANDARD, LogCfgFields, SysArgs
 from .settings import settings
@@ -12,6 +12,52 @@ _IS_INITIALIZED: bool = False
 _log_file_handler: Optional[logging.Handler] = None
 _log_console_handler: Optional[logging.Handler] = None
 _logger = logging.getLogger(__name__)
+
+
+if TYPE_CHECKING:
+    from logging import _FormatStyle
+
+
+class LogFormatter(logging.Formatter):
+    _grey = "\x1b[38;20m"
+    _cyan = "\x1b[36:36m"
+    _yellow = "\x1b[33;20m"
+    _red = "\x1b[31;20m"
+    _bold_red = "\x1b[31;1m"
+    _reset = "\x1b[0m"
+    _fmt = ""
+
+    FORMATS = {
+        logging.DEBUG: _fmt,
+        logging.INFO: _fmt,
+        logging.WARNING: _fmt,
+        logging.ERROR: _fmt,
+        logging.CRITICAL: _fmt,
+    }
+
+    def __init__(
+        self,
+        fmt: str | None = None,
+        datefmt: str | None = None,
+        style: "_FormatStyle" = "%",
+        validate: bool = True,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+    ) -> None:
+        super().__init__(fmt, datefmt, style, validate, defaults=defaults)
+        if fmt is not None:
+            self.FORMATS = {
+                logging.DEBUG: self._cyan + fmt + self._reset,
+                logging.INFO: self._grey + fmt + self._reset,
+                logging.WARNING: self._yellow + fmt + self._reset,
+                logging.ERROR: self._red + fmt + self._reset,
+                logging.CRITICAL: self._bold_red + fmt + self._reset,
+            }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
 
 
 def init_logger(sys_args: Optional[Dict[str, str]] = None) -> bool:
@@ -65,7 +111,7 @@ def get_console_handler() -> Optional[logging.StreamHandler]:
         console_handler.setLevel(logging.INFO)
     elif _verbosity >= VERBOSE_STANDARD:
         console_handler.setLevel(logging.DEBUG)
-    _logging_formatter = logging.Formatter(_log_config.get(LogCfgFields.OUTPUT.CONSOLE.FORMAT))
+    _logging_formatter = LogFormatter(_log_config.get(LogCfgFields.OUTPUT.CONSOLE.FORMAT))
     console_handler.setFormatter(_logging_formatter)
     return console_handler
 
