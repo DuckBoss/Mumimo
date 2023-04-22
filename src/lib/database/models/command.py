@@ -8,7 +8,6 @@ from .. import metadata
 
 if TYPE_CHECKING:
     from .permission_group import PermissionGroupTable
-    from .plugin import PluginTable
 
 
 command_permission_association_table = Table(

@@ -1,15 +1,10 @@
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import Any, Dict
 
-from sqlalchemy import DateTime, ForeignKey, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import DateTime, String
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
 from .. import metadata
-
-if TYPE_CHECKING:
-    from .alias import AliasTable
-    from .command import CommandTable
-    from .user import UserTable
 
 
 class PermissionGroupTable(metadata.Base):
