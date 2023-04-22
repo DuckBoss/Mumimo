@@ -193,7 +193,7 @@ class ClientState:
             if self.state.remove_user(user=data["name"]):
                 logger.debug(
                     f"[{LogOutputIdentifiers.MUMBLE_ON_DISCONNECT}]: '{data['name']}' disconnected: "
-                    "removed user '{data['name']}' from the server state."
+                    f"removed user '{data['name']}' from the server state."
                 )
                 return
             logger.error(f"Unable to remove user '{data['name']}' from the server state: {data}")
