@@ -1,8 +1,13 @@
+import asyncio
+import logging
 from enum import Enum
-from typing import TYPE_CHECKING, Optional, Dict, Union
+from typing import TYPE_CHECKING, Optional, Dict, Union, Any
 
 from .utils import mumble_utils
+from .constants import LogOutputIdentifiers
 
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from pymumble_py3.mumble import Mumble
@@ -143,17 +148,30 @@ class ClientState:
 
             def remove_user(self, user: Union["User", str, int]) -> bool:
                 if isinstance(user, str):
-                    _user = mumble_utils.get_user_by_name(user)
+                    marked = None
+                    for _name, _user in self._users.items():
+                        if _name == user:
+                            marked = _name
+                    if marked:
+                        del self._users[marked]
+                        return True
                 elif isinstance(user, int):
-                    _user = mumble_utils.get_user_by_id(user)
+                    marked = None
+                    for _name, _user in self._users.items():
+                        if _user["session"] == user:
+                            marked = _name
+                    if marked:
+                        del self._users[marked]
+                        return True
                 else:
-                    _user = user
-                if not _user:
-                    return False
-                del self._users[_user["name"]]
-                return True
+                    _user: "User" = user
+                    if not _user:
+                        return False
+                    del self._users[_user["name"]]
+                    return True
+                return False
 
-        _state: Optional[ServerState]
+        _state: ServerState
         _connection: Optional["Mumble"]
 
         def __init__(self, mumble_instance: "Mumble") -> None:
@@ -161,17 +179,24 @@ class ClientState:
             self._connection = mumble_instance
 
         @property
-        def state(self) -> Optional[ServerState]:
+        def state(self) -> ServerState:
             return self._state
 
         def on_server_connect(self, data) -> None:
             print(data)
 
-        def on_user_created(self, data) -> None:
-            print(data)
+        def on_user_created(self, data: Dict[str, Any]) -> None:
+            asyncio.run(mumble_utils.Management.UserManagement.add_user(data))
+            logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_CONNECT}]: '{data['name']}' connected: added user '{data['name']}' to the server state.")
 
-        def on_user_removed(self, data) -> None:
-            print(data)
+        def on_user_removed(self, data: Dict[str, Any], message: str) -> None:
+            if self.state.remove_user(user=data["name"]):
+                logger.debug(
+                    f"[{LogOutputIdentifiers.MUMBLE_ON_DISCONNECT}]: '{data['name']}' disconnected: "
+                    "removed user '{data['name']}' from the server state."
+                )
+                return
+            logger.error(f"Unable to remove user '{data['name']}' from the server state: {data}")
 
     _audio_properties: AudioProperties
     _server_properties: ServerProperties
