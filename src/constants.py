@@ -23,6 +23,10 @@ class LogOutputIdentifiers:
     DB_PLUGINS_COMMANDS: str = f"{DB}.{PLUGINS}.Commands"
     DB_PLUGINS_PERMISSIONS: str = f"{DB}.{PLUGINS}.Permissions"
 
+    MUMBLE: str = "Mumble"
+    MUMBLE_ON_CONNECT: str = f"{MUMBLE}.On_Connect"
+    MUMBLE_ON_DISCONNECT: str = f"{MUMBLE}.On_Disconnect"
+
 
 # Env Args Constants
 class EnvArgs:
@@ -78,6 +82,13 @@ class SysArgs:
 # Config Constants
 DEFAULT_PATH_CONFIG_FILE: str = "config/config.toml"
 DEFAULT_PATH_LOGGING_CONFIG_FILE: str = "config/logging.toml"
+
+
+class DefaultPermissionGroups:
+    DEFAULT_NONE = "none"
+    DEFAULT_GUEST = "guest"
+    DEFAULT_MEMBER = "member"
+    DEFAULT_ADMIN = "admin"
 
 
 class PluginCfgSections:

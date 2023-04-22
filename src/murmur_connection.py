@@ -2,8 +2,6 @@ import logging
 import threading
 import time
 from typing import Dict, Optional, Union, List
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
 
 
 import pymumble_py3 as pymumble
@@ -11,15 +9,14 @@ from pymumble_py3.users import User
 from pymumble_py3.constants import PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, PYMUMBLE_CLBK_CONNECTED, PYMUMBLE_CLBK_USERCREATED, PYMUMBLE_CLBK_USERREMOVED
 from pymumble_py3.errors import ConnectionRejectedError
 
-from .lib.database.models.user import UserTable
-from .lib.database.models.permission_group import PermissionGroupTable
 from .client_state import ClientState
 from .services.cmd_processing_service import CommandProcessingService
-from .constants import VERBOSE_MAX, SysArgs, LogOutputIdentifiers, MumimoCfgFields
+from .constants import VERBOSE_MAX, SysArgs, MumimoCfgFields
 from .exceptions import ConnectivityError, ServiceError
 from .lib.singleton import singleton
 from .settings import settings
 from .utils.args_validators import SystemArgumentsValidator
+from .utils import mumble_utils
 from .version import version
 
 logger = logging.getLogger(__name__)
@@ -191,31 +188,9 @@ class MurmurConnection:
         if not _bot_name:
             raise ServiceError("Failed async post connection actions: mumimo bot name not found in config.", logger=logger)
 
-        _all_users: List[str] = [user["name"] for id, user in _inst.users.items() if user["name"] != _bot_name]
-        _added_users: List[str] = []
-
-        async with _database_service.session() as session:
-            for _user in _all_users:
-                _user_exists = await session.execute(select(UserTable).filter_by(name=_user))
-                if _user_exists.scalar():
-                    logger.debug(f"[{LogOutputIdentifiers.DB_USERS}]: Deteced user '{_user}' already exists in the database. Skipping import...")
-                    continue
-                _permission_query = await session.execute(select(PermissionGroupTable).filter_by(name="guest"))
-                _permission_model: Optional[PermissionGroupTable] = _permission_query.scalar()
-                if not _permission_model:
-                    raise ServiceError(
-                        "Encountered an error while adding detected users to the database: the default permission group 'guest' is missing!",
-                        logger=logger,
-                    )
-                _user_model: UserTable = UserTable(name=_user)
-                _user_model.permission_groups.append(_permission_model)
-                session.add(_user_model)
-                _added_users.append(_user)
-            try:
-                await session.commit()
-                logger.debug(f"[{LogOutputIdentifiers.DB_USERS}]: Added new users to the database -> [{', '.join(_added_users)}]")
-            except SQLAlchemyError as e:
-                raise ServiceError("Encountered an error while adding detected users to the database.", logger=logger) from e
+        _all_users: List["User"] = [user for id, user in _inst.users.items() if user["name"] != _bot_name]
+        for _user in _all_users:
+            await mumble_utils.Management.UserManagement.add_user(_user)
 
         logger.debug("Asynchronous post connection actions complete.")
 
