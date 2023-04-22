@@ -9,7 +9,7 @@ line_length = 150
 [tool.pytest.ini_options]
 addopts = "-s -vv --cov=."
 pythonpath = "."
-testpaths = "tests"
+testpaths = "tests src/plugins/"
 required_plugins = ['pytest-randomly', 'pytest-timeout']
 log_format = "(%(asctime)s)[%(name)s][%(levelname)s]:%(message)s"
 log_date_format = "%Y-%m-%d %H:%M:%S"

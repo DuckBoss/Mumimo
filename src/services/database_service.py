@@ -161,7 +161,7 @@ class DatabaseService:
             raise DatabaseServiceError(
                 f"[{LogOutputIdentifiers.DB}]: Cannot import default values. Database connection engine is not initialized.", logger=logger
             )
-        _cfg = settings.get_mumimo_config()
+        _cfg = settings.configs.get_mumimo_config()
         if _cfg is None:
             raise DatabaseServiceError(
                 f"[{LogOutputIdentifiers.DB}]: Cannot import default values. The mumimo config has not been initialized.", logger=logger
@@ -209,6 +209,9 @@ class DatabaseService:
             session_factory=async_sessionmaker(self._engine, class_=AsyncSession, expire_on_commit=False),
             scopefunc=asyncio.current_task,
         )
+
+        # Save the database service instance to the settings.
+        settings.database.set_database_instance(self)
 
     async def _validate_connection_parameters(self, connection_parameters: DatabaseConnectionParameters) -> Tuple[bool, str]:
         _validation_result: Tuple[bool, str] = connection_parameters.validate_parameters()

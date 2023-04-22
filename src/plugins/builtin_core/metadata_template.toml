@@ -1,5 +1,5 @@
 [plugin]
-enable = true
+enabled = true
 
 [plugin.about]
 name = "Core"
@@ -8,4 +8,5 @@ description = "Provides core functionality to Mumimo."
 
 [plugin.commands]
 disable_commands = []
+disable_parameters = []
 default_permission_groups = ["guest", "regular", "admin"]

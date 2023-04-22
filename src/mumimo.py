@@ -4,10 +4,9 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from .exceptions import ServiceError
 from .murmur_connection import MurmurConnection
-from .services.database_service import DatabaseService
 from .services.init_services.mumimo_init_service import MumimoInitService
 from .settings import settings
-from .utils import connection_utils
+from .utils import connection_utils, mumble_utils
 
 if TYPE_CHECKING:
     from .client_state import ClientState
@@ -42,12 +41,14 @@ class MumimoService:
             self._murmur_connection_instance.setup(connection_params)
             self._murmur_connection_instance.ready().connect()
             if self._murmur_connection_instance.is_connected:
-                _client_state: Optional["ClientState"] = settings.get_client_state()
+                settings.connection.set_murmur_connection(self._murmur_connection_instance)
+                _client_state: Optional["ClientState"] = settings.state.get_client_state()
                 if _client_state is not None:
                     _client_state.audio_properties.mute()
             if self._murmur_connection_instance.start():
                 logger.info("Established Murmur connectivity.")
                 logger.info("Mumimo client initialized.")
+                await self._murmur_connection_instance._async_post_connection_actions()
                 await self._wait_for_interrupt()
             else:
                 logger.error("Failed to establish Murmur connectivity.")
@@ -59,13 +60,4 @@ class MumimoService:
             while True:
                 await asyncio.sleep(0.1)
         except asyncio.exceptions.CancelledError:
-            logger.info("Gracefully exiting Mumimo client...")
-            if self._murmur_connection_instance is not None:
-                logger.info("Disconnecting from Murmur server...")
-                if self._murmur_connection_instance.stop():
-                    logger.info("Disconnected from Murmur server.")
-                await DatabaseService().close(clean=True)
-            _async_runner = asyncio.get_running_loop()
-            if _async_runner.is_running():
-                _async_runner.stop()
-            logger.info("Mumimo client closed.")
+            await mumble_utils.Management.exit_server()

@@ -6,6 +6,7 @@ register = false
 comment = "Hi! I am Mumimo."
 default_channel = ""
 auto_reconnect = false
+name = "Mumimo"
 
 [settings.commands]
 command_token = "!"

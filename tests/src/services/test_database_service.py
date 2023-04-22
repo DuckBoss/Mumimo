@@ -314,7 +314,7 @@ class TestDatabaseService:
                 await _db_service.import_default_values()
 
         @pytest.mark.asyncio
-        @patch("src.settings.MumimoSettings.get_mumimo_config")
+        @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
         async def test_import_config_is_none(self, mock_cfg, get_database_service: DatabaseService) -> None:
             _db_service: DatabaseService = get_database_service
             _db_service._engine = AsyncMock()
@@ -325,7 +325,7 @@ class TestDatabaseService:
         @pytest.mark.asyncio
         @patch.object(DatabaseService, "_import_default_aliases")
         @patch.object(DatabaseService, "_import_default_permission_groups")
-        @patch("src.settings.MumimoSettings.get_mumimo_config")
+        @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
         async def test_import_success(self, mock_cfg, mock_import_permissions, mock_import_aliases, get_database_service: DatabaseService) -> None:
             _db_service: DatabaseService = get_database_service
             _db_service._engine = AsyncMock()

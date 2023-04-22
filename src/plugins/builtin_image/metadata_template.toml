@@ -1,0 +1,12 @@
+[plugin]
+enabled = true
+
+[plugin.about]
+name = "Image"
+version = "0.0.1"
+description = "Provides image processing functionality to Mumimo."
+
+[plugin.commands]
+disable_commands = []
+disable_parameters = []
+default_permission_groups = ["guest", "regular", "admin"]

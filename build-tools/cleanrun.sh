@@ -7,7 +7,7 @@ cd ..
 DB_FILE=".config/mumimo.sqlite"
 PLUGIN_CONFIG_DIR=".config/plugins"
 ENV_FILE=".config/.env"
-LOG_DIR="logs/"
+LOG_DIR=".config/logs/"
 
 
 echo "Removing old logs..."

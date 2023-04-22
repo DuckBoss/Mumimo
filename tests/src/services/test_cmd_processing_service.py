@@ -13,8 +13,8 @@ from src.services.cmd_processing_service import CommandProcessingService
 
 class TestCommandProcessingService:
     @pytest.fixture(autouse=True)
-    @patch("src.settings.MumimoSettings.get_log_config")
-    @patch("src.settings.MumimoSettings.get_mumimo_config")
+    @patch("src.settings.MumimoSettings.Configs.get_log_config")
+    @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
     @patch("pymumble_py3.mumble.Mumble")
     def get_cmd_processing_service(self, mock_mumble, mock_cfg, mock_log_cfg) -> CommandProcessingService:
         mock_cfg.return_value = Config("tests/data/config/test_config.toml")
@@ -183,8 +183,8 @@ class TestCommandProcessingService:
             assert result["file"]["message"] == "[Redacted Message]"
 
     class TestServiceInit:
-        @patch("src.settings.MumimoSettings.get_mumimo_config")
-        @patch("src.settings.MumimoSettings.get_log_config")
+        @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
+        @patch("src.settings.MumimoSettings.Configs.get_log_config")
         @patch("src.config.Config")
         @patch("pymumble_py3.mumble.Mumble")
         def test_init_command_processing_service(self, mock_mumble, mock_mumimo_config, mock_log_cfg, mock_config) -> None:
@@ -201,7 +201,7 @@ class TestCommandProcessingService:
             with pytest.raises(ServiceError, match="^Unable to retrieve murmur connection:"):
                 _ = CommandProcessingService(mock_mumble)
 
-        @patch("src.settings.MumimoSettings.get_mumimo_config")
+        @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
         @patch("pymumble_py3.mumble.Mumble")
         def test_init_command_processing_service_no_cfg_instance(self, mock_mumble, mock_cfg_instance) -> None:
             mock_cfg_instance.return_value = None
@@ -213,23 +213,29 @@ class TestCommandProcessingService:
             users = {0: {"name": "test_user"}}
             channels = {0: {"name": "test_channel"}}
 
+        @patch("src.settings.MumimoSettings.Commands.get_command_callbacks")
         @patch("src.logging.log_privacy", Mock())
         @patch("src.services.cmd_processing_service.CommandProcessingService.connection_instance", new_callable=PropertyMock)
-        @patch("src.settings.MumimoSettings.get_log_config")
+        @patch("src.settings.MumimoSettings.Configs.get_log_config")
         @patch("src.utils.parsers.cmd_parser.parse_command")
-        def test_process_cmd_valid_text(self, mock_parse_command, mock_log_cfg, mock_connection_instance, get_cmd_processing_service) -> None:
+        def test_process_cmd_valid_text(
+            self, mock_parse_command, mock_log_cfg, mock_connection_instance, mock_cmd_callbacks, get_cmd_processing_service
+        ) -> None:
+            mock_cmd_callbacks.return_value = {"test_cmd": {"func": Mock()}}
             mock_connection_instance.return_value = self.MockMumble()
             mock_log_cfg.return_value = LogConfig("tests/data/config/test_logging.toml")
             mock_parse_command.return_value = Command("test_cmd", ["param_1", "param_2"], "test_msg", 0, 0, -1)
             service: CommandProcessingService = get_cmd_processing_service
             assert service.process_cmd("") is None
 
+        @patch("src.settings.MumimoSettings.Commands.get_command_callbacks")
         @patch("src.services.cmd_processing_service.CommandProcessingService.connection_instance", new_callable=PropertyMock)
-        @patch("src.settings.MumimoSettings.get_log_config")
+        @patch("src.services.cmd_processing_service.CommandProcessingService.log_cfg", new_callable=PropertyMock)
         @patch("src.utils.parsers.cmd_parser.parse_command")
         def test_process_cmd_valid_text_log_cfg_is_none(
-            self, mock_parse_command, mock_log_cfg, mock_connection_instance, get_cmd_processing_service
+            self, mock_parse_command, mock_log_cfg, mock_connection_instance, mock_cmd_callbacks, get_cmd_processing_service
         ) -> None:
+            mock_cmd_callbacks.return_value = {"test_cmd": {"func": Mock()}}
             mock_connection_instance.return_value = self.MockMumble()
             mock_log_cfg.return_value = None
             mock_parse_command.return_value = Command("test_cmd", ["param_1", "param_2"], "test_msg", 0, 0, -1)
@@ -237,13 +243,15 @@ class TestCommandProcessingService:
                 service: CommandProcessingService = get_cmd_processing_service
                 service.process_cmd("")
 
+        @patch("src.settings.MumimoSettings.Commands.get_command_callbacks")
         @patch("src.services.cmd_processing_service.CommandProcessingService.cmd_history", new_callable=PropertyMock)
         @patch("src.services.cmd_processing_service.CommandProcessingService.connection_instance", new_callable=PropertyMock)
-        @patch("src.settings.MumimoSettings.get_log_config")
+        @patch("src.settings.MumimoSettings.Configs.get_log_config")
         @patch("src.utils.parsers.cmd_parser.parse_command")
         def test_process_cmd_valid_text_cmd_history_is_none(
-            self, mock_parse_command, mock_log_cfg, mock_connection_instance, mock_cmd_history, get_cmd_processing_service
+            self, mock_parse_command, mock_log_cfg, mock_connection_instance, mock_cmd_history, mock_cmd_callbacks, get_cmd_processing_service
         ) -> None:
+            mock_cmd_callbacks.return_value = {"test_cmd": {"func": Mock()}}
             mock_cmd_history.return_value = None
             mock_connection_instance.return_value = self.MockMumble()
             mock_log_cfg.return_value = LogConfig("tests/data/config/test_logging.toml")

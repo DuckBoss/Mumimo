@@ -63,6 +63,14 @@ class ClientSettingsInitService:
         # System arguments should have higher priority than config file.
         prioritized_options: Dict[str, Any] = {}
 
+        # Prioritize mumimo name from system argument over config option.
+        name = self._get_sys_args().get(SysArgs.SYS_NAME) or cfg_instance.get(
+            MumimoCfgFields.SETTINGS.CONNECTION.NAME,
+            fallback="Mumimo",
+        )
+        prioritized_options[SysArgs.SYS_NAME] = name
+        cfg_instance.set(MumimoCfgFields.SETTINGS.CONNECTION.NAME, name)
+
         # Prioritize auto-reconnect from system argument over config option.
         reconnect = self._get_sys_args().get(SysArgs.SYS_RECONNECT) or cfg_instance.get(
             MumimoCfgFields.SETTINGS.CONNECTION.AUTO_RECONNECT, fallback=False
@@ -116,13 +124,20 @@ class ClientSettingsInitService:
             if env_args is None:
                 env_args = {}
 
+        # Prioritize system args from system arguments over environment file.
         prioritized_options: Dict[str, Any] = {}
 
-        # Prioritize system args from system argument over environment file.
+        # Prioritize channel access tokens.
         sys_tokens = self._get_sys_args().get(SysArgs.SYS_TOKENS) or env_args.get(EnvArgs.ENV_TOKENS)
         if isinstance(sys_tokens, str):
             sys_tokens = connection_utils.parse_channel_tokens(sys_tokens)
         prioritized_options[SysArgs.SYS_TOKENS] = sys_tokens
+
+        # Prioritize cert/key files.
+        sys_cert_file = self._get_sys_args().get(SysArgs.SYS_CERT) or env_args.get(EnvArgs.ENV_CERT)
+        prioritized_options[SysArgs.SYS_CERT] = sys_cert_file
+        sys_key_file = self._get_sys_args().get(SysArgs.SYS_KEY) or env_args.get(EnvArgs.ENV_KEY)
+        prioritized_options[SysArgs.SYS_KEY] = sys_key_file
 
         prioritized_options.update(
             {

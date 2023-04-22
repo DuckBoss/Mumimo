@@ -32,9 +32,9 @@ class MumimoInitService:
         logger.info("Mumimo client settings initialized.")
         # Initialize the internal database.
         logger.info("Initializing internal database...")
-        print(cfg)
+        # print(cfg)
         _prioritized_cfg_opts = self._client_settings_init_service.get_prioritized_cfg_options()
-        print(_prioritized_cfg_opts)
+        # print(_prioritized_cfg_opts)
         _prioritized_env_opts = self._client_settings_init_service.get_prioritized_env_options()
         await self._db_init_service.initialize_database(
             dialect=_prioritized_env_opts.get(SysArgs.SYS_DB_DIALECT, None),

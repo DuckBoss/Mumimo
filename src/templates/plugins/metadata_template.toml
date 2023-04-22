@@ -1,0 +1,12 @@
+[plugin]
+enabled = false
+
+[plugin.about]
+name = "placeholder"
+version = "0.0.1"
+description = "placeholder"
+
+[plugin.commands]
+disable_commands = []
+disable_parameters = []
+default_permission_groups = []

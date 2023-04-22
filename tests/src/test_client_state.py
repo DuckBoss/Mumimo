@@ -11,16 +11,16 @@ from src.murmur_connection import MurmurConnection
 
 class TestClientState:
     @pytest.fixture(autouse=True)
-    @patch("src.settings.MumimoSettings.get_log_config")
-    @patch("src.settings.MumimoSettings.get_mumimo_config")
+    @patch("src.settings.MumimoSettings.Configs.get_log_config")
+    @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
     @patch.object(MurmurConnection, "connection_instance")
     def get_client_state(self, mumble_instance: Mumble, mock_mumimo_cfg, mock_log_cfg) -> ClientState:
         mock_mumimo_cfg.return_value = Config("tests/data/config/test_config.toml")
         mock_log_cfg.return_value = LogConfig("tests/data/config/test_logging.toml")
         return ClientState(mumble_instance)
 
-    @patch("src.settings.MumimoSettings.get_log_config")
-    @patch("src.settings.MumimoSettings.get_mumimo_config")
+    @patch("src.settings.MumimoSettings.Configs.get_log_config")
+    @patch("src.settings.MumimoSettings.Configs.get_mumimo_config")
     @patch.object(MurmurConnection, "connection_instance")
     def test_client_state_init(self, mumble_instance: Mumble, mock_mumimo_cfg, mock_log_cfg) -> None:
         mock_mumimo_cfg.return_value = Config("tests/data/config/test_config.toml")

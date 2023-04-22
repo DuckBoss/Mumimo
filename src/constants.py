@@ -10,11 +10,22 @@ VERBOSITY_MAX: int = VERBOSE_MAX
 
 # Logging Output Identifier Constants
 class LogOutputIdentifiers:
+    PLUGINS: str = "Plugins"
+    PLUGINS_PERMISSIONS: str = f"{PLUGINS}.Permissions"
+    PLUGINS_COMMANDS: str = f"{PLUGINS}.Commands"
+    PLUGINS_PARAMETERS: str = f"{PLUGINS}.Parameters"
+
     DB: str = "Database"
     DB_PERMISSIONS: str = f"{DB}.Permissions"
+    DB_USERS: str = f"{DB}.Users"
     DB_ALIASES: str = f"{DB}.Aliases"
     DB_PLUGINS: str = f"{DB}.Plugins"
-    DB_COMMANDS: str = f"{DB}.Commands"
+    DB_PLUGINS_COMMANDS: str = f"{DB}.{PLUGINS}.Commands"
+    DB_PLUGINS_PERMISSIONS: str = f"{DB}.{PLUGINS}.Permissions"
+
+    MUMBLE: str = "Mumble"
+    MUMBLE_ON_CONNECT: str = f"{MUMBLE}.On_Connect"
+    MUMBLE_ON_DISCONNECT: str = f"{MUMBLE}.On_Disconnect"
 
 
 # Env Args Constants
@@ -49,6 +60,7 @@ class SysArgs:
     SYS_RECONNECT: str = "auto_reconnect"
     SYS_GEN_CERT: str = "generate_cert"
     SYS_SUPER_USER: str = "superuser"
+    SYS_NAME: str = "name"
     SYS_ENV_FILE: str = "env_file"
     SYS_CONFIG_FILE: str = "config_file"
     SYS_LOG_CONFIG_FILE: str = "log_config_file"
@@ -72,6 +84,13 @@ DEFAULT_PATH_CONFIG_FILE: str = "config/config.toml"
 DEFAULT_PATH_LOGGING_CONFIG_FILE: str = "config/logging.toml"
 
 
+class DefaultPermissionGroups:
+    DEFAULT_NONE = "none"
+    DEFAULT_GUEST = "guest"
+    DEFAULT_MEMBER = "member"
+    DEFAULT_ADMIN = "admin"
+
+
 class PluginCfgSections:
     PLUGIN: str = "plugin"
     PLUGIN_ABOUT: str = f"{PLUGIN}.about"
@@ -82,7 +101,7 @@ class PluginCfgSections:
 
 class PluginCfgFields:
     class PLUGIN:
-        ENABLE: str = f"{PluginCfgSections.PLUGIN}.enable"
+        ENABLED: str = f"{PluginCfgSections.PLUGIN}.enabled"
 
         class ABOUT:
             NAME: str = f"{PluginCfgSections.PLUGIN_ABOUT}.name"
@@ -94,6 +113,7 @@ class PluginCfgFields:
 
         class COMMANDS:
             DISABLE_COMMANDS: str = f"{PluginCfgSections.PLUGIN_COMMANDS}.disable_commands"
+            DISABLE_PARAMETERS: str = f"{PluginCfgSections.PLUGIN_COMMANDS}.disable_parameters"
             DEFAULT_PERMISSION_GROUPS: str = f"{PluginCfgSections.PLUGIN_COMMANDS}.default_permission_groups"
 
         class HELP:
@@ -163,6 +183,7 @@ class MumimoCfgFields:
             COMMENT: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.comment"
             DEFAULT_CHANNEL: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.default_channel"
             AUTO_RECONNECT: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.auto_reconnect"
+            NAME: str = f"{MumimoCfgSections.SETTINGS_CONNECTION}.name"
 
         class DATABASE:
             USE_REMOTE_DB: str = f"{MumimoCfgSections.SETTINGS_DATABASE}.use_remote_database"

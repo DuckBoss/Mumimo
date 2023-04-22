@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, String, Table, Column
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -8,7 +8,14 @@ from .. import metadata
 
 if TYPE_CHECKING:
     from .permission_group import PermissionGroupTable
-    from .plugin import PluginTable
+
+
+command_permission_association_table = Table(
+    "command_permission_association_table",
+    metadata.Base.metadata,
+    Column("command_id", ForeignKey("command.id")),
+    Column("permission_group_id", ForeignKey("permission_group.id")),
+)
 
 
 class CommandTable(metadata.Base):
@@ -18,10 +25,9 @@ class CommandTable(metadata.Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
 
     # One to many to permission groups
-    permission_groups: Mapped[List["PermissionGroupTable"]] = relationship(back_populates="command")
+    permission_groups: Mapped[List["PermissionGroupTable"]] = relationship(secondary=command_permission_association_table)
 
-    # Nullable many-to-one to plugins
-    plugin: Mapped[Optional["PluginTable"]] = relationship(back_populates="commands")
+    # One to many nullable plugin
     plugin_id: Mapped[Optional[int]] = mapped_column(ForeignKey("plugin.id"))
 
     created_on: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=func.now(), server_default=func.now(), nullable=False)

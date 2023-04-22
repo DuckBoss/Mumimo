@@ -1,10 +1,17 @@
+import asyncio
+import logging
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Dict, Union, Any
 
-from .services.cmd_processing_service import CommandProcessingService
+from .utils import mumble_utils
+from .constants import LogOutputIdentifiers
+
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from pymumble_py3.mumble import Mumble
+    from pymumble_py3.users import User
 
 
 class ClientState:
@@ -120,18 +127,88 @@ class ClientState:
                         return True
             return False
 
+    class ServerProperties:
+        class ServerState:
+            _users: Dict[str, "User"]
+
+            def __init__(self) -> None:
+                self._users = {}
+
+            def add_user(self, user: Union["User", str, int]) -> bool:
+                if isinstance(user, str):
+                    _user = mumble_utils.get_user_by_name(user)
+                elif isinstance(user, int):
+                    _user = mumble_utils.get_user_by_id(user)
+                else:
+                    _user = user
+                if not _user:
+                    return False
+                self._users[_user["name"]] = _user
+                return True
+
+            def remove_user(self, user: Union["User", str, int]) -> bool:
+                if isinstance(user, str):
+                    marked = None
+                    for _name, _user in self._users.items():
+                        if _name == user:
+                            marked = _name
+                    if marked:
+                        del self._users[marked]
+                        return True
+                elif isinstance(user, int):
+                    marked = None
+                    for _name, _user in self._users.items():
+                        if _user["session"] == user:
+                            marked = _name
+                    if marked:
+                        del self._users[marked]
+                        return True
+                else:
+                    _user: "User" = user
+                    if not _user:
+                        return False
+                    del self._users[_user["name"]]
+                    return True
+                return False
+
+        _state: ServerState
+        _connection: Optional["Mumble"]
+
+        def __init__(self, mumble_instance: "Mumble") -> None:
+            self._state = self.ServerState()
+            self._connection = mumble_instance
+
+        @property
+        def state(self) -> ServerState:
+            return self._state
+
+        def on_server_connect(self, data) -> None:
+            print(data)
+
+        def on_user_created(self, data: Dict[str, Any]) -> None:
+            asyncio.run(mumble_utils.Management.UserManagement.add_user(data))
+            logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_CONNECT}]: '{data['name']}' connected: added user '{data['name']}' to the server state.")
+
+        def on_user_removed(self, data: Dict[str, Any], message: str) -> None:
+            if self.state.remove_user(user=data["name"]):
+                logger.debug(
+                    f"[{LogOutputIdentifiers.MUMBLE_ON_DISCONNECT}]: '{data['name']}' disconnected: "
+                    f"removed user '{data['name']}' from the server state."
+                )
+                return
+            logger.error(f"Unable to remove user '{data['name']}' from the server state: {data}")
+
     _audio_properties: AudioProperties
-    _cmd_service: CommandProcessingService
+    _server_properties: ServerProperties
 
     def __init__(self, mumble_instance: "Mumble") -> None:
         self._audio_properties = self.AudioProperties(mumble_instance)
-        self._murmur_callbacks = {}
-        self._cmd_service = CommandProcessingService(mumble_instance)
+        self._server_properties = self.ServerProperties(mumble_instance)
 
     @property
     def audio_properties(self) -> AudioProperties:
         return self._audio_properties
 
     @property
-    def cmd_service(self) -> CommandProcessingService:
-        return self._cmd_service
+    def server_properties(self) -> ServerProperties:
+        return self._server_properties
