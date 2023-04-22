@@ -1,10 +1,10 @@
 [plugin]
-enabled = true
+enabled = false
 
 [plugin.about]
-name = "Core"
+name = "Sound Board"
 version = "0.0.1"
-description = "Provides core functionality to Mumimo."
+description = "Provides sound board functionality to Mumimo."
 
 [plugin.commands]
 disable_commands = []

@@ -2,9 +2,9 @@
 enabled = true
 
 [plugin.about]
-name = "Core"
+name = "Image"
 version = "0.0.1"
-description = "Provides core functionality to Mumimo."
+description = "Provides image processing functionality to Mumimo."
 
 [plugin.commands]
 disable_commands = []

@@ -18,18 +18,6 @@ class PermissionGroupTable(metadata.Base):
     id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
 
-    # Nullable many-to-one to commands
-    command: Mapped[Optional["CommandTable"]] = relationship(back_populates="permission_groups")
-    command_id: Mapped[Optional[int]] = mapped_column(ForeignKey("command.id"))
-
-    # Nullable many-to-one to users
-    user: Mapped[Optional["UserTable"]] = relationship(back_populates="permission_groups")
-    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"))
-
-    # Nullable many-to-one to aliases
-    alias: Mapped[Optional["AliasTable"]] = relationship(back_populates="permission_groups")
-    alias_id: Mapped[Optional[int]] = mapped_column(ForeignKey("alias.id"))
-
     created_on: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=func.now(), server_default=func.now(), nullable=False)
     updated_on: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False)
 

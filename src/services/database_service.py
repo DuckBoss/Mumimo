@@ -210,6 +210,9 @@ class DatabaseService:
             scopefunc=asyncio.current_task,
         )
 
+        # Save the database service instance to the settings.
+        settings.database.set_database_instance(self)
+
     async def _validate_connection_parameters(self, connection_parameters: DatabaseConnectionParameters) -> Tuple[bool, str]:
         _validation_result: Tuple[bool, str] = connection_parameters.validate_parameters()
         return _validation_result

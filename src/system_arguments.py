@@ -26,6 +26,7 @@ group_connection.add_argument("-k", "--key-file", help="path to private key asso
 group_connection.add_argument("-t", "--tokens", help="channel access tokens as a list of strings", type=str)
 group_connection.add_argument("-ar", "--auto-reconnect", help="attempt to reconnect to the server if disconnected", action="store_true")
 group_connection.add_argument("-su", "--superuser", help="the user profile that has full access to this client", type=str)
+group_connection.add_argument("-n", "--name", help="changes the display name of the bot client to the specified name", type=str)
 
 # Other system arguments
 group_other = args_parser.add_argument_group("other")

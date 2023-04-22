@@ -17,7 +17,7 @@ class PluginTable(metadata.Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
 
     # One to many to commands
-    commands: Mapped[List["CommandTable"]] = relationship(back_populates="plugin", cascade="all, delete")
+    commands: Mapped[List["CommandTable"]] = relationship(cascade="all, delete")
 
     created_on: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=func.now(), server_default=func.now(), nullable=False)
     updated_on: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False)

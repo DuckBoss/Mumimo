@@ -1,6 +1,14 @@
 import logging
 import threading
+import asyncio
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
+
+
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+from ..lib.database.models.user import UserTable
+from ..lib.database.models.permission_group import PermissionGroupTable
+from ..lib.database.models.command import CommandTable
 
 from ..constants import LogCfgFields, MumimoCfgFields
 from ..exceptions import ServiceError
@@ -12,10 +20,13 @@ from ..utils.parsers import cmd_parser
 
 if TYPE_CHECKING:
     from pymumble_py3.mumble import Mumble
+    from pymumble_py3.users import User
 
     from ..config import Config
     from ..lib.command import Command
     from ..log_config import LogConfig
+
+    from ..services.database_service import DatabaseService
 
 
 logger = logging.getLogger(__name__)
@@ -148,7 +159,6 @@ class CommandProcessingService:
             return _dict
 
     _connection_instance: "Mumble"
-    _cmd_history: "CommandHistory"
     _privacy_filter: "OutputPrivacyFilter"
     _cfg_instance: "Config"
     _log_cfg: "LogConfig"
@@ -156,10 +166,6 @@ class CommandProcessingService:
     @property
     def connection_instance(self) -> "Mumble":
         return self._connection_instance
-
-    @property
-    def cmd_history(self) -> "CommandHistory":
-        return self._cmd_history
 
     @property
     def log_cfg(self) -> "LogConfig":
@@ -176,10 +182,15 @@ class CommandProcessingService:
         if _log_cfg is None:
             raise ServiceError("Unable to create command processing service: log config could not be retrieved.", logger=logger)
         self._log_cfg = _log_cfg
-        self._cmd_history = CommandHistory(history_limit=_cfg_instance.get(MumimoCfgFields.SETTINGS.COMMANDS.COMMAND_HISTORY_LENGTH, None))
+        settings.commands.history.set_command_history(
+            CommandHistory(history_limit=_cfg_instance.get(MumimoCfgFields.SETTINGS.COMMANDS.COMMAND_HISTORY_LENGTH, None))
+        )
         self._privacy_filter = self.OutputPrivacyFilter()
 
     def process_cmd(self, text) -> None:
+        asyncio.run(self._process_cmd(text))
+
+    async def _process_cmd(self, text) -> None:
         if text is None:
             raise ServiceError("Received text message with a 'None' value.", logger=logger)
         parsed_cmd: Optional["Command"] = cmd_parser.parse_command(text)
@@ -190,7 +201,7 @@ class CommandProcessingService:
                 return
 
             # Retrieve all the registered command callbacks to process the command.
-            _callbacks = settings.commands.get_command_callbacks()
+            _callbacks = settings.commands.callbacks.get_command_callbacks()
             if _callbacks is None:
                 raise ServiceError("Unable to process command: cannot retrieve registered command callbacks.", logger=logger)
 
@@ -200,6 +211,51 @@ class CommandProcessingService:
                 logger.warning(f"The command: [{_cmd_name}] is not a registered command.")
                 return
 
+            # Retrieve the user's and command's permission groups to determine if the user can use this commnad.
+            _db_service: Optional["DatabaseService"] = settings.database.get_database_instance()
+            if not _db_service:
+                raise ServiceError("Unable to process command: the database service could not retrieve the database instance.", logger=logger)
+
+            _actor_name: Optional["User"] = mumble_utils.get_user_by_id(parsed_cmd.actor)
+            if not _actor_name:
+                raise ServiceError("Unable to process command: the user name could not be retrieved from the actor id.")
+
+            async with _db_service.session() as session:
+                _user_query = await session.execute(
+                    select(UserTable).filter_by(name=_actor_name["name"]).options(selectinload(UserTable.permission_groups))
+                )
+                _user_info: Optional[UserTable] = _user_query.scalar()
+                if not _user_info:
+                    logger.error("Unable to process command: the user that sent this command was not found in the database.")
+                    return
+
+                _command_query = await session.execute(
+                    select(CommandTable).filter_by(name=_cmd_name).options(selectinload(CommandTable.permission_groups))
+                )
+                _command_info: Optional[CommandTable] = _command_query.scalar()
+                if not _command_info:
+                    logger.error("Unable to process command: the command was not found in the database.")
+                    return
+
+                _user_permissions_groups: List[PermissionGroupTable] = _user_info.permission_groups
+                _command_permission_groups: List[PermissionGroupTable] = _command_info.permission_groups
+                _user_permissions_list = [perm.to_dict() for perm in _user_permissions_groups]
+
+                _command_permissions_list = [perm.to_dict() for perm in _command_permission_groups]
+                _command_permissions_list = [cmd_perm["name"] for cmd_perm in _command_permissions_list]
+                permission_found: bool = False
+                for _user_permission in _user_permissions_list:
+                    if _user_permission["name"] in _command_permissions_list:
+                        permission_found = True
+                        break
+                if not permission_found:
+                    mumble_utils.echo(
+                        f"Unable to process command: the user '{_user_info.name}' does not have permissions to use the '{_cmd_name}' command.",
+                        target_users=mumble_utils.get_user_by_id(parsed_cmd.actor),
+                        log_severity=logging.WARNING,
+                    )
+                    return
+
             # Check if the plugin is currently active/running:
             _plugin_name: Optional[str] = _cmd_info.get("plugin", None)
             if _plugin_name is None:
@@ -208,7 +264,12 @@ class CommandProcessingService:
             if _registered_plugins is None:
                 raise ServiceError("Unable to process command: could not find any registered plugins.", logger=logger)
             if not _registered_plugins[_plugin_name].is_running:
-                logger.warning(f"The command: [{_cmd_name}] could not be executed because the plugin is not running.")
+                _inactive_msg = f"The command '{_cmd_name}' could not be executed because the plugin '{_plugin_name}' is not running."
+                logger.warning(_inactive_msg)
+                mumble_utils.echo(
+                    _inactive_msg,
+                    target_users=mumble_utils.get_user_by_id(parsed_cmd.actor),
+                )
                 return
 
             # Retrieve the callable method for the command.
@@ -216,14 +277,23 @@ class CommandProcessingService:
             if _cmd_callable is None:
                 raise ServiceError(f"The command: [{_cmd_name}] does not contain a registered callable method.", logger=logger)
 
-            # Ignore the command if the provided parameters are invalid:
-            if parsed_cmd.parameters:
-                _cmd_params: Optional[List[str]] = _cmd_info.get("parameters", [])
-                if not any(param in _cmd_params for param in parsed_cmd.parameters):
+            # Ignore the command if the provided parameters are invalid or do not exist:
+            _cmd_params: Optional[List[str]] = _cmd_info.get("parameters", [])
+            if len(_cmd_params) > 0:
+                _parameters_required = _cmd_info.get("parameters_required", False)
+                if _parameters_required and not parsed_cmd.parameters:
+                    logger.warning(f"The command: [{_cmd_name}] requires parameters and no parameters were provided.")
+                    mumble_utils.echo(
+                        f"Invalid '{_cmd_name}' command. This command requires the usage of parameters. "
+                        f"Please use one of the available parameters: {', '.join(_cmd_params)}",
+                        target_users=mumble_utils.get_user_by_id(parsed_cmd.actor),
+                    )
+                    return
+                if any(param.split("=", 1)[0] not in _cmd_params for param in parsed_cmd.parameters):
                     logger.warning(f"The command: [{_cmd_name}] could not be executed because one or more provided parameters do not exist.")
                     mumble_utils.echo(
-                        f"""Invalid command. Please use one of the available parameters: {'", "'.join(_cmd_params)}""",
-                        target_type="me",
+                        f"Invalid '{_cmd_name}' command. Please use one of the available parameters: {', '.join(_cmd_params)}",
+                        target_users=mumble_utils.get_user_by_id(parsed_cmd.actor),
                         user_id=parsed_cmd.actor,
                     )
                     return
@@ -236,9 +306,9 @@ class CommandProcessingService:
             )
 
             # Add command to command history:
-            if self.cmd_history is None:
+            if settings.commands.history.get_command_history() is None:
                 raise ServiceError("Unable to add command to uninitialized command history.", logger=logger)
-            if self.cmd_history.add(parsed_cmd) is None:
+            if settings.commands.history.add_command_to_history(parsed_cmd) is None:
                 logger.warning(f"The command: [{parsed_cmd.message}] could not be added to the command history.")
 
             # Debug the command:
@@ -255,9 +325,9 @@ class CommandProcessingService:
                 args=(_registered_plugins[_plugin_name], parsed_cmd),
             )
             logger.debug(f"Command thread: [{_cmd_thread.name}] initialized.")
-            logger.debug(f"Command thread: [{_cmd_thread.name} | {_cmd_thread.ident}] starting...")
             _cmd_thread.start()
+            logger.debug(f"Command thread: [{_cmd_thread.name} | {_cmd_thread.ident}] starting...")
 
-            logger.debug(f"Command thread: [{_cmd_thread.name} | {_cmd_thread.ident}] closing...")
+            logger.debug(f"Command thread: [{_cmd_thread.name} | {_cmd_thread.ident}] completing...")
             _cmd_thread.join()
             logger.debug(f"Command thread: [{_cmd_thread.name}] closed.")

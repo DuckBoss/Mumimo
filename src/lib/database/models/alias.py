@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, String, Table, Column
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -11,6 +11,14 @@ if TYPE_CHECKING:
     from .user import UserTable
 
 
+alias_permission_association_table = Table(
+    "alias_permission_association_table",
+    metadata.Base.metadata,
+    Column("alias_id", ForeignKey("alias.id")),
+    Column("permission_group_id", ForeignKey("permission_group.id")),
+)
+
+
 class AliasTable(metadata.Base):
     __tablename__ = "alias"
 
@@ -19,10 +27,9 @@ class AliasTable(metadata.Base):
     command: Mapped[str] = mapped_column(String(1024), nullable=False)
 
     # One to many to permission groups
-    permission_groups: Mapped[List["PermissionGroupTable"]] = relationship(back_populates="alias")
+    permission_groups: Mapped[List["PermissionGroupTable"]] = relationship(secondary=alias_permission_association_table)
 
-    # Nullable many-to-one to users
-    user: Mapped[Optional["UserTable"]] = relationship(back_populates="aliases")
+    # One to many nullable user
     user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"))
 
     created_on: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=func.now(), server_default=func.now(), nullable=False)

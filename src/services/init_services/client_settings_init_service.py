@@ -63,6 +63,14 @@ class ClientSettingsInitService:
         # System arguments should have higher priority than config file.
         prioritized_options: Dict[str, Any] = {}
 
+        # Prioritize mumimo name from system argument over config option.
+        name = self._get_sys_args().get(SysArgs.SYS_NAME) or cfg_instance.get(
+            MumimoCfgFields.SETTINGS.CONNECTION.NAME,
+            fallback="Mumimo",
+        )
+        prioritized_options[SysArgs.SYS_NAME] = name
+        cfg_instance.set(MumimoCfgFields.SETTINGS.CONNECTION.NAME, name)
+
         # Prioritize auto-reconnect from system argument over config option.
         reconnect = self._get_sys_args().get(SysArgs.SYS_RECONNECT) or cfg_instance.get(
             MumimoCfgFields.SETTINGS.CONNECTION.AUTO_RECONNECT, fallback=False
