@@ -9,7 +9,7 @@ class CommandHistory:
     _history: List["Command"]
     _limit: int
 
-    DEFAULT_HISTORY_LIMIT: int = 1000
+    DEFAULT_HISTORY_LIMIT: int = 100
 
     @property
     def history(self) -> List["Command"]:
