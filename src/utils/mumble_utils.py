@@ -32,6 +32,7 @@ def echo(
     target_users: Optional[Union[List["User"], "User"]] = None,
     log_severity: int = logging.DEBUG,
     raw_text: Optional[str] = None,
+    **kwargs,
 ) -> None:
     if text is None:
         logger.warning("Unable to echo message: 'text' value is missing.")

@@ -285,14 +285,22 @@ class CommandProcessingService:
                 logger.warning(f"The command: [{_cmd_name}] is not a registered command.")
                 _all_command_names = [command for command in _callbacks.keys()]
                 _command_suggestions = process.extract(_cmd_name, _all_command_names, limit=3)
-                _command_suggestions = [x[0] for x in _command_suggestions if x[1] >= 75]
+                logger.debug(f"Found command suggestions: {_command_suggestions}")
+                _command_suggestions = [x[0] for x in _command_suggestions if x[1] >= 70]
                 # Only display suggestions if there is a closely matched ratio.
                 if _command_suggestions:
-                    _msg = f"The command: [{_cmd_name}] could not be found. Did you mean any of the following: "
-                    _msg += f"[{', '.join(_command_suggestions)}]?"
+                    _suggestion_msgs = []
+                    for idx, cmd in enumerate(_command_suggestions):
+                        _suggestion_msgs.append(f"- {cmd} ")
+                    _msgs = [
+                        f"The command: [{_cmd_name}] could not be found. ",
+                        "Did you mean any of the following: ",
+                        *_suggestion_msgs,
+                    ]
                     GUIFramework.gui(
-                        _msg,
+                        _msgs,
                         target_users=mumble_utils.get_user_by_id(command.actor),
+                        table_align="left",
                     )
                 return
 

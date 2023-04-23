@@ -2,7 +2,7 @@ import logging
 
 from typing import Optional, Union, List
 from .constants import TextTypes
-from .utility import TagModifiers
+from .utility import FontModifiers, AlignmentModifiers
 from ....utils import mumble_utils
 
 
@@ -28,12 +28,13 @@ class GUIFramework:
             self._box_close = ""
             self._box_rows = []
 
-        def open(self, settings: Optional["Settings"] = None) -> bool:
+        def open(self, settings: Optional["Settings"] = None, **kwargs) -> bool:
             if self.is_open:
                 return False
             if settings is None:
                 settings = self.settings
-            self._box_open = f'<table bgcolor="{self.settings.background_color}" align="{self.settings.background_color}">'
+            settings.update(**kwargs)
+            self._box_open = f'<table bgcolor="{settings.table_bg_color}" align="{settings.table_align}" cellspacing="1" cellpadding="5">'
             self.is_open = True
             return True
 
@@ -44,14 +45,19 @@ class GUIFramework:
             self.is_open = False
             return True
 
-        def add_row(self, text: str, settings: Optional["Settings"] = None) -> bool:
+        def add_row(self, text: str, settings: Optional["Settings"] = None, **kwargs) -> bool:
             if not self.is_open:
                 return False
             if settings is None:
                 settings = self.settings
-            _row_type = f"{'tr' if self.settings.text_type == TextTypes.BODY else 'th'}"
+            settings.update(**kwargs)
+            _row_type = f"{'td' if settings.text_type == TextTypes.BODY else 'th'}"
             self._box_rows.append(
-                f'<{_row_type} {TagModifiers.align(self.settings.text_align)} {TagModifiers.color(settings.text_color)}">{text}</{_row_type}>'
+                f"<tr {FontModifiers.bgcolor(settings.row_bg_color)}>"
+                f"<{_row_type} {AlignmentModifiers.align(settings.row_align)}>"
+                f"<font {FontModifiers.color(settings.text_color)}>{text}</font>"
+                f"</{_row_type}>"
+                f"</tr>"
             )
             return True
 
@@ -68,10 +74,27 @@ class GUIFramework:
             text_type: TextTypes = TextTypes.HEADER
             text_color: str = "yellow"
             text_align: str = "center"
-            background_color: str = "black"
 
-    def __init__(self) -> None:
-        logger.debug("Initialized GUI Framework.")
+            table_align: str = "center"
+            table_bg_color: str = "black"
+
+            row_align: str = "left"
+            row_bg_color: str = "black"
+
+            def __init__(self, **kwargs) -> None:
+                self.update(**kwargs)
+
+            def update(self, **kwargs) -> "GUIFramework.ContentBox.Settings":
+                self.text_type = kwargs.get("text_type", self.text_type)
+                self.text_color = kwargs.get("text_color", self.text_color)
+                self.text_align = kwargs.get("text_align", self.text_align)
+
+                self.table_align = kwargs.get("table_align", self.table_align)
+                self.table_bg_color = kwargs.get("table_bg_color", self.table_bg_color)
+
+                self.row_align = kwargs.get("row_align", self.row_align)
+                self.row_bg_color = kwargs.get("bg_color", self.row_bg_color)
+                return self
 
     @staticmethod
     def gui(
@@ -84,9 +107,9 @@ class GUIFramework:
             raw_text = [text]
 
         _content = GUIFramework.ContentBox(settings=settings)
-        _content.open()
+        _content.open(**kwargs)
         for idx, row in enumerate(raw_text):
-            _content.add_row(row)
+            _content.add_row(row, **kwargs)
         _content.close()
 
         _compiled_text: str = _content.compile()
