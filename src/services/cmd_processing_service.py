@@ -3,6 +3,7 @@ import threading
 import asyncio
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
+from thefuzz import fuzz, process
 
 
 from sqlalchemy import select
@@ -279,7 +280,19 @@ class CommandProcessingService:
             # Retrieve the registered command information.
             _cmd_info: Optional[Dict[str, Any]] = _callbacks.get(_cmd_name)
             if _cmd_info is None:
+                # If the command does not exist, suggest similar commands using a fuzzy search.
                 logger.warning(f"The command: [{_cmd_name}] is not a registered command.")
+                _all_command_names = [command for command in _callbacks.keys()]
+                _command_suggestions = process.extract(_cmd_name, _all_command_names, limit=3)
+                _command_suggestions = [x[0] for x in _command_suggestions if x[1] >= 75]
+                # Only display suggestions if there is a closely matched ratio.
+                if _command_suggestions:
+                    _msg = f"The command: [{_cmd_name}] could not be found. Did you mean any of the following: "
+                    _msg += f"[{', '.join(_command_suggestions)}]?"
+                    mumble_utils.echo(
+                        _msg,
+                        target_users=mumble_utils.get_user_by_id(command.actor),
+                    )
                 return
 
             # Retrieve the user's and command's permission groups to determine if the user can use this commnad.
