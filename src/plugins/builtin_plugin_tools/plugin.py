@@ -5,6 +5,7 @@ from src.constants import LogOutputIdentifiers
 from src.lib.frameworks.plugins.plugin import PluginBase
 from src.settings import settings
 from src.utils import mumble_utils
+from src.lib.frameworks.gui.gui import GUIFramework
 
 from .utility.constants import ParameterDefinitions
 
@@ -44,14 +45,14 @@ class Plugin(PluginBase):
     def _get_plugin(self, data: "Command") -> Optional["PluginBase"]:
         _plugin_name: str = data.message.strip()
         if not _plugin_name:
-            mumble_utils.echo(
+            GUIFramework.gui(
                 f"'{data._command}' command warning: an invalid plugin name was provided.",
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
         _plugin: Optional["PluginBase"] = settings.plugins.get_registered_plugin(_plugin_name)
         if _plugin is None:
-            mumble_utils.echo(
+            GUIFramework.gui(
                 f"'{data._command}' command error: the plugin '{_plugin_name}' could not be found.",
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
@@ -65,12 +66,12 @@ class Plugin(PluginBase):
 
         _status, _message = _plugin.stop()
         if not _status:
-            mumble_utils.echo(
+            GUIFramework.gui(
                 f"'{data._command}' command error: {_message}",
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
-        mumble_utils.echo(
+        GUIFramework.gui(
             _message,
             target_users=mumble_utils.get_user_by_id(data.actor),
         )
@@ -82,12 +83,12 @@ class Plugin(PluginBase):
 
         _status, _message = _plugin.start()
         if not _status:
-            mumble_utils.echo(
+            GUIFramework.gui(
                 f"'{data._command}' command error: {_message}",
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
-        mumble_utils.echo(
+        GUIFramework.gui(
             _message,
             target_users=mumble_utils.get_user_by_id(data.actor),
         )
@@ -99,12 +100,12 @@ class Plugin(PluginBase):
 
         _status, _message = _plugin.restart()
         if not _status:
-            mumble_utils.echo(
+            GUIFramework.gui(
                 f"'{data._command}' command error: {_message}",
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
-        mumble_utils.echo(
+        GUIFramework.gui(
             _message,
             target_users=mumble_utils.get_user_by_id(data.actor),
         )
@@ -112,19 +113,19 @@ class Plugin(PluginBase):
     def _parameter_plugin_active(self, data: "Command", parameter: str) -> None:
         _registered_plugins = settings.plugins.get_registered_plugins()
         if not _registered_plugins:
-            mumble_utils.echo(
+            GUIFramework.gui(
                 f"'{data._command}' command warning: no active plugins were found.",
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
         _plugin = _registered_plugins.get(data.message.strip())
         if not _plugin:
-            mumble_utils.echo(
+            GUIFramework.gui(
                 f"'{data._command}' command warning: no plugin name was provided.",
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
-        mumble_utils.echo(
+        GUIFramework.gui(
             f"Plugin '{data.message.strip()}' active: {_plugin.is_running}",
             target_users=mumble_utils.get_user_by_id(data.actor),
         )

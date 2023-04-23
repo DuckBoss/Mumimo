@@ -5,6 +5,7 @@ class ParameterDefinitions:
     class Echo:
         DELAY: str = "delay"
         BROADCAST: str = "broadcast"
+        MYCHANNEL: str = "mychannel"
         CHANNEL: str = "channel"
         CHANNELS: str = "channels"
         USER: str = "user"
@@ -16,6 +17,7 @@ class ParameterDefinitions:
             return [
                 ParameterDefinitions.Echo.DELAY,
                 ParameterDefinitions.Echo.BROADCAST,
+                ParameterDefinitions.Echo.MYCHANNEL,
                 ParameterDefinitions.Echo.CHANNEL,
                 ParameterDefinitions.Echo.CHANNELS,
                 ParameterDefinitions.Echo.USER,

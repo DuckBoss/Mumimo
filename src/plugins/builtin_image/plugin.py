@@ -8,7 +8,7 @@ from src.constants import LogOutputIdentifiers
 from src.lib.frameworks.plugins.plugin import PluginBase
 from src.settings import settings
 from src.utils import mumble_utils
-
+from src.lib.frameworks.gui.gui import GUIFramework
 from .utility.constants import ParameterDefinitions
 
 logger = logging.getLogger(__name__)
@@ -89,7 +89,7 @@ class Plugin(PluginBase):
         if len(parameter_split) == 2:
             user_names = [user.strip().replace("_", " ") for user in parameter_split[1].split(",")]
             if not user_names:
-                mumble_utils.echo(
+                GUIFramework.gui(
                     f"'{data._command}' command warning: no users were provided.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
@@ -102,12 +102,12 @@ class Plugin(PluginBase):
                 if _search_user is not None:
                     _found_users.append(_search_user)
                     continue
-                mumble_utils.echo(
+                GUIFramework.gui(
                     f"'{data._command}' command warning: cannot find specified user '{_user}'.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
             return _found_users
-        mumble_utils.echo(
+        GUIFramework.gui(
             f"'{data._command}' command warning: an invalid list of user names was provided.",
             target_users=mumble_utils.get_user_by_id(data.actor),
         )
@@ -120,7 +120,7 @@ class Plugin(PluginBase):
         if len(parameter_split) == 2:
             channel_names = [channel.strip().replace("_", " ") for channel in parameter_split[1].split(",")]
             if not channel_names:
-                mumble_utils.echo(
+                GUIFramework.gui(
                     f"'{data._command}' command warning: no channel names were provided.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
@@ -133,12 +133,12 @@ class Plugin(PluginBase):
                 if _search_channel is not None:
                     _found_channels.append(_search_channel)
                     continue
-                mumble_utils.echo(
+                GUIFramework.gui(
                     f"'{data._command}' command warning: cannot find specified channel '{_channel}'.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
             return _found_channels
-        mumble_utils.echo(
+        GUIFramework.gui(
             f"'{data._command}' command warning: an invalid list of channel names was provided.",
             target_users=mumble_utils.get_user_by_id(data.actor),
         )
@@ -149,7 +149,7 @@ class Plugin(PluginBase):
         if len(parameter_split) == 2:
             _search_term: str = parameter_split[1].strip().replace("_", " ")
             if not _search_term:
-                mumble_utils.echo(
+                GUIFramework.gui(
                     f"'{data._command}' command warning: an invalid user name was provided.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
@@ -157,12 +157,12 @@ class Plugin(PluginBase):
             _search_user: Optional["User"] = mumble_utils.get_user_by_name(_search_term)
             if _search_user is not None:
                 return _search_user
-            mumble_utils.echo(
+            GUIFramework.gui(
                 f"'{data._command}' command warning: cannot find specified user '{_search_term}'.",
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
-        mumble_utils.echo(
+        GUIFramework.gui(
             f"'{data._command}' command warning: a user name was not provided.",
             target_users=mumble_utils.get_user_by_id(data.actor),
         )
@@ -172,7 +172,7 @@ class Plugin(PluginBase):
         if len(parameter_split) == 2:
             _search_term: str = parameter_split[1].strip().replace("_", " ")
             if not _search_term:
-                mumble_utils.echo(
+                GUIFramework.gui(
                     f"'{data._command}' command warning: an invalid channel name was provided.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
@@ -180,12 +180,12 @@ class Plugin(PluginBase):
             _search_channel: Optional["Channel"] = mumble_utils.get_channel_by_name(_search_term)
             if _search_channel is not None:
                 return _search_channel
-            mumble_utils.echo(
+            GUIFramework.gui(
                 f"'{data._command}' command warning: cannot find specified channel '{_search_term}'.",
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
-        mumble_utils.echo(
+        GUIFramework.gui(
             f"'{data._command}' command warning: a channel name was not provided.",
             target_users=mumble_utils.get_user_by_id(data.actor),
         )

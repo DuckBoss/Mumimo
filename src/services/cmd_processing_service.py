@@ -3,7 +3,7 @@ import threading
 import asyncio
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
-from thefuzz import fuzz, process
+from thefuzz import process
 
 
 from sqlalchemy import select
@@ -15,6 +15,7 @@ from ..lib.database.models.alias import AliasTable
 
 from ..constants import LogCfgFields, MumimoCfgFields, LogOutputIdentifiers
 from ..exceptions import ServiceError
+from ..lib.frameworks.gui.gui import GUIFramework
 from ..lib.command_history import CommandHistory
 from ..logging import log_privacy
 from ..settings import settings
@@ -289,7 +290,7 @@ class CommandProcessingService:
                 if _command_suggestions:
                     _msg = f"The command: [{_cmd_name}] could not be found. Did you mean any of the following: "
                     _msg += f"[{', '.join(_command_suggestions)}]?"
-                    mumble_utils.echo(
+                    GUIFramework.gui(
                         _msg,
                         target_users=mumble_utils.get_user_by_id(command.actor),
                     )
@@ -333,7 +334,7 @@ class CommandProcessingService:
                         permission_found = True
                         break
                 if not permission_found:
-                    mumble_utils.echo(
+                    GUIFramework.gui(
                         f"Unable to process command: the user '{_user_info.name}' does not have permissions to use the '{_cmd_name}' command.",
                         target_users=mumble_utils.get_user_by_id(command.actor),
                         log_severity=logging.WARNING,
@@ -350,7 +351,7 @@ class CommandProcessingService:
             if not _registered_plugins[_plugin_name].is_running:
                 _inactive_msg = f"The command '{_cmd_name}' could not be executed because the plugin '{_plugin_name}' is not running."
                 logger.warning(_inactive_msg)
-                mumble_utils.echo(
+                GUIFramework.gui(
                     _inactive_msg,
                     target_users=mumble_utils.get_user_by_id(command.actor),
                 )
@@ -367,7 +368,7 @@ class CommandProcessingService:
                 _parameters_required = _cmd_info.get("parameters_required", False)
                 if _parameters_required and not command.parameters:
                     logger.warning(f"The command: [{_cmd_name}] requires parameters and no parameters were provided.")
-                    mumble_utils.echo(
+                    GUIFramework.gui(
                         f"Invalid '{_cmd_name}' command. This command requires the usage of parameters. "
                         f"Please use one of the available parameters: {', '.join(_cmd_params)}",
                         target_users=mumble_utils.get_user_by_id(command.actor),
@@ -375,7 +376,7 @@ class CommandProcessingService:
                     return
                 if any(param.split("=", 1)[0] not in _cmd_params for param in command.parameters):
                     logger.warning(f"The command: [{_cmd_name}] could not be executed because one or more provided parameters do not exist.")
-                    mumble_utils.echo(
+                    GUIFramework.gui(
                         f"Invalid '{_cmd_name}' command. Please use one of the available parameters: {', '.join(_cmd_params)}",
                         target_users=mumble_utils.get_user_by_id(command.actor),
                         user_id=command.actor,
