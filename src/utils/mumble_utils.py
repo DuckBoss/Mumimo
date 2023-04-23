@@ -30,7 +30,8 @@ def echo(
     delay: Optional[int] = None,
     target_channels: Optional[Union[List["Channel"], "Channel"]] = None,
     target_users: Optional[Union[List["User"], "User"]] = None,
-    log_severity: int = 0,
+    log_severity: int = logging.DEBUG,
+    raw_text: Optional[str] = None,
 ) -> None:
     if text is None:
         logger.warning("Unable to echo message: 'text' value is missing.")
@@ -43,6 +44,8 @@ def echo(
         target_channels = [target_channels]
     if isinstance(target_users, User):
         target_users = [target_users]
+    if raw_text is None:
+        raw_text = text
 
     if user_id:
         _user = get_user_by_id(user_id)
@@ -64,7 +67,7 @@ def echo(
             channel.send_text_message(text.strip())
             logger.log(
                 level=log_severity,
-                msg=f"'{_user}' echoed [Channel->{channel['name']}]: {text.strip()}",
+                msg=f"'{_user}' echoed [Channel->{channel['name']}]: {raw_text.strip()}",
             )
     elif target_users:
         if _delay > 0:
@@ -73,7 +76,7 @@ def echo(
             user.send_text_message(text.strip())
             logger.log(
                 level=log_severity,
-                msg=f"'{_user}' echoed [User->{user['name']}]: {text.strip()}",
+                msg=f"'{_user}' echoed [User->{user['name']}]: {raw_text.strip()}",
             )
     else:
         _channel: Optional["Channel"] = get_my_channel()
@@ -85,7 +88,7 @@ def echo(
         _channel.send_text_message(text.strip())
         logger.log(
             level=log_severity,
-            msg=f"'{_user}' echoed [Channel->{_channel['name']}]: {text.strip()}",
+            msg=f"'{_user}' echoed [Channel->{_channel['name']}]: {raw_text.strip()}",
         )
 
 
