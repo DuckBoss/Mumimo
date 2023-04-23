@@ -9,6 +9,7 @@ from ....config import Config
 from ....constants import LogOutputIdentifiers, PluginCfgFields
 from ....exceptions import PluginError
 from ....utils import mumble_utils
+from ...frameworks.gui.gui import GUIFramework
 
 logger = logging.getLogger(__name__)
 
@@ -161,7 +162,7 @@ class PluginBase(ABC):
         _compiled_result: ParameterCompileResult = self._compile_parameters(func_name, data)
         if _compiled_result.status == PluginConstants.Status.FAILED:
             if _compiled_result.reason == PluginConstants.Reason.COMMAND_DISABLED:
-                mumble_utils.echo(
+                GUIFramework.gui(
                     f"'{data.command}' command error: this command is disabled.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
@@ -169,27 +170,27 @@ class PluginBase(ABC):
             elif _compiled_result.reason == PluginConstants.Reason.COMMAND_EXCLUSIVE:
                 if not _compiled_result.parameters:
                     _compiled_result.parameters = ["n/a"]
-                mumble_utils.echo(
+                GUIFramework.gui(
                     f"'{data.command}' command error: [{', '.join(_compiled_result.parameters)}] are exclusive "
                     "parameters that must be used independently.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
                 return
             elif _compiled_result.reason == PluginConstants.Reason.PARAMETER_DISABLED:
-                mumble_utils.echo(
+                GUIFramework.gui(
                     f"'{data.command}' command error: the '{_compiled_result.parameters}' parameter is disabled.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
                 return
             elif _compiled_result.reason == PluginConstants.Reason.PARAMETER_INVALID:
-                mumble_utils.echo(
+                GUIFramework.gui(
                     f"'{data.command}' command error: the '{_compiled_result.parameters}' parameter is invalid.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
                 return
         _compiled_parameters: Optional[Dict[str, Any]] = _compiled_result.result
         if _compiled_parameters is None:
-            mumble_utils.echo(f"'{data.command}' command error: parameters failed to compile.")
+            GUIFramework.gui(f"'{data.command}' command error: parameters failed to compile.")
             return
         return _compiled_parameters
 
