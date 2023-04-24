@@ -1,0 +1,26 @@
+[theme.light]
+text_type = "body"
+text_color = "black"
+text_align = "center"
+
+table_align = "center"
+table_bg_color = "beige"
+
+row_align = "left"
+row_bg_color = "beige"
+
+
+[theme.dark]
+text_type = "body"
+text_color = "yellow"
+text_align = "center"
+
+table_align = "center"
+table_bg_color = "black"
+
+row_align = "left"
+row_bg_color = "black"
+
+# Create custom themes here:
+# Ensure all themes follow the naming scheme with 'theme.<my_theme_name>'
+# Example: [theme.custom1]

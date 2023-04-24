@@ -64,6 +64,7 @@ class SysArgs:
     SYS_ENV_FILE: str = "env_file"
     SYS_CONFIG_FILE: str = "config_file"
     SYS_LOG_CONFIG_FILE: str = "log_config_file"
+    SYS_GUI_THEMES_FILE: str = "gui_themes_file"
     SYS_DB_LOCALDBPATH: str = "local_database_path"
     SYS_DB_LOCALDBDIALECT: str = "local_database_dialect"
     SYS_DB_LOCALDBDRIVER: str = "local_database_driver"
@@ -82,6 +83,7 @@ class SysArgs:
 # Config Constants
 DEFAULT_PATH_CONFIG_FILE: str = "config/config.toml"
 DEFAULT_PATH_LOGGING_CONFIG_FILE: str = "config/logging.toml"
+DEFAULT_PATH_GUI_THEMES_FILE: str = "config/gui_themes.toml"
 
 
 class DefaultPermissionGroups:
@@ -166,6 +168,7 @@ class MumimoCfgSections:
     SETTINGS_MEDIA_AUDIODUCKING: str = f"{SETTINGS_MEDIA}.audio_ducking"
     SETTINGS_MEDIA_YOUTUBEDL: str = f"{SETTINGS_MEDIA}.youtube_dl"
     SETTINGS_PLUGINS: str = f"{SETTINGS}.plugins"
+    SETTINGS_GUI: str = f"{SETTINGS}.gui"
 
     OUTPUT: str = "output"
     OUTPUT_GUI: str = f"{OUTPUT}.gui"
@@ -224,6 +227,11 @@ class MumimoCfgFields:
             PLUGINS_CONFIG_PATH: str = f"{MumimoCfgSections.SETTINGS_PLUGINS}.plugins_config_path"
             DISABLED_PLUGINS: str = f"{MumimoCfgSections.SETTINGS_PLUGINS}.disabled_plugins"
             SAFE_MODE_PLUGINS: str = f"{MumimoCfgSections.SETTINGS_PLUGINS}.safe_mode_plugins"
+
+        class GUI:
+            ENABLE: str = f"{MumimoCfgSections.SETTINGS_GUI}.enable"
+            THEMES_PATH: str = f"{MumimoCfgSections.SETTINGS_GUI}.themes_path"
+            SELECTED_THEME: str = f"{MumimoCfgSections.SETTINGS_GUI}.selected_theme"
 
     class OUTPUT:
         class GUI:

@@ -1,9 +1,15 @@
 import logging
 
-from typing import Optional, Union, List
+from typing import Optional, Union, List, TYPE_CHECKING
 from .constants import TextTypes
 from .utility import FontModifiers, AlignmentModifiers
 from ....utils import mumble_utils
+from ....settings import settings
+from ....constants import MumimoCfgFields
+from ....exceptions import GUIError
+
+if TYPE_CHECKING:
+    from ....config import Config
 
 
 logger = logging.getLogger(__name__)
@@ -18,11 +24,12 @@ class GUIFramework:
         _box_close: str
         _box_rows: List[str]
 
-        def __init__(self, settings: Optional["Settings"] = None) -> None:
+        def __init__(self, settings: Optional["Settings"] = None, **kwargs) -> None:
             if settings is not None:
                 self.settings = settings
             else:
                 self.settings = self.Settings()
+            self.settings.update(**kwargs)
             self.is_open = False
             self._box_open = ""
             self._box_close = ""
@@ -71,7 +78,7 @@ class GUIFramework:
             return _msg
 
         class Settings:
-            text_type: TextTypes = TextTypes.HEADER
+            text_type: TextTypes = TextTypes.BODY
             text_color: str = "yellow"
             text_align: str = "center"
 
@@ -82,10 +89,34 @@ class GUIFramework:
             row_bg_color: str = "black"
 
             def __init__(self, **kwargs) -> None:
+                self._from_config()
                 self.update(**kwargs)
 
+            def _from_config(self) -> None:
+                _themes: Optional["Config"] = settings.configs.get_gui_themes()
+                if not _themes:
+                    raise GUIError("Unable to load gui themes: could not retrieve gui themes from settings.")
+                _config: Optional["Config"] = settings.configs.get_mumimo_config()
+                if not _config:
+                    raise GUIError("Unable to load gui themes: mumimo config could not be retrieved from settings.")
+
+                _selected_theme = _config.get(MumimoCfgFields.SETTINGS.GUI.SELECTED_THEME, None)
+                if not _selected_theme:
+                    _selected_theme = "light"
+                    logger.warning("Unable to find selected gui theme, falling back to default 'light' theme.")
+
+                _theme = _themes.get(_selected_theme, None)
+                if not _theme:
+                    raise GUIError(f"Unable to find gui theme: [{_selected_theme}], falling back to default 'light' theme.", logger=logger)
+
+                self.update(**_theme)
+
             def update(self, **kwargs) -> "GUIFramework.ContentBox.Settings":
-                self.text_type = kwargs.get("text_type", self.text_type)
+                _text_type = kwargs.get("text_type", self.text_type)
+                if not isinstance(_text_type, TextTypes):
+                    _text_type = TextTypes(_text_type)
+                self.text_type = _text_type
+
                 self.text_color = kwargs.get("text_color", self.text_color)
                 self.text_align = kwargs.get("text_align", self.text_align)
 
@@ -93,7 +124,7 @@ class GUIFramework:
                 self.table_bg_color = kwargs.get("table_bg_color", self.table_bg_color)
 
                 self.row_align = kwargs.get("row_align", self.row_align)
-                self.row_bg_color = kwargs.get("bg_color", self.row_bg_color)
+                self.row_bg_color = kwargs.get("row_bg_color", self.row_bg_color)
                 return self
 
     @staticmethod

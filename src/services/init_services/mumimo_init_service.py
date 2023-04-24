@@ -6,6 +6,7 @@ from ...services.database_service import DatabaseService
 from ...services.init_services.cfg_init_service import ConfigInitService
 from ...services.init_services.client_settings_init_service import ClientSettingsInitService
 from ...services.init_services.plugins_init_service import PluginsInitService
+from ...services.init_services.gui_init_service import GUIInitService
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ class MumimoInitService:
         self._client_settings_init_service: ClientSettingsInitService = ClientSettingsInitService(sys_args)
         self._db_init_service: DatabaseService = DatabaseService()
         self._plugins_init_service: PluginsInitService = PluginsInitService(sys_args)
+        self._gui_init_service: GUIInitService = GUIInitService(sys_args)
 
     async def initialize(self) -> None:
         # Initialize the mumimo configuration file.
@@ -30,6 +32,10 @@ class MumimoInitService:
         logger.info("Initializing client settings...")
         self._client_settings_init_service.initialize_client_settings(cfg)
         logger.info("Mumimo client settings initialized.")
+        # Initialize mumimo gui settings.
+        logger.info("Initializing client gui settings...")
+        self._gui_init_service.initialize_gui(self._sys_args.get(SysArgs.SYS_GUI_THEMES_FILE))
+        logger.info("Client gui settings initialized.")
         # Initialize the internal database.
         logger.info("Initializing internal database...")
         # print(cfg)

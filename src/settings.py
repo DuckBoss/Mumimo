@@ -52,6 +52,7 @@ class MumimoSettings:
     class Configs:
         _mumimo_cfg: Optional["Config"] = None
         _log_cfg: Optional["LogConfig"] = None
+        _gui_themes: Optional["Config"] = None
 
         def get_mumimo_config(self) -> Optional["Config"]:
             return self._mumimo_cfg
@@ -64,6 +65,12 @@ class MumimoSettings:
 
         def set_log_config(self, cfg: "LogConfig") -> None:
             self._log_cfg = cfg
+
+        def get_gui_themes(self) -> Optional["Config"]:
+            return self._gui_themes
+
+        def set_gui_themes(self, themes: "Config") -> Optional["Config"]:
+            self._gui_themes = themes
 
     class State:
         _client_state: Optional["ClientState"] = None

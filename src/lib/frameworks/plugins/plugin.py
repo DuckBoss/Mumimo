@@ -190,7 +190,10 @@ class PluginBase(ABC):
                 return
         _compiled_parameters: Optional[Dict[str, Any]] = _compiled_result.result
         if _compiled_parameters is None:
-            GUIFramework.gui(f"'{data.command}' command error: parameters failed to compile.")
+            GUIFramework.gui(
+                f"'{data.command}' command error: parameters failed to compile.",
+                target_users=mumble_utils.get_user_by_id(data.actor),
+            )
             return
         return _compiled_parameters
 

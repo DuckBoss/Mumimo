@@ -24,6 +24,11 @@ class PluginError(LoggedException):
         super().__init__(msg, logger)
 
 
+class GUIError(LoggedException):
+    def __init__(self, msg: str, logger: Optional[logging.Logger] = None) -> None:
+        super().__init__(msg, logger)
+
+
 class ServiceError(LoggedException):
     def __init__(self, msg: str, logger: Optional[logging.Logger] = None) -> None:
         super().__init__(msg, logger=logger)

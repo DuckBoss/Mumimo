@@ -113,6 +113,11 @@ class ClientSettingsInitService:
         prioritized_options[SysArgs.SYS_PLUGINS_CONFIG_PATH] = plugins_config_path
         cfg_instance.set(MumimoCfgFields.SETTINGS.PLUGINS.PLUGINS_CONFIG_PATH, plugins_config_path)
 
+        # Prioritize gui-theme-path from system argument over config options.
+        gui_theme_path = self._get_sys_args().get(SysArgs.SYS_GUI_THEMES_FILE) or cfg_instance.get(MumimoCfgFields.SETTINGS.GUI.THEMES_PATH)
+        prioritized_options[SysArgs.SYS_GUI_THEMES_FILE] = gui_theme_path
+        cfg_instance.set(MumimoCfgFields.SETTINGS.GUI.THEMES_PATH, gui_theme_path)
+
         return prioritized_options
 
     def _get_prioritized_client_env_options(self) -> Dict[str, Any]:

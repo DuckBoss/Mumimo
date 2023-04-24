@@ -31,10 +31,11 @@ group_connection.add_argument("-n", "--name", help="changes the display name of 
 # Other system arguments
 group_other = args_parser.add_argument_group("other")
 group_other.add_argument("-pp", "--plugins-path", help="use a custom path for plugins", type=str)
+group_other.add_argument("-cpp", "--custom-plugins-path", help="specify a path for custom plugins", type=str)
 group_other.add_argument("-pcp", "--plugins-config-path", help="use a custom path for plugin metadata file storage", type=str)
-group_other.add_argument("-cpp", "--custom-plugins-path", help="specify a path for custom plugins.", type=str)
 group_other.add_argument("-cf", "--config-file", help="use a custom config file from the given path", type=str)
 group_other.add_argument("-lcf", "--log-config-file", help="use a custom config file for logging from the given path", type=str)
+group_other.add_argument("-gtf", "--gui-themes-file", help="ust a custom gui themes file for loading gui themes", type=str)
 group_other.add_argument("-e", "--env-file", help="use connection options from an environment file", type=str)
 group_other.add_argument("-v", "--verbose", help="enables verbose and debug messages to output to the console", action="count", default=0)
 group_other.add_argument(
@@ -49,15 +50,15 @@ group_database = args_parser.add_argument_group("database")
 group_database.add_argument(
     "-rdb",
     "--use-remote-database",
-    help="enables usage of a custom remote database instead of the default local sqlite database.",
+    help="enables usage of a custom remote database instead of the default local sqlite database",
     action="store_true",
 )
-group_database.add_argument("-ldbp", "--local-database-path", help="specify the local database path to use for non-remote database usage.", type=str)
+group_database.add_argument("-ldbp", "--local-database-path", help="specify the local database path to use for non-remote database usage", type=str)
 group_database.add_argument(
-    "-ldbdr", "--local-database-dialect", help="specify the local database dialect to use for non-remote database usage.", type=str
+    "-ldbdr", "--local-database-dialect", help="specify the local database dialect to use for non-remote database usage", type=str
 )
 group_database.add_argument(
-    "-ldbdi", "--local-database-driver", help="specify the local database driver to use for non-remote database usage.", type=str
+    "-ldbdi", "--local-database-driver", help="specify the local database driver to use for non-remote database usage", type=str
 )
 
 group_database.add_argument(
