@@ -299,7 +299,6 @@ class CommandProcessingService:
                     GUIFramework.gui(
                         _msgs,
                         target_users=mumble_utils.get_user_by_id(command.actor),
-                        table_align="left",
                     )
                 return
 
@@ -384,7 +383,6 @@ class CommandProcessingService:
                     GUIFramework.gui(
                         text=_msgs,
                         target_users=mumble_utils.get_user_by_id(command.actor),
-                        table_align="left",
                     )
                     return
                 if any(param.split("=", 1)[0] not in _cmd_params for param in command.parameters):
@@ -398,7 +396,6 @@ class CommandProcessingService:
                     GUIFramework.gui(
                         text=_msgs,
                         target_users=mumble_utils.get_user_by_id(command.actor),
-                        table_align="left",
                     )
                     return
 
