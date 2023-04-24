@@ -82,7 +82,7 @@ class GUIFramework:
             text_color: str = "yellow"
             text_align: str = "center"
 
-            table_align: str = "center"
+            table_align: str = "left"
             table_bg_color: str = "black"
 
             row_align: str = "left"
