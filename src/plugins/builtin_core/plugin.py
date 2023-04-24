@@ -12,6 +12,7 @@ from src.utils import mumble_utils
 from src.lib.frameworks.gui.gui import GUIFramework
 
 from .utility.constants import ParameterDefinitions
+from .utility import theme_utils
 
 logger = logging.getLogger(__name__)
 
@@ -206,6 +207,53 @@ class Plugin(PluginBase):
                 return
             _my_channel.move_in()
             return
+
+    @command(
+        parameters=ParameterDefinitions.Themes.get_definitions(),
+        exclusive_parameters=ParameterDefinitions.Themes.get_definitions(),
+        parameters_required=True,
+    )
+    def themes(self, data: "Command") -> None:
+        _parameters = self.verify_parameters(self.themes.__name__, data)
+        if _parameters is None:
+            return
+
+        _theme_list = _parameters.get(ParameterDefinitions.Themes.LIST, None)
+        if _theme_list:
+            _msgs: List[str] = ["Available themes: "]
+            for idx, theme in enumerate(_theme_list):
+                _msgs.append(f"{idx+1}) {theme}")
+            GUIFramework.gui(
+                text=_msgs,
+                target_users=mumble_utils.get_user_by_id(data.actor),
+            )
+
+        _switch_themes = _parameters.get(ParameterDefinitions.Themes.SWITCH, None)
+        if _switch_themes:
+            GUIFramework.gui(
+                text=f"Switched theme to: {data.message.strip()}",
+                target_users=mumble_utils.get_user_by_id(data.actor),
+            )
+
+    def _parameter_themes_list(self, data: "Command", parameter: str) -> List[str]:
+        return theme_utils.list_themes()
+
+    def _parameter_themes_switch(self, data: "Command", parameter: str) -> bool:
+        _new_theme = data.message.strip()
+        _available_themes = theme_utils.list_themes()
+        if not _new_theme or _new_theme not in _available_themes:
+            _msgs: List[str] = [
+                "Invalid theme. ",
+                "Here are the available themes to choose from: ",
+            ]
+            for idx, theme in enumerate(theme_utils.list_themes()):
+                _msgs.append(f"{idx+1}) {theme}")
+            GUIFramework.gui(
+                text=_msgs,
+                target_users=mumble_utils.get_user_by_id(data.actor),
+            )
+            return False
+        return theme_utils.switch_themes(_new_theme)
 
     def _parameter_move_to_me(self, data: "Command", parameter: str) -> Optional["User"]:
         return mumble_utils.get_user_by_id(data.actor)
