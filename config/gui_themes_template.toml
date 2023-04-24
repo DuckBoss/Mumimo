@@ -1,4 +1,4 @@
-[theme.light]
+[light]
 text_type = "header"
 text_color = "black"
 text_align = "center"
@@ -10,7 +10,19 @@ row_align = "left"
 row_bg_color = "blanchedalmond"
 
 
-[theme.dark]
+[dark]
+text_type = "header"
+text_color = "lightsteelblue"
+text_align = "center"
+
+table_align = "center"
+table_bg_color = "darkslategrey"
+
+row_align = "left"
+row_bg_color = "darkslategrey"
+
+
+[highcontrast]
 text_type = "header"
 text_color = "yellow"
 text_align = "center"
@@ -22,5 +34,4 @@ row_align = "left"
 row_bg_color = "black"
 
 # Create custom themes here:
-# Ensure all themes follow the naming scheme with 'theme.<my_theme_name>'
-# Example: [theme.custom1]
+# Example: [custom1], [custom2], ...
