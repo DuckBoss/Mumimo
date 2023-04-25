@@ -37,3 +37,22 @@ class ParameterDefinitions:
                 ParameterDefinitions.Move.TO_USER,
                 ParameterDefinitions.Move.TO_ME,
             ]
+
+    class Themes:
+        SWITCH: str = "switch"
+        LIST: str = "list"
+        NEW: str = "new"
+        DELETE: str = "delete"
+        UPDATE: str = "update"
+        SHOW: str = "show"
+
+        @staticmethod
+        def get_definitions() -> List[str]:
+            return [
+                ParameterDefinitions.Themes.SWITCH,
+                ParameterDefinitions.Themes.LIST,
+                ParameterDefinitions.Themes.NEW,
+                ParameterDefinitions.Themes.DELETE,
+                ParameterDefinitions.Themes.UPDATE,
+                ParameterDefinitions.Themes.SHOW,
+            ]

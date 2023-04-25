@@ -1,0 +1,42 @@
+#
+# This is a template file.
+# Please do not modify this!
+#
+
+[light]
+text_type = "header"
+text_color = "black"
+text_align = "center"
+
+table_align = "left"
+table_bg_color = "blanchedalmond"
+
+row_align = "left"
+row_bg_color = "blanchedalmond"
+
+
+[dark]
+text_type = "header"
+text_color = "lightsteelblue"
+text_align = "center"
+
+table_align = "left"
+table_bg_color = "darkslategrey"
+
+row_align = "left"
+row_bg_color = "darkslategrey"
+
+
+[highcontrast]
+text_type = "header"
+text_color = "yellow"
+text_align = "center"
+
+table_align = "left"
+table_bg_color = "black"
+
+row_align = "left"
+row_bg_color = "black"
+
+# Create custom themes here:
+# Example: [custom1], [custom2], ...

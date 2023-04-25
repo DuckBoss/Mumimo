@@ -1,0 +1,15 @@
+#
+# This is a template file.
+# Please do not modify this!
+#
+
+[template]
+text_type = "header"
+text_color = "snow"
+text_align = "center"
+
+table_align = "left"
+table_bg_color = "black"
+
+row_align = "left"
+row_bg_color = "black"

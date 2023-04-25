@@ -289,18 +289,16 @@ class CommandProcessingService:
                 _command_suggestions = [x[0] for x in _command_suggestions if x[1] >= 70]
                 # Only display suggestions if there is a closely matched ratio.
                 if _command_suggestions:
-                    _suggestion_msgs = []
-                    for idx, cmd in enumerate(_command_suggestions):
-                        _suggestion_msgs.append(f"- {cmd} ")
                     _msgs = [
                         f"The command: [{_cmd_name}] could not be found. ",
                         "Did you mean any of the following: ",
-                        *_suggestion_msgs,
                     ]
+                    for idx, cmd in enumerate(_command_suggestions):
+                        _msgs.append(f"{idx+1}) {cmd}")
+
                     GUIFramework.gui(
                         _msgs,
                         target_users=mumble_utils.get_user_by_id(command.actor),
-                        table_align="left",
                     )
                 return
 
@@ -376,18 +374,28 @@ class CommandProcessingService:
                 _parameters_required = _cmd_info.get("parameters_required", False)
                 if _parameters_required and not command.parameters:
                     logger.warning(f"The command: [{_cmd_name}] requires parameters and no parameters were provided.")
+                    _msgs = [
+                        f"Invalid '{_cmd_name}' command. This command requires the usage of parameters. ",
+                        "Please use one of the available parameters: ",
+                    ]
+                    for idx, param in enumerate(_cmd_params):
+                        _msgs.append(f"{idx+1}) {param}")
                     GUIFramework.gui(
-                        f"Invalid '{_cmd_name}' command. This command requires the usage of parameters. "
-                        f"Please use one of the available parameters: {', '.join(_cmd_params)}",
+                        text=_msgs,
                         target_users=mumble_utils.get_user_by_id(command.actor),
                     )
                     return
                 if any(param.split("=", 1)[0] not in _cmd_params for param in command.parameters):
                     logger.warning(f"The command: [{_cmd_name}] could not be executed because one or more provided parameters do not exist.")
+                    _msgs = [
+                        f"Invalid '{_cmd_name}' command. ",
+                        "Please use one of the available parameters: ",
+                    ]
+                    for idx, param in enumerate(_cmd_params):
+                        _msgs.append(f"{idx+1}) {param}")
                     GUIFramework.gui(
-                        f"Invalid '{_cmd_name}' command. Please use one of the available parameters: {', '.join(_cmd_params)}",
+                        text=_msgs,
                         target_users=mumble_utils.get_user_by_id(command.actor),
-                        user_id=command.actor,
                     )
                     return
 

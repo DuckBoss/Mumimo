@@ -99,7 +99,7 @@ class ClientSettingsInitService:
             MumimoCfgFields.SETTINGS.DATABASE.LOCAL_DB_DRIVERNAME
         )
         prioritized_options[SysArgs.SYS_DB_LOCALDBDRIVER] = db_local_drivername
-        cfg_instance.set(MumimoCfgFields.SETTINGS.DATABASE.LOCAL_DB_DIALECT, db_local_drivername)
+        cfg_instance.set(MumimoCfgFields.SETTINGS.DATABASE.LOCAL_DB_DRIVERNAME, db_local_drivername)
 
         # Prioritize plugins-path from system argument over config option.
         plugins_path = self._get_sys_args().get(SysArgs.SYS_PLUGINS_PATH) or cfg_instance.get(MumimoCfgFields.SETTINGS.PLUGINS.PLUGINS_PATH)
@@ -112,6 +112,11 @@ class ClientSettingsInitService:
         )
         prioritized_options[SysArgs.SYS_PLUGINS_CONFIG_PATH] = plugins_config_path
         cfg_instance.set(MumimoCfgFields.SETTINGS.PLUGINS.PLUGINS_CONFIG_PATH, plugins_config_path)
+
+        # Prioritize gui-theme-path from system argument over config options.
+        gui_theme_path = self._get_sys_args().get(SysArgs.SYS_GUI_THEMES_FILE) or cfg_instance.get(MumimoCfgFields.SETTINGS.GUI.THEMES_PATH)
+        prioritized_options[SysArgs.SYS_GUI_THEMES_FILE] = gui_theme_path
+        cfg_instance.set(MumimoCfgFields.SETTINGS.GUI.THEMES_PATH, gui_theme_path)
 
         return prioritized_options
 

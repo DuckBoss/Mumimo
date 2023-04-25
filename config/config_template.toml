@@ -44,6 +44,11 @@ safe_mode_plugins = []
 
 
 ### GUI Settings ###
+[settings.gui]
+enable = true
+themes_path = "config/gui_theme.toml"
+selected_theme = "dark"  # Default themes available: "light", "dark", "highcontrast"
+
 [output.gui]
 enable = true
 
