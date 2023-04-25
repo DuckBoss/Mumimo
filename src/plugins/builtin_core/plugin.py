@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from src.lib.command import Command
-    from src.config import Config
 
 
 class Plugin(PluginBase):
