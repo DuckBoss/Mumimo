@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional
 
 from pymumble_py3.channels import Channel
 from pymumble_py3.users import User
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from src.lib.command import Command
+    from src.config import Config
 
 
 class Plugin(PluginBase):
@@ -56,74 +57,6 @@ class Plugin(PluginBase):
         if _delay and _delay > 0:
             time.sleep(_delay)
 
-        if _parameters.get(ParameterDefinitions.Echo.BROADCAST, False):
-            _all_channels: List["Channel"] = mumble_utils.get_all_channels()
-            if not _all_channels:
-                logger.warning(
-                    f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command warning: the channel tree could not be retrieved."
-                )
-            GUIFramework.gui(
-                data.message,
-                target_channels=_all_channels,
-                user_id=data.actor,
-            )
-
-        if _parameters.get(ParameterDefinitions.Echo.ME, False):
-            _me = mumble_utils.get_user_by_id(data.actor)
-            if not _me:
-                logger.warning(
-                    f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command warning: the user was not found with the provided id."
-                )
-            GUIFramework.gui(
-                data.message,
-                target_users=_me,
-                user_id=data.actor,
-            )
-
-        _user: Optional["User"] = _parameters.get(ParameterDefinitions.Echo.USER, None)
-        if _user:
-            GUIFramework.gui(
-                data.message,
-                target_users=_user,
-                user_id=data.actor,
-            )
-
-        _users: Optional[List["User"]] = _parameters.get(ParameterDefinitions.Echo.USERS, [])
-        if _users:
-            GUIFramework.gui(
-                data.message,
-                target_users=_users,
-                user_id=data.actor,
-            )
-
-        _my_channel: Optional["Channel"] = _parameters.get(ParameterDefinitions.Echo.MYCHANNEL, None)
-        if _my_channel:
-            _channel_user = mumble_utils.get_user_by_id(data.actor)
-            if not _channel_user:
-                return
-            _channel_obj = mumble_utils.get_channel_by_user(_channel_user)
-            GUIFramework.gui(
-                data.message,
-                target_channels=_channel_obj,
-                user_id=data.actor,
-            )
-
-        _channel: Optional["Channel"] = _parameters.get(ParameterDefinitions.Echo.CHANNEL, None)
-        if _channel:
-            GUIFramework.gui(
-                data.message,
-                target_channels=_channel,
-                user_id=data.actor,
-            )
-
-        _channels: Optional[List["Channel"]] = _parameters.get(ParameterDefinitions.Echo.CHANNELS, [])
-        if _channels:
-            GUIFramework.gui(
-                data.message,
-                target_channels=_channels,
-                user_id=data.actor,
-            )
-
         if not any(x in self.command_parameters[self.echo.__name__] for x in _parameters.keys()):
             if not data.message.strip():
                 GUIFramework.gui(
@@ -132,13 +65,12 @@ class Plugin(PluginBase):
                     user_id=data.actor,
                 )
                 return
-            if not _channel:
-                _channel = mumble_utils.get_my_channel()
-                GUIFramework.gui(
-                    data.message,
-                    target_channels=_channel,
-                    user_id=data.actor,
-                )
+            _channel = mumble_utils.get_my_channel()
+            GUIFramework.gui(
+                data.message,
+                target_channels=_channel,
+                user_id=data.actor,
+            )
 
     @command(
         parameters=ParameterDefinitions.Move.get_definitions(),
@@ -155,7 +87,7 @@ class Plugin(PluginBase):
             return
 
         if not any(x in self.command_parameters[self.move.__name__] for x in _parameters.keys()):
-            _target_channel = data.message.strip()
+            _target_channel = data.message.strip().replace("_", " ")
             if not _target_channel:
                 GUIFramework.gui(
                     f"'{data._command}' command error: a target channel must be specified when no parameters are used.",
@@ -163,50 +95,15 @@ class Plugin(PluginBase):
                     user_id=data.actor,
                 )
                 return
-            _parameters[ParameterDefinitions.Move.TO_CHANNEL] = _target_channel
-
-        _channel: Optional[Union["Channel", str]] = _parameters.get(ParameterDefinitions.Move.TO_CHANNEL, None)
-        if isinstance(_channel, Channel):
-            _channel.move_in()
-            return
-        elif isinstance(_channel, str):
-            _channel = _channel.strip().replace("_", " ")
-            _search_channel: Optional["Channel"] = mumble_utils.get_channel_by_name(_channel)
+            _search_channel: Optional["Channel"] = mumble_utils.get_channel_by_name(_target_channel)
             if _search_channel is None:
                 GUIFramework.gui(
-                    f"'{data._command}' command error: cannot find specified channel '{_channel}'.",
+                    f"'{data._command}' command error: cannot find specified channel '{_target_channel}'.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                     user_id=data.actor,
                 )
                 return
             _search_channel.move_in()
-            return
-
-        _user: Optional["User"] = _parameters.get(ParameterDefinitions.Move.TO_USER, None)
-        if _user:
-            _user_channel: Optional["Channel"] = mumble_utils.get_channel_by_user(_user)
-            if not _user_channel:
-                GUIFramework.gui(
-                    f"'{data._command}' command error: unable to find the channel '{_user['name']}' belongs to.",
-                    target_users=mumble_utils.get_user_by_id(data.actor),
-                    user_id=data.actor,
-                )
-                return
-            _user_channel.move_in()
-            return
-
-        _me: Optional["User"] = _parameters.get(ParameterDefinitions.Move.TO_ME, None)
-        if _me:
-            _my_channel: Optional["Channel"] = mumble_utils.get_channel_by_user(_me)
-            if not _my_channel:
-                GUIFramework.gui(
-                    f"'{data._command}' command error: unable to find the channel '{_me['name']}' belongs to.",
-                    target_users=mumble_utils.get_user_by_id(data.actor),
-                    user_id=data.actor,
-                )
-                return
-            _my_channel.move_in()
-            return
 
     @command(
         parameters=ParameterDefinitions.Themes.get_definitions(),
@@ -214,31 +111,32 @@ class Plugin(PluginBase):
         parameters_required=True,
     )
     def themes(self, data: "Command") -> None:
+        # Example:
+        # !themes.list  -> Displays a list of the available gui themes.
+        # !themes.switch "theme_name" -> Switches the gui theme to the selected theme.
+        # !themes.new "theme_name"  -> Creates a new theme from a template theme.
+        # !themes.delete "theme_name"  -> Deletes the specified theme, and falls back to a default theme if it was in use.
+        # !themes.show "theme_name"  -> Shows the config data for the specified theme.
+        # !themes.update="theme_name" item1=value1...  -> Updates a specified theme with the specified new values.
+
         _parameters = self.verify_parameters(self.themes.__name__, data)
         if _parameters is None:
             return
 
-        _theme_list = _parameters.get(ParameterDefinitions.Themes.LIST, None)
-        if _theme_list:
-            _msgs: List[str] = ["Available themes: "]
-            for idx, theme in enumerate(_theme_list):
-                _msgs.append(f"{idx+1}) {theme}")
-            GUIFramework.gui(
-                text=_msgs,
-                target_users=mumble_utils.get_user_by_id(data.actor),
-            )
+    def _parameter_themes_list(self, data: "Command", parameter: str) -> None:
+        _theme_list = theme_utils.list_themes()
+        if not _theme_list:
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the themes list could not be retrieved.")
+            return
+        _msgs: List[str] = ["Available themes: "]
+        for idx, theme in enumerate(_theme_list):
+            _msgs.append(f"{idx+1}) {theme}")
+        GUIFramework.gui(
+            text=_msgs,
+            target_users=mumble_utils.get_user_by_id(data.actor),
+        )
 
-        _switch_themes = _parameters.get(ParameterDefinitions.Themes.SWITCH, None)
-        if _switch_themes:
-            GUIFramework.gui(
-                text=f"Switched theme to: {data.message.strip()}",
-                target_users=mumble_utils.get_user_by_id(data.actor),
-            )
-
-    def _parameter_themes_list(self, data: "Command", parameter: str) -> List[str]:
-        return theme_utils.list_themes()
-
-    def _parameter_themes_switch(self, data: "Command", parameter: str) -> bool:
+    def _parameter_themes_switch(self, data: "Command", parameter: str) -> None:
         _new_theme = data.message.strip()
         _available_themes = theme_utils.list_themes()
         if not _new_theme or _new_theme not in _available_themes:
@@ -252,28 +150,181 @@ class Plugin(PluginBase):
                 text=_msgs,
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
-            return False
-        return theme_utils.switch_themes(_new_theme)
+            return
+        _switched_themes = theme_utils.switch_themes(_new_theme)
+        if not _switched_themes:
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the theme could not be switched.")
+            return
+        GUIFramework.gui(
+            text=f"Switched theme to: {data.message.strip()}",
+            target_users=mumble_utils.get_user_by_id(data.actor),
+        )
+
+    def _parameter_themes_new(self, data: "Command", parameter: str) -> None:
+        _new_theme = data.message.strip().replace(" ", "_")
+        if not theme_utils.new_theme(_new_theme):
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: failed to create theme.")
+            GUIFramework.gui(
+                text=f"Failed to create new theme: {_new_theme}",
+                target_users=mumble_utils.get_user_by_id(data.actor),
+            )
+            return
+        GUIFramework.gui(
+            text=f"Created new theme: {_new_theme}",
+            target_users=mumble_utils.get_user_by_id(data.actor),
+        )
+
+    def _parameter_themes_delete(self, data: "Command", parameter: str) -> None:
+        _delete_theme = data.message.strip().replace(" ", "_")
+        if not theme_utils.delete_theme(_delete_theme):
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: failed to delete theme.")
+            GUIFramework.gui(
+                text=f"Failed to delete theme: {_delete_theme}",
+                target_users=mumble_utils.get_user_by_id(data.actor),
+            )
+            return
+        GUIFramework.gui(
+            text=f"Deleted theme: {_delete_theme}",
+            target_users=mumble_utils.get_user_by_id(data.actor),
+        )
+
+    def _parameter_themes_update(self, data: "Command", parameter: str) -> None:
+        parameter_split = parameter.split("=", 1)
+        if not len(parameter_split) == 2:
+            GUIFramework.gui(
+                f"'{data._command}' command error: a user name was not provided.",
+                target_users=mumble_utils.get_user_by_id(data.actor),
+            )
+
+        _theme_name: str = parameter_split[1].strip().replace("_", " ")
+        if not _theme_name:
+            GUIFramework.gui(
+                f"'{data._command}' command error: an invalid theme name was provided.",
+                target_users=mumble_utils.get_user_by_id(data.actor),
+            )
+            return
+
+        _update_items = data.message.strip().replace(" ", "_")
+        if not _update_items:
+            GUIFramework.gui(
+                f"'{data._command}' command error: invalid update values provided. Update values must follow the format: 'item1=value1, item2=value2, ...'",
+                target_users=mumble_utils.get_user_by_id(data.actor),
+            )
+            return
+        _update_items_split = _update_items.split(",")
+        _update_items_pairs = {}
+        for item in _update_items_split:
+            _pairs_split = item.split("=", 1)
+            if len(_pairs_split) != 2:
+                GUIFramework.gui(
+                    f"'{data._command}' command error: invalid update values provided. Update values must follow the format: 'item1=value1, item2=value2, ...'",
+                    target_users=mumble_utils.get_user_by_id(data.actor),
+                )
+                return
+            _key, _value = _pairs_split[0], _pairs_split[1]
+            _update_items_pairs[_key] = _value
+
+        _theme_updated: bool = theme_utils.update_theme(_theme_name, _update_items_pairs)
+        if not _theme_updated:
+            GUIFramework.gui(
+                f"'{data._command}' command error: unable to update theme. Ensure the theme exists and valid values are provided.",
+                target_users=mumble_utils.get_user_by_id(data.actor),
+            )
+            return
+        GUIFramework.gui(
+            f"Updated theme: {_theme_name}",
+            target_users=mumble_utils.get_user_by_id(data.actor),
+        )
+
+    def _parameter_themes_show(self, data: "Command", parameter: str) -> None:
+        _theme_name = data.message.strip().replace(" ", "_")
+        _selected_theme = theme_utils._get_theme(_theme_name)
+        if not _selected_theme:
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: failed to show theme.")
+            GUIFramework.gui(
+                text=f"Failed to show theme: {_theme_name}",
+                target_users=mumble_utils.get_user_by_id(data.actor),
+            )
+            return
+        _msgs = [f"[{_theme_name}]"]
+        for key, value in _selected_theme.items():
+            _msgs.append(f"{key}={value}")
+        GUIFramework.gui(
+            text=_msgs,
+            target_users=mumble_utils.get_user_by_id(data.actor),
+        )
 
     def _parameter_move_to_me(self, data: "Command", parameter: str) -> Optional["User"]:
-        return mumble_utils.get_user_by_id(data.actor)
+        _me = mumble_utils.get_user_by_id(data.actor)
+        if not _me:
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the user could not be retrieved.")
+            return
+        _my_channel: Optional["Channel"] = mumble_utils.get_channel_by_user(_me)
+        if not _my_channel:
+            GUIFramework.gui(
+                f"'{data._command}' command error: unable to find the channel '{_me['name']}' belongs to.",
+                target_users=mumble_utils.get_user_by_id(data.actor),
+                user_id=data.actor,
+            )
+            return
+        _my_channel.move_in()
+        return
 
     def _parameter_move_to_user(self, data: "Command", parameter: str) -> Optional["User"]:
-        return self._get_user(data, parameter)
+        _user = self._get_user(data, parameter)
+        if not _user:
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the user could not be retrieved.")
+            return
+        _user_channel: Optional["Channel"] = mumble_utils.get_channel_by_user(_user)
+        if not _user_channel:
+            GUIFramework.gui(
+                f"'{data._command}' command error: unable to find the channel '{_user['name']}' belongs to.",
+                target_users=mumble_utils.get_user_by_id(data.actor),
+                user_id=data.actor,
+            )
+            return
+        _user_channel.move_in()
 
     def _parameter_move_to_channel(self, data: "Command", parameter: str) -> Optional["Channel"]:
-        return self._get_channel(data, parameter)
+        _channel = self._get_channel(data, parameter)
+        if not _channel:
+            return
+        _channel.move_in()
 
-    def _parameter_echo_me(self, data: "Command", parameter: str) -> bool:
-        return True
+    def _parameter_echo_me(self, data: "Command", parameter: str) -> None:
+        _me = mumble_utils.get_user_by_id(data.actor)
+        if not _me:
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the user was not found with the provided id.")
+            return
+        GUIFramework.gui(
+            data.message,
+            target_users=_me,
+            user_id=data.actor,
+        )
 
-    def _parameter_echo_broadcast(self, data: "Command", parameter: str) -> bool:
-        return True
+    def _parameter_echo_broadcast(self, data: "Command", parameter: str) -> None:
+        _all_channels: List["Channel"] = mumble_utils.get_all_channels()
+        if not _all_channels:
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the channel tree could not be retrieved.")
+            return
+        GUIFramework.gui(
+            data.message,
+            target_channels=_all_channels,
+            user_id=data.actor,
+        )
 
-    def _parameter_echo_user(self, data: "Command", parameter: str) -> Optional["User"]:
-        return self._get_user(data, parameter)
+    def _parameter_echo_user(self, data: "Command", parameter: str) -> None:
+        _user = self._get_user(data, parameter)
+        if not _user:
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the user could not be retrieved.")
+            return
+        GUIFramework.gui(
+            data.message,
+            target_users=_user,
+            user_id=data.actor,
+        )
 
-    def _parameter_echo_users(self, data: "Command", parameter: str) -> Optional[List["User"]]:
+    def _parameter_echo_users(self, data: "Command", parameter: str) -> None:
         parameter_split = parameter.split("=", 1)
         if len(parameter_split) == 2:
             user_names = [user.strip().replace("_", " ") for user in parameter_split[1].split(",")]
@@ -295,19 +346,41 @@ class Plugin(PluginBase):
                     f"'{data._command}' command warning: cannot find specified user '{_user}'.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
-            return _found_users
+            GUIFramework.gui(
+                data.message,
+                target_users=_found_users,
+                user_id=data.actor,
+            )
+            return
         GUIFramework.gui(
             f"'{data._command}' command warning: an invalid list of user names was provided.",
             target_users=mumble_utils.get_user_by_id(data.actor),
         )
 
-    def _parameter_echo_channel(self, data: "Command", parameter: str) -> Optional["Channel"]:
-        return self._get_channel(data, parameter)
+    def _parameter_echo_channel(self, data: "Command", parameter: str) -> None:
+        _channel = self._get_channel(data, parameter)
+        if not _channel:
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the channel could not be retrieved.")
+            return
+        GUIFramework.gui(
+            data.message,
+            target_channels=_channel,
+            user_id=data.actor,
+        )
 
-    def _parameter_echo_mychannel(self, data: "Command", parameter: str) -> bool:
-        return True
+    def _parameter_echo_mychannel(self, data: "Command", parameter: str) -> None:
+        _channel_user = mumble_utils.get_user_by_id(data.actor)
+        if not _channel_user:
+            return
+        _channel_obj = mumble_utils.get_channel_by_user(_channel_user)
+        if _channel_obj:
+            GUIFramework.gui(
+                data.message,
+                target_channels=_channel_obj,
+                user_id=data.actor,
+            )
 
-    def _parameter_echo_channels(self, data: "Command", parameter: str) -> Optional[List["Channel"]]:
+    def _parameter_echo_channels(self, data: "Command", parameter: str) -> None:
         parameter_split = parameter.split("=", 1)
         if len(parameter_split) == 2:
             channel_names = [channel.strip().replace("_", " ") for channel in parameter_split[1].split(",")]
@@ -329,7 +402,12 @@ class Plugin(PluginBase):
                     f"'{data._command}' command warning: cannot find specified channel '{_channel}'.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
-            return _found_channels
+            GUIFramework.gui(
+                data.message,
+                target_channels=_found_channels,
+                user_id=data.actor,
+            )
+            return
         GUIFramework.gui(
             f"'{data._command}' command warning: an invalid list of channel names was provided.",
             target_users=mumble_utils.get_user_by_id(data.actor),
@@ -360,13 +438,13 @@ class Plugin(PluginBase):
             target_users=mumble_utils.get_user_by_id(data.actor),
         )
 
-    def _get_user(self, data: "Command", parameter: str):
+    def _get_user(self, data: "Command", parameter: str) -> Optional["User"]:
         parameter_split = parameter.split("=", 1)
         if len(parameter_split) == 2:
             _search_term: str = parameter_split[1].strip().replace("_", " ")
             if not _search_term:
                 GUIFramework.gui(
-                    f"'{data._command}' command warning: an invalid user name was provided.",
+                    f"'{data._command}' command error: an invalid user name was provided.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
                 return
@@ -374,22 +452,22 @@ class Plugin(PluginBase):
             if _search_user is not None:
                 return _search_user
             GUIFramework.gui(
-                f"'{data._command}' command warning: cannot find specified user '{_search_term}'.",
+                f"'{data._command}' command error: cannot find specified user '{_search_term}'.",
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
         GUIFramework.gui(
-            f"'{data._command}' command warning: a user name was not provided.",
+            f"'{data._command}' command error: a user name was not provided.",
             target_users=mumble_utils.get_user_by_id(data.actor),
         )
 
-    def _get_channel(self, data: "Command", parameter: str):
+    def _get_channel(self, data: "Command", parameter: str) -> Optional["Channel"]:
         parameter_split = parameter.split("=", 1)
         if len(parameter_split) == 2:
             _search_term: str = parameter_split[1].strip().replace("_", " ")
             if not _search_term:
                 GUIFramework.gui(
-                    f"'{data._command}' command warning: an invalid channel name was provided.",
+                    f"'{data._command}' command error: an invalid channel name was provided.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
                 return
@@ -397,11 +475,11 @@ class Plugin(PluginBase):
             if _search_channel is not None:
                 return _search_channel
             GUIFramework.gui(
-                f"'{data._command}' command warning: cannot find specified channel '{_search_term}'.",
+                f"'{data._command}' command error: cannot find specified channel '{_search_term}'.",
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
         GUIFramework.gui(
-            f"'{data._command}' command warning: a channel name was not provided.",
+            f"'{data._command}' command error: a channel name was not provided.",
             target_users=mumble_utils.get_user_by_id(data.actor),
         )

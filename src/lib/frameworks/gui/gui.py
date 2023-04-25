@@ -101,7 +101,8 @@ class GUIFramework:
                     raise GUIError("Unable to load gui themes: mumimo config could not be retrieved from settings.")
 
                 _selected_theme = _config.get(MumimoCfgFields.SETTINGS.GUI.SELECTED_THEME, None)
-                if not _selected_theme:
+                _theme = _themes.get(_selected_theme, None)
+                if not _selected_theme or not _theme:
                     _selected_theme = "light"
                     logger.warning("Unable to find selected gui theme, falling back to default 'light' theme.")
 
