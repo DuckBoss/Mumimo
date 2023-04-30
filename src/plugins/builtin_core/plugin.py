@@ -117,6 +117,8 @@ class Plugin(PluginBase):
         # !themes.delete "theme_name"  -> Deletes the specified theme, and falls back to a default theme if it was in use.
         # !themes.show "theme_name"  -> Shows the config data for the specified theme.
         # !themes.update="theme_name" item1=value1...  -> Updates a specified theme with the specified new values.
+        # !themes.reset "theme_name" -> Resets the specified theme back to default options.
+        # !themes.resetall -> Resets all the themes back to the default set of themes and options.
 
         _parameters = self.verify_parameters(self.themes.__name__, data)
         if _parameters is None:
@@ -173,6 +175,33 @@ class Plugin(PluginBase):
             target_users=mumble_utils.get_user_by_id(data.actor),
         )
 
+    def _parameter_themes_reset(self, data: "Command", parameter: str) -> None:
+        _selected_theme = data.message.strip().replace(" ", "_")
+        if not theme_utils.reset_theme(_selected_theme):
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: failed to reset theme.")
+            GUIFramework.gui(
+                text=f"Failed to reset theme: {_selected_theme}",
+                target_users=mumble_utils.get_user_by_id(data.actor),
+            )
+            return
+        GUIFramework.gui(
+            text=f"Resetted selected theme: {_selected_theme}",
+            target_users=mumble_utils.get_user_by_id(data.actor),
+        )
+
+    def _parameter_themes_resetall(self, data: "Command", parameter: str) -> None:
+        if not theme_utils.reset_all_themes():
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: failed to reset all themes.")
+            GUIFramework.gui(
+                text="Failed to reset all themes.",
+                target_users=mumble_utils.get_user_by_id(data.actor),
+            )
+            return
+        GUIFramework.gui(
+            text="Resetted all themes to defaults.",
+            target_users=mumble_utils.get_user_by_id(data.actor),
+        )
+
     def _parameter_themes_delete(self, data: "Command", parameter: str) -> None:
         _delete_theme = data.message.strip().replace(" ", "_")
         if not theme_utils.delete_theme(_delete_theme):
@@ -194,6 +223,7 @@ class Plugin(PluginBase):
                 f"'{data._command}' command error: a user name was not provided.",
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
+            return
 
         _theme_name: str = parameter_split[1].strip().replace("_", " ")
         if not _theme_name:

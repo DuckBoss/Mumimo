@@ -52,7 +52,7 @@ def delete_theme(theme: str) -> bool:
 
 
 def new_theme(theme: str) -> bool:
-    _template_theme = _get_template_theme()
+    _template_theme = _get_custom_theme_template()
     _themes: Optional["Config"] = settings.configs.get_gui_themes()
     if not _themes:
         logger.error("Failed to create new gui theme: the gui themes could not be retrieved from settings.")
@@ -69,6 +69,42 @@ def new_theme(theme: str) -> bool:
     # Save new theme to the toml file.
     _themes.save()
     logger.debug(f"Created new gui theme from template: {theme}.")
+
+    return True
+
+
+def reset_theme(theme: str) -> bool:
+    _template_theme = _get_custom_theme_template()
+    _themes: Optional["Config"] = settings.configs.get_gui_themes()
+    if not _themes:
+        logger.error("Failed to reset gui theme: the gui themes could not be retrieved from settings.")
+        return False
+
+    theme = theme.strip().replace(" ", "_")
+    _selected_theme = _themes.get(theme, None)
+    if not _selected_theme:
+        logger.error(f"Failed to reset gui theme: theme '{theme}' does not exist.")
+        return False
+    _selected_theme = _template_theme
+    _themes.update({theme: _selected_theme})
+
+    _themes.save()
+    logger.debug(f"Reset gui theme from template: {theme}.")
+
+    return True
+
+
+def reset_all_themes() -> bool:
+    _template_default_themes = _get_default_themes_template()
+    _themes: Optional["Config"] = settings.configs.get_gui_themes()
+    if not _themes:
+        logger.error("Failed to reset gui themes: the gui themes could not be retrieved from settings.")
+        return False
+    _themes.clear()
+    _themes.update(_template_default_themes)
+
+    _themes.save()
+    logger.debug("Reset all gui themes from default themes template.")
 
     return True
 
@@ -96,7 +132,7 @@ def update_theme(theme: str, items: Dict[str, Any]) -> bool:
     return True
 
 
-def _get_template_theme() -> "Config":
+def _get_custom_theme_template() -> "Config":
     _config: Optional["Config"] = settings.configs.get_mumimo_config()
     if not _config:
         raise PluginError("Unable to get template theme: mumimo config could not be retrieved from settings.", logger=logger)
@@ -116,6 +152,24 @@ def _get_template_theme() -> "Config":
         raise PluginError("Unable to get template theme: 'template' section is missing in gui custom theme template file.")
 
     return _template
+
+
+def _get_default_themes_template() -> "Config":
+    _config: Optional["Config"] = settings.configs.get_mumimo_config()
+    if not _config:
+        raise PluginError("Unable to get default template themes: mumimo config could not be retrieved from settings.", logger=logger)
+
+    _plugin_path = _config.get(MumimoCfgFields.SETTINGS.PLUGINS.PLUGINS_PATH, None)
+    if not _plugin_path:
+        raise PluginError("Unable to get default template themes: mumimo config does not have a defined plugin path.")
+
+    _theme_template_path = pathlib.Path.cwd() / _plugin_path / "builtin_core/resources/gui_themes_template.toml"
+    _themes_template: "Config" = Config(_theme_template_path)
+    if _themes_template is None:
+        raise PluginError(f"Unable to get default template themes: default template themes file is missing. Expected path: {_theme_template_path}")
+    _themes_template.read()
+
+    return _themes_template
 
 
 def _get_theme(theme: str) -> Optional["Config"]:

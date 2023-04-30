@@ -45,6 +45,8 @@ class ParameterDefinitions:
         DELETE: str = "delete"
         UPDATE: str = "update"
         SHOW: str = "show"
+        RESET: str = "reset"
+        RESETALL: str = "resetall"
 
         @staticmethod
         def get_definitions() -> List[str]:
@@ -55,4 +57,6 @@ class ParameterDefinitions:
                 ParameterDefinitions.Themes.DELETE,
                 ParameterDefinitions.Themes.UPDATE,
                 ParameterDefinitions.Themes.SHOW,
+                ParameterDefinitions.Themes.RESET,
+                ParameterDefinitions.Themes.RESETALL,
             ]
