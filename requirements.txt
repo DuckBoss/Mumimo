@@ -5,7 +5,7 @@ git+https://github.com/azlux/pymumble/@7d203c5a9d0f1a628b6272699bf4c4a0a69fe44b
 python-dotenv==1.0.0
 validators==0.20.0
 toml==0.10.2
-aiosqlite==0.18.0
+aiosqlite==0.19.0
 SqlAlchemy==2.0.8
 SQLAlchemy-Utils==0.40.0
 
