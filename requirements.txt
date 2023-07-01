@@ -10,4 +10,4 @@ SqlAlchemy==2.0.8
 SQLAlchemy-Utils==0.40.0
 
 thefuzz==0.19.0
-python-Levenshtein==0.20.9
+python-Levenshtein==0.21.1
