@@ -19,20 +19,21 @@ if TYPE_CHECKING:
 
 
 class LogFormatter(logging.Formatter):
-    _grey = "\x1b[38;20m"
-    _cyan = "\x1b[36:36m"
-    _yellow = "\x1b[33;20m"
-    _red = "\x1b[31;20m"
-    _bold_red = "\x1b[31;1m"
-    _reset = "\x1b[0m"
-    _fmt = ""
+    class LogColors:
+        GREY = "\x1b[38;20m"
+        CYAN = "\x1b[36:36m"
+        YELLOW = "\x1b[33;20m"
+        RED = "\x1b[31;20m"
+        BOLD_RED = "\x1b[31;1m"
+        RESET = "\x1b[0m"
+        EMPTY = ""
 
     FORMATS = {
-        logging.DEBUG: _fmt,
-        logging.INFO: _fmt,
-        logging.WARNING: _fmt,
-        logging.ERROR: _fmt,
-        logging.CRITICAL: _fmt,
+        logging.DEBUG: LogColors.EMPTY,
+        logging.INFO: LogColors.EMPTY,
+        logging.WARNING: LogColors.EMPTY,
+        logging.ERROR: LogColors.EMPTY,
+        logging.CRITICAL: LogColors.EMPTY,
     }
 
     def __init__(
@@ -47,11 +48,11 @@ class LogFormatter(logging.Formatter):
         super().__init__(fmt, datefmt, style, validate, defaults=defaults)
         if fmt is not None:
             self.FORMATS = {
-                logging.DEBUG: self._cyan + fmt + self._reset,
-                logging.INFO: self._grey + fmt + self._reset,
-                logging.WARNING: self._yellow + fmt + self._reset,
-                logging.ERROR: self._red + fmt + self._reset,
-                logging.CRITICAL: self._bold_red + fmt + self._reset,
+                logging.DEBUG: self.LogColors.CYAN + fmt + self.LogColors.RESET,
+                logging.INFO: self.LogColors.GREY + fmt + self.LogColors.RESET,
+                logging.WARNING: self.LogColors.YELLOW + fmt + self.LogColors.RESET,
+                logging.ERROR: self.LogColors.RED + fmt + self.LogColors.RESET,
+                logging.CRITICAL: self.LogColors.BOLD_RED + fmt + self.LogColors.RESET,
             }
 
     def format(self, record):
