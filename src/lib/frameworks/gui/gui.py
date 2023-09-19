@@ -134,9 +134,9 @@ class GUIFramework:
         settings: Optional[ContentBox.Settings] = None,
         **kwargs,
     ) -> None:
-        raw_text = text
         if isinstance(text, str):
-            raw_text = [text]
+            text = [text]
+        raw_text = text
 
         _content = GUIFramework.ContentBox(settings=settings)
         _content.open(**kwargs)

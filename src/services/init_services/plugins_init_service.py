@@ -53,6 +53,15 @@ class PluginsInitService:
         for dir in _plugin_dirs:
             _plugin_name = dir.name
 
+            # Skip the plugin if it is disabled in the mumimo config file.
+            if _plugin_name in _cfg.get(MumimoCfgFields.SETTINGS.PLUGINS.DISABLED_PLUGINS, []):
+                logger.info(
+                    f"[{LogOutputIdentifiers.PLUGINS}]: Plugin '{_plugin_name}' is disabled in the mumimo config file. "
+                    "Skipping plugin initialization..."
+                )
+                _skipped_plugins.append(_plugin_name)
+                continue
+
             if not (dir / "plugin.py").is_file():
                 logger.error(
                     f"[{LogOutputIdentifiers.PLUGINS}]: Plugin '{_plugin_name}' does not contain a 'plugin.py' file. "
@@ -122,6 +131,7 @@ class PluginsInitService:
                         command_parameters=command_value[1],
                         parameters_required=command_value[2],
                         exclusive_parameters=command_value[3],
+                        global_parameters=command_value[4],
                     )
                     logger.debug(
                         f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: Registered '{_plugin_name}.{command_name}.[{'|'.join(command_value[1])}]' "

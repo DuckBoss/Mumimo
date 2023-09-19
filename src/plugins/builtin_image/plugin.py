@@ -78,8 +78,16 @@ class Plugin(PluginBase):
     def _parameter_image_me(self, data: "Command", parameter: str) -> bool:
         return True
 
-    def _parameter_image_broadcast(self, data: "Command", parameter: str) -> bool:
-        return True
+    def _parameter_image_broadcast(self, data: "Command", parameter: str) -> None:
+        _all_channels: List["Channel"] = mumble_utils.get_all_channels()
+        if not _all_channels:
+            logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the channel tree could not be retrieved.")
+            return
+        GUIFramework.gui(
+            data.message,
+            target_channels=_all_channels,
+            user_id=data.actor,
+        )
 
     def _parameter_image_user(self, data: "Command", parameter: str) -> Optional["User"]:
         return self._get_user(data, parameter)

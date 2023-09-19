@@ -27,6 +27,9 @@ class Plugin(PluginBase):
         self.initialize_parameters(settings.commands.callbacks.get_callbacks(self._plugin_name))
         logger.debug(f"[{LogOutputIdentifiers.PLUGINS}]: Plugin '{self._plugin_name}' ready.")
 
+    def process(self, data: "Command"):
+        logger.debug(data.to_dict())
+
     @command(
         parameters=ParameterDefinitions.Plugin.get_definitions(),
         parameters_required=True,
@@ -34,10 +37,11 @@ class Plugin(PluginBase):
     )
     def plugin(self, data: "Command"):
         # Example:
-        # !plugin.active "builtin_core"  -> Displays a message showing the status of the specified plugin.
+        # !plugin.active "plugin1"  -> Displays a message showing the status of the specified plugin.
         # !plugin.stop "plugin1"  -> Stops the specified plugin if it is running.
         # !plugin.start "plugin1"  -> Starts the specified plugin if it is not running.
         # !plugin.restart "plugin1"  -> Restarts the specified plugin.
+        # TODO: !plugin.configure "plugin1" -> Configure the specified plugin.
         _parameters = self.verify_parameters(self.plugin.__name__, data)
         if _parameters is None:
             return

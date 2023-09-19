@@ -10,6 +10,7 @@ class CommandCallbacks(Dict[str, Dict[str, Any]]):
         command_parameters: Optional[List[str]] = None,
         parameters_required: bool = False,
         exclusive_parameters: Optional[List[str]] = None,
+        global_parameters: Optional[List[str]] = None,
     ) -> Dict[str, Dict[str, Any]]:
         if self.get(callback_name) is None:
             self[callback_name] = {}
@@ -17,6 +18,8 @@ class CommandCallbacks(Dict[str, Dict[str, Any]]):
             command_parameters = []
         if exclusive_parameters is None:
             exclusive_parameters = []
+        if global_parameters is None:
+            global_parameters = []
         self[callback_name] = {
             "command": callback_name,
             "func": command_func,
@@ -24,6 +27,7 @@ class CommandCallbacks(Dict[str, Dict[str, Any]]):
             "parameters": command_parameters,
             "parameters_required": parameters_required,
             "exclusive_parameters": exclusive_parameters,
+            "global_parameters": global_parameters,
         }
         return self
 

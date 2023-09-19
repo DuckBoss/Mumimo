@@ -1,7 +1,7 @@
 import logging
 import pathlib
 import threading
-from abc import ABC
+from abc import ABC, abstractmethod
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -10,6 +10,9 @@ from ....constants import LogOutputIdentifiers, PluginCfgFields
 from ....exceptions import PluginError
 from ....utils import mumble_utils
 from ...frameworks.gui.gui import GUIFramework
+from ...message_queue import MessageQueue
+from .message_relay_definitions import MessageRelayDefinitions
+from . import plugin_output_parameters
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +21,7 @@ if TYPE_CHECKING:
     from ....lib.command import Command
 
 
-class PluginConstants:
+class PluginCompileConstants:
     class Status(Enum):
         NONE = 0
         OK = 1
@@ -37,8 +40,8 @@ class ParameterCompileResult:
         self,
         parameters: Optional[Union[List[str], str]] = None,
         result: Optional[Dict[str, Any]] = None,
-        status: PluginConstants.Status = PluginConstants.Status.NONE,
-        reason: PluginConstants.Reason = PluginConstants.Reason.NONE,
+        status: PluginCompileConstants.Status = PluginCompileConstants.Status.NONE,
+        reason: PluginCompileConstants.Reason = PluginCompileConstants.Reason.NONE,
     ) -> None:
         if isinstance(parameters, str):
             parameters = [parameters]
@@ -55,6 +58,7 @@ class PluginBase(ABC):
     _thread_stop_event: threading.Event = threading.Event()
     _command_parameters: Dict[str, List[str]] = {}
     _exclusive_parameters: Dict[str, List[str]] = {}
+    _output_message_queue: MessageQueue
 
     @classmethod
     def makeCommandRegister(cls):
@@ -69,7 +73,13 @@ class PluginBase(ABC):
                 exclusive_parameters = []
 
             def register_with_parameters(func):
-                registered_cmds[func.__name__] = (func, parameters, parameters_required, exclusive_parameters)
+                registered_cmds[func.__name__] = (
+                    func,
+                    parameters,
+                    parameters_required,
+                    exclusive_parameters,
+                    MessageRelayDefinitions.get_definitions(),
+                )
                 return func
 
             return register_with_parameters
@@ -94,13 +104,22 @@ class PluginBase(ABC):
         return self._plugin_name
 
     @property
+    def output_message_queue(self):
+        return self._output_message_queue
+
+    @property
     def plugin_metadata(self) -> Config:
         return self._plugin_metadata
 
     def __init__(self, plugin_name: str) -> None:
         super().__init__()
         self._plugin_name = plugin_name
+        self._output_message_queue = MessageQueue()
         self.initialize_metadata()
+
+    @abstractmethod
+    def process(self, data: "Command"):
+        raise NotImplementedError()
 
     def _compile_parameters(self, func_name: str, data: "Command") -> ParameterCompileResult:
         _results = {}
@@ -109,15 +128,17 @@ class PluginBase(ABC):
         if _command is None:
             raise PluginError(f"Plugin '{self.plugin_name}' error: encountered an error compiling parameters due to a missing command value.")
 
-        # Return a compile failure reuslt if the command is disabled.
+        # Return a compile failure result if the command is disabled.
         if func_name in self.plugin_metadata.get(PluginCfgFields.PLUGIN.COMMANDS.DISABLE_COMMANDS, []):
             return ParameterCompileResult(
-                status=PluginConstants.Status.FAILED,
-                reason=PluginConstants.Reason.COMMAND_DISABLED,
+                status=PluginCompileConstants.Status.FAILED,
+                reason=PluginCompileConstants.Reason.COMMAND_DISABLED,
             )
         # Return a compile failure result if the command is using more than 1 exclusive parameter at a time.
         if len(self.exclusive_parameters[_command]) > 0:
-            if len(data.parameters) > 1:
+            params = [param.split("=")[0] for param in data.parameters]
+            params = [param for param in params if param not in MessageRelayDefinitions.get_definitions()]
+            if len(params) > 1:
                 matching_parameters = [
                     param
                     for param in data.parameters
@@ -125,8 +146,8 @@ class PluginBase(ABC):
                     if param.split("=")[0] == param_exclusive
                 ]
                 return ParameterCompileResult(
-                    status=PluginConstants.Status.FAILED,
-                    reason=PluginConstants.Reason.COMMAND_EXCLUSIVE,
+                    status=PluginCompileConstants.Status.FAILED,
+                    reason=PluginCompileConstants.Reason.COMMAND_EXCLUSIVE,
                     parameters=[param.split("=")[0] for param in matching_parameters],
                 )
 
@@ -135,39 +156,59 @@ class PluginBase(ABC):
             if len(param_split) == 0:
                 param_split.append(param.strip())
 
+            # If the parameter is a global plugin message relay parameter, execute the associated parameter function.
+            if param_split[0] in MessageRelayDefinitions.get_definitions():
+                continue
+
             # Return a compile failure result if the parameter is disabled for the specified command.
             if f"{_command}.{param_split[0]}" in self.plugin_metadata.get(PluginCfgFields.PLUGIN.COMMANDS.DISABLE_PARAMETERS, []):
                 return ParameterCompileResult(
-                    status=PluginConstants.Status.FAILED,
-                    reason=PluginConstants.Reason.PARAMETER_DISABLED,
+                    status=PluginCompileConstants.Status.FAILED,
+                    reason=PluginCompileConstants.Reason.PARAMETER_DISABLED,
                     parameters=param_split[0],
                 )
             # Return a compile failure if the parameter is invalid.
             elif param_split[0] not in self.command_parameters[_command]:
                 return ParameterCompileResult(
-                    status=PluginConstants.Status.FAILED,
-                    reason=PluginConstants.Reason.PARAMETER_INVALID,
+                    status=PluginCompileConstants.Status.FAILED,
+                    reason=PluginCompileConstants.Reason.PARAMETER_INVALID,
                     parameters=param_split[0],
                 )
+
             # Execute the parameter function.
             func: Callable = getattr(self, f"_parameter_{func_name}_{param_split[0]}")
             _results[param_split[0]] = func(data, param)
 
+        # Display all messages in the output queue.
+        print(data.parameters)
+        params = [param.split("=")[0] for param in data.parameters if param.split("=")[0] in MessageRelayDefinitions.get_definitions()]
+        print(params)
+        if not params:
+            params = [MessageRelayDefinitions.ME]
+        print(params)
+        print(self.output_message_queue.queue)
+        output = self.output_message_queue.dequeue()
+        while output is not None:
+            for param in params:
+                func: Callable = getattr(plugin_output_parameters, f"output_{param}")
+                func(*output)
+            output = self.output_message_queue.dequeue()
+
         return ParameterCompileResult(
-            status=PluginConstants.Status.OK,
+            status=PluginCompileConstants.Status.OK,
             result=_results,
         )
 
     def verify_parameters(self, func_name: str, data: "Command") -> Optional[Dict[str, Any]]:
         _compiled_result: ParameterCompileResult = self._compile_parameters(func_name, data)
-        if _compiled_result.status == PluginConstants.Status.FAILED:
-            if _compiled_result.reason == PluginConstants.Reason.COMMAND_DISABLED:
+        if _compiled_result.status == PluginCompileConstants.Status.FAILED:
+            if _compiled_result.reason == PluginCompileConstants.Reason.COMMAND_DISABLED:
                 GUIFramework.gui(
                     f"'{data.command}' command error: this command is disabled.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
                 return
-            elif _compiled_result.reason == PluginConstants.Reason.COMMAND_EXCLUSIVE:
+            elif _compiled_result.reason == PluginCompileConstants.Reason.COMMAND_EXCLUSIVE:
                 if not _compiled_result.parameters:
                     _compiled_result.parameters = ["n/a"]
                 GUIFramework.gui(
@@ -176,13 +217,13 @@ class PluginBase(ABC):
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
                 return
-            elif _compiled_result.reason == PluginConstants.Reason.PARAMETER_DISABLED:
+            elif _compiled_result.reason == PluginCompileConstants.Reason.PARAMETER_DISABLED:
                 GUIFramework.gui(
                     f"'{data.command}' command error: the '{_compiled_result.parameters}' parameter is disabled.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
                 return
-            elif _compiled_result.reason == PluginConstants.Reason.PARAMETER_INVALID:
+            elif _compiled_result.reason == PluginCompileConstants.Reason.PARAMETER_INVALID:
                 GUIFramework.gui(
                     f"'{data.command}' command error: the '{_compiled_result.parameters}' parameter is invalid.",
                     target_users=mumble_utils.get_user_by_id(data.actor),

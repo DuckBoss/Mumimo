@@ -1,37 +1,20 @@
 import logging
 from typing import List, Optional
 
-from ..exceptions import ServiceError
-from ..lib.command import Command
-
+from .command import Command
+from .queue import Queue
 
 logger = logging.getLogger(__name__)
 
 
-class CommandQueue:
+class CommandQueue(Queue):
     _queue: List[Command] = []
     _max_size: int = 0
 
-    DEFAULT_COMMAND_QUEUE_LIMIT: int = 100
+    DEFAULT_QUEUE_LIMIT: int = 100
 
-    def __init__(self, max_size: Optional[int] = DEFAULT_COMMAND_QUEUE_LIMIT) -> None:
-        if not isinstance(max_size, int) or max_size < 0:
-            raise ServiceError(
-                "Cannot initialize command queue: the provided max size must be a non-negative number.",
-                logger=logger,
-            )
-        if max_size is not None:
-            self._max_size = max_size
-        else:
-            self._max_size = self.DEFAULT_COMMAND_QUEUE_LIMIT
-
-    @property
-    def size(self) -> int:
-        return len(self._queue)
-
-    @property
-    def max_size(self) -> int:
-        return self._max_size
+    def __init__(self, max_size: Optional[int] = DEFAULT_QUEUE_LIMIT) -> None:
+        super().__init__(max_size)
 
     @property
     def queue(self) -> List[Command]:

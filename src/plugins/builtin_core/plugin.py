@@ -1,5 +1,4 @@
 import logging
-import time
 from typing import TYPE_CHECKING, List, Optional
 
 from pymumble_py3.channels import Channel
@@ -32,9 +31,10 @@ class Plugin(PluginBase):
         self.initialize_parameters(settings.commands.callbacks.get_callbacks(self._plugin_name))
         logger.debug(f"[{LogOutputIdentifiers.PLUGINS}]: Plugin '{self._plugin_name}' ready.")
 
-    @command(
-        parameters=ParameterDefinitions.Echo.get_definitions(),
-    )
+    def process(self, data: "Command"):
+        logger.debug(data.to_dict())
+
+    @command()
     def echo(self, data: "Command") -> None:
         # Example:
         # !echo "hello, channel!"  -> Without a target parameter, by default echoes to the bot channel.
@@ -52,10 +52,6 @@ class Plugin(PluginBase):
         if _parameters is None:
             return
 
-        _delay = _parameters.get(ParameterDefinitions.Echo.DELAY, None)
-        if _delay and _delay > 0:
-            time.sleep(_delay)
-
         if not any(x in self.command_parameters[self.echo.__name__] for x in _parameters.keys()):
             if not data.message.strip():
                 GUIFramework.gui(
@@ -64,12 +60,7 @@ class Plugin(PluginBase):
                     user_id=data.actor,
                 )
                 return
-            _channel = mumble_utils.get_my_channel()
-            GUIFramework.gui(
-                data.message,
-                target_channels=_channel,
-                user_id=data.actor,
-            )
+            self.output_message_queue.enqueue((data.message, data))
 
     @command(
         parameters=ParameterDefinitions.Move.get_definitions(),
@@ -102,6 +93,7 @@ class Plugin(PluginBase):
                     user_id=data.actor,
                 )
                 return
+            self.output_message_queue.enqueue((f"Attempting to move to channel: '{_target_channel}'.", data))
             _search_channel.move_in()
 
     @command(
@@ -132,10 +124,7 @@ class Plugin(PluginBase):
         _msgs: List[str] = ["Available themes: "]
         for idx, theme in enumerate(_theme_list):
             _msgs.append(f"{idx+1}) {theme}")
-        GUIFramework.gui(
-            text=_msgs,
-            target_users=mumble_utils.get_user_by_id(data.actor),
-        )
+        self.output_message_queue.enqueue((_msgs, data))
 
     def _parameter_themes_switch(self, data: "Command", parameter: str) -> None:
         _new_theme = data.message.strip()
@@ -156,10 +145,7 @@ class Plugin(PluginBase):
         if not _switched_themes:
             logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the theme could not be switched.")
             return
-        GUIFramework.gui(
-            text=f"Switched theme to: {data.message.strip()}",
-            target_users=mumble_utils.get_user_by_id(data.actor),
-        )
+        self.output_message_queue.enqueue((f"Switched theme to: {data.message.strip()}", data))
 
     def _parameter_themes_new(self, data: "Command", parameter: str) -> None:
         _new_theme = data.message.strip().replace(" ", "_")
@@ -170,10 +156,7 @@ class Plugin(PluginBase):
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
-        GUIFramework.gui(
-            text=f"Created new theme: {_new_theme}",
-            target_users=mumble_utils.get_user_by_id(data.actor),
-        )
+        self.output_message_queue.enqueue((f"Created new theme: {_new_theme}", data))
 
     def _parameter_themes_reset(self, data: "Command", parameter: str) -> None:
         _selected_theme = data.message.strip().replace(" ", "_")
@@ -184,10 +167,7 @@ class Plugin(PluginBase):
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
-        GUIFramework.gui(
-            text=f"Resetted selected theme: {_selected_theme}",
-            target_users=mumble_utils.get_user_by_id(data.actor),
-        )
+        self.output_message_queue.enqueue((f"Reset selected theme: {_selected_theme}", data))
 
     def _parameter_themes_resetall(self, data: "Command", parameter: str) -> None:
         if not theme_utils.reset_all_themes():
@@ -197,10 +177,7 @@ class Plugin(PluginBase):
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
-        GUIFramework.gui(
-            text="Resetted all themes to defaults.",
-            target_users=mumble_utils.get_user_by_id(data.actor),
-        )
+        self.output_message_queue.enqueue(("Reset all themes to defaults.", data))
 
     def _parameter_themes_delete(self, data: "Command", parameter: str) -> None:
         _delete_theme = data.message.strip().replace(" ", "_")
@@ -211,10 +188,7 @@ class Plugin(PluginBase):
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
-        GUIFramework.gui(
-            text=f"Deleted theme: {_delete_theme}",
-            target_users=mumble_utils.get_user_by_id(data.actor),
-        )
+        self.output_message_queue.enqueue((f"Deleted theme: {_delete_theme}", data))
 
     def _parameter_themes_update(self, data: "Command", parameter: str) -> None:
         parameter_split = parameter.split("=", 1)
@@ -236,7 +210,8 @@ class Plugin(PluginBase):
         _update_items = data.message.strip().replace(" ", "_")
         if not _update_items:
             GUIFramework.gui(
-                f"'{data._command}' command error: invalid update values provided. Update values must follow the format: 'item1=value1, item2=value2, ...'",
+                f"'{data._command}' command error: invalid update values provided. Update values must follow the format: "
+                "'item1=value1, item2=value2, ...'",
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
@@ -246,7 +221,8 @@ class Plugin(PluginBase):
             _pairs_split = item.split("=", 1)
             if len(_pairs_split) != 2:
                 GUIFramework.gui(
-                    f"'{data._command}' command error: invalid update values provided. Update values must follow the format: 'item1=value1, item2=value2, ...'",
+                    f"'{data._command}' command error: invalid update values provided. Update values must follow the format: "
+                    "'item1=value1, item2=value2, ...'",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
                 return
@@ -260,10 +236,7 @@ class Plugin(PluginBase):
                 target_users=mumble_utils.get_user_by_id(data.actor),
             )
             return
-        GUIFramework.gui(
-            f"Updated theme: {_theme_name}",
-            target_users=mumble_utils.get_user_by_id(data.actor),
-        )
+        self.output_message_queue.enqueue((f"Updated theme: {_theme_name}", data))
 
     def _parameter_themes_show(self, data: "Command", parameter: str) -> None:
         _theme_name = data.message.strip().replace(" ", "_")
@@ -278,10 +251,7 @@ class Plugin(PluginBase):
         _msgs = [f"[{_theme_name}]"]
         for key, value in _selected_theme.items():
             _msgs.append(f"{key}={value}")
-        GUIFramework.gui(
-            text=_msgs,
-            target_users=mumble_utils.get_user_by_id(data.actor),
-        )
+        self.output_message_queue.enqueue((_msgs, data))
 
     def _parameter_move_to_me(self, data: "Command", parameter: str) -> Optional["User"]:
         _me = mumble_utils.get_user_by_id(data.actor)
@@ -296,6 +266,7 @@ class Plugin(PluginBase):
                 user_id=data.actor,
             )
             return
+        self.output_message_queue.enqueue((f"Attempting to join user: {_me['name']}", data))
         _my_channel.move_in()
         return
 
@@ -312,12 +283,14 @@ class Plugin(PluginBase):
                 user_id=data.actor,
             )
             return
+        self.output_message_queue.enqueue((f"Attempting to join user: {_user['name']}", data))
         _user_channel.move_in()
 
     def _parameter_move_to_channel(self, data: "Command", parameter: str) -> Optional["Channel"]:
         _channel = self._get_channel(data, parameter)
         if not _channel:
             return
+        self.output_message_queue.enqueue((f"Attempting to join channel: {_channel['name']}", data))
         _channel.move_in()
 
     def _parameter_echo_me(self, data: "Command", parameter: str) -> None:
@@ -325,33 +298,21 @@ class Plugin(PluginBase):
         if not _me:
             logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the user was not found with the provided id.")
             return
-        GUIFramework.gui(
-            data.message,
-            target_users=_me,
-            user_id=data.actor,
-        )
+        self.output_message_queue.enqueue((data.message, data))
 
     def _parameter_echo_broadcast(self, data: "Command", parameter: str) -> None:
         _all_channels: List["Channel"] = mumble_utils.get_all_channels()
         if not _all_channels:
             logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the channel tree could not be retrieved.")
             return
-        GUIFramework.gui(
-            data.message,
-            target_channels=_all_channels,
-            user_id=data.actor,
-        )
+        self.output_message_queue.enqueue((data.message, data))
 
     def _parameter_echo_user(self, data: "Command", parameter: str) -> None:
         _user = self._get_user(data, parameter)
         if not _user:
             logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the user could not be retrieved.")
             return
-        GUIFramework.gui(
-            data.message,
-            target_users=_user,
-            user_id=data.actor,
-        )
+        self.output_message_queue.enqueue((data.message, data))
 
     def _parameter_echo_users(self, data: "Command", parameter: str) -> None:
         parameter_split = parameter.split("=", 1)
@@ -375,11 +336,7 @@ class Plugin(PluginBase):
                     f"'{data._command}' command warning: cannot find specified user '{_user}'.",
                     target_users=mumble_utils.get_user_by_id(data.actor),
                 )
-            GUIFramework.gui(
-                data.message,
-                target_users=_found_users,
-                user_id=data.actor,
-            )
+            self.output_message_queue.enqueue((data.message, data))
             return
         GUIFramework.gui(
             f"'{data._command}' command warning: an invalid list of user names was provided.",
@@ -391,11 +348,7 @@ class Plugin(PluginBase):
         if not _channel:
             logger.error(f"[{LogOutputIdentifiers.PLUGINS_COMMANDS}]: '{data.command}' command error: the channel could not be retrieved.")
             return
-        GUIFramework.gui(
-            data.message,
-            target_channels=_channel,
-            user_id=data.actor,
-        )
+        self.output_message_queue.enqueue((data.message, data))
 
     def _parameter_echo_mychannel(self, data: "Command", parameter: str) -> None:
         _channel_user = mumble_utils.get_user_by_id(data.actor)

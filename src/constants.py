@@ -7,6 +7,14 @@ VERBOSE_MAX: int = 4
 VERBOSITY_MIN: int = VERBOSE_NONE
 VERBOSITY_MAX: int = VERBOSE_MAX
 
+# Command Constants
+COMMAND_SUGGESTIONS_THRESHOLD = 70
+
+# Config Constants
+DEFAULT_PATH_CONFIG_FILE: str = "config/config.toml"
+DEFAULT_PATH_LOGGING_CONFIG_FILE: str = "config/logging.toml"
+DEFAULT_PATH_GUI_THEMES_FILE: str = "config/gui_themes.toml"
+
 
 # Logging Output Identifier Constants
 class LogOutputIdentifiers:
@@ -78,12 +86,6 @@ class SysArgs:
     SYS_DB_NAME: str = "db_name"
     SYS_PLUGINS_PATH: str = "plugins_path"
     SYS_PLUGINS_CONFIG_PATH: str = "plugins_config_path"
-
-
-# Config Constants
-DEFAULT_PATH_CONFIG_FILE: str = "config/config.toml"
-DEFAULT_PATH_LOGGING_CONFIG_FILE: str = "config/logging.toml"
-DEFAULT_PATH_GUI_THEMES_FILE: str = "config/gui_themes.toml"
 
 
 class DefaultPermissionGroups:

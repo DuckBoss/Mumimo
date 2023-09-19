@@ -13,7 +13,7 @@ from ..lib.database.models.permission_group import PermissionGroupTable
 from ..lib.database.models.command import CommandTable
 from ..lib.database.models.alias import AliasTable
 
-from ..constants import LogCfgFields, MumimoCfgFields, LogOutputIdentifiers
+from ..constants import LogCfgFields, MumimoCfgFields, LogOutputIdentifiers, COMMAND_SUGGESTIONS_THRESHOLD
 from ..exceptions import ServiceError
 from ..lib.frameworks.gui.gui import GUIFramework
 from ..lib.command_history import CommandHistory
@@ -22,6 +22,7 @@ from ..settings import settings
 from ..utils import mumble_utils
 from ..utils.parsers import cmd_parser
 from ..lib.command_queue import CommandQueue
+from ..lib.frameworks.plugins.plugin_output_parameters import MessageRelayDefinitions
 
 if TYPE_CHECKING:
     from pymumble_py3.mumble import Mumble
@@ -285,8 +286,8 @@ class CommandProcessingService:
                 logger.warning(f"The command: [{_cmd_name}] is not a registered command.")
                 _all_command_names = [command for command in _callbacks.keys()]
                 _command_suggestions = process.extract(_cmd_name, _all_command_names, limit=3)
-                logger.debug(f"Found command suggestions: {_command_suggestions}")
-                _command_suggestions = [x[0] for x in _command_suggestions if x[1] >= 70]
+                logger.debug(f"Calculated command suggestions: {_command_suggestions}")
+                _command_suggestions = [x[0] for x in _command_suggestions if x[1] >= COMMAND_SUGGESTIONS_THRESHOLD]
                 # Only display suggestions if there is a closely matched ratio.
                 if _command_suggestions:
                     _msgs = [
@@ -369,8 +370,8 @@ class CommandProcessingService:
                 raise ServiceError(f"The command: [{_cmd_name}] does not contain a registered callable method.", logger=logger)
 
             # Ignore the command if the provided parameters are invalid or do not exist:
-            _cmd_params: Optional[List[str]] = _cmd_info.get("parameters", [])
-            if len(_cmd_params) > 0:
+            _cmd_params: Optional[List[str]] = _cmd_info.get("parameters", None)
+            if _cmd_params:
                 _parameters_required = _cmd_info.get("parameters_required", False)
                 if _parameters_required and not command.parameters:
                     logger.warning(f"The command: [{_cmd_name}] requires parameters and no parameters were provided.")
@@ -385,7 +386,11 @@ class CommandProcessingService:
                         target_users=mumble_utils.get_user_by_id(command.actor),
                     )
                     return
-                if any(param.split("=", 1)[0] not in _cmd_params for param in command.parameters):
+                if any(
+                    param.split("=", 1)[0] not in _cmd_params
+                    for param in command.parameters
+                    if param.split("=", 1)[0] not in MessageRelayDefinitions.get_definitions()
+                ):
                     logger.warning(f"The command: [{_cmd_name}] could not be executed because one or more provided parameters do not exist.")
                     _msgs = [
                         f"Invalid '{_cmd_name}' command. ",
