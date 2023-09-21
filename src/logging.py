@@ -1,7 +1,7 @@
 import logging
 import pathlib
 import sys
-from typing import Dict, Optional, TYPE_CHECKING, Mapping, Any
+from typing import Dict, Optional, TYPE_CHECKING, Union
 
 from .constants import VERBOSE_HIGH, VERBOSE_MIN, VERBOSE_STANDARD, LogCfgFields, SysArgs
 from .settings import settings
@@ -36,16 +36,14 @@ class LogFormatter(logging.Formatter):
         logging.CRITICAL: LogColors.EMPTY,
     }
 
-    def __init__(
+    def __init(
         self,
-        fmt: str | None = None,
-        datefmt: str | None = None,
+        fmt: Union[str, None] = None,
+        datefmt: Union[str, None] = None,
         style: "_FormatStyle" = "%",
         validate: bool = True,
-        *,
-        defaults: Mapping[str, Any] | None = None,
     ) -> None:
-        super().__init__(fmt, datefmt, style, validate, defaults=defaults)
+        super().__init__(fmt, datefmt, style, validate)
         if fmt is not None:
             self.FORMATS = {
                 logging.DEBUG: self.LogColors.CYAN + fmt + self.LogColors.RESET,
