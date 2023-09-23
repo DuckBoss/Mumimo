@@ -32,8 +32,12 @@ class LogOutputIdentifiers:
     DB_PLUGINS_PERMISSIONS: str = f"{DB}.{PLUGINS}.Permissions"
 
     MUMBLE: str = "Mumble"
-    MUMBLE_ON_CONNECT: str = f"{MUMBLE}.On_Connect"
-    MUMBLE_ON_DISCONNECT: str = f"{MUMBLE}.On_Disconnect"
+    MUMBLE_ON_CONNECT: str = f"{MUMBLE}.On_Server_Connect"
+    MUMBLE_ON_DISCONNECT: str = f"{MUMBLE}.On_Server_Disconnect"
+    MUMBLE_ON_USER_CREATED: str = f"{MUMBLE}.On_User_Created"
+    MUMBLE_ON_USER_REMOVED: str = f"{MUMBLE}.On_User_Removed"
+    MUMBLE_ON_CHANNEL_CREATED: str = f"{MUMBLE}.On_Channel_Created"
+    MUMBLE_ON_CHANNEL_REMOVED: str = f"{MUMBLE}.On_Channel_Removed"
 
 
 # Env Args Constants

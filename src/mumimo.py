@@ -60,4 +60,4 @@ class MumimoService:
             while True:
                 await asyncio.sleep(0.1)
         except asyncio.exceptions.CancelledError:
-            await mumble_utils.Management.exit_server()
+            await mumble_utils.Management.Client.exit_server()

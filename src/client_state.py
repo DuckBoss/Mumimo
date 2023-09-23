@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from pymumble_py3.mumble import Mumble
     from pymumble_py3.users import User
+    from pymumble_py3.channels import Channel
 
 
 class ClientState:
@@ -63,77 +64,116 @@ class ClientState:
         def state(self) -> Optional[AudioState]:
             return self._state
 
+        # region Mute
         def mute(self) -> bool:
-            if self._state is None:
+            if self.state is None:
                 return False
-            if self._check_client_mute():
-                self._state.mute()
-                return True
-            return False
+            if not self._check_client_mute():
+                return False
+            self.state.mute()
+            return True
 
         def _check_client_mute(self) -> bool:
-            if self._connection is not None:
-                if self._connection.users.myself:
-                    self._connection.users.myself.mute()
-                    if self._connection.users.myself.get_property("self_mute") is True:
-                        return True
-            return False
-
-        def unmute(self) -> bool:
-            if self._state is None:
+            if self._connection is None:
                 return False
-            if self._check_client_unmute():
-                self._state.unmute()
-                return True
-            return False
+            if self._connection.users.myself is None:
+                return False
+            self._connection.users.myself.mute()
+            return self._connection.users.myself.get_property("self_mute") is True
+        # endregion
+
+        # region Unmute
+        def unmute(self) -> bool:
+            if self.state is None:
+                return False
+            if not self._check_client_unmute():
+                return False
+            self.state.unmute()
+            return True
 
         def _check_client_unmute(self) -> bool:
-            if self._connection is not None:
-                if self._connection.users.myself:
-                    self._connection.users.myself.unmute()
-                    if self._connection.users.myself.get_property("self_mute") is False:
-                        return True
-            return False
-
-        def deafen(self) -> bool:
-            if self._state is None:
+            if self._connection is None:
                 return False
-            if self._check_client_deafen():
-                self._state.deafen()
-                return True
-            return False
+            if self._connection.users.myself is None:
+                return False
+            self._connection.users.myself.unmute()
+            return self._connection.users.myself.get_property("self_mute") is False
+        # endregion Unmute
+
+        # region Deafen
+        def deafen(self) -> bool:
+            if self.state is None:
+                return False
+            if not self._check_client_deafen():
+                return False
+            self.state.deafen()
+            return True
 
         def _check_client_deafen(self) -> bool:
-            if self._connection is not None:
-                if self._connection.users.myself:
-                    self._connection.users.myself.deafen()
-                    if self._connection.users.myself.get_property("self_deaf") is True:
-                        return True
-            return False
-
-        def undeafen(self) -> bool:
-            if self._state is None:
+            if self._connection is None:
                 return False
-            if self._check_client_undeafen():
-                self._state.undeafen()
-                return True
-            return False
+            if self._connection.users.myself is None:
+                return False
+            self._connection.users.myself.deafen()
+            return self._connection.users.myself.get_property("self_deaf") is True
+        # endregion Deafen
+
+        # region Undeafen
+        def undeafen(self) -> bool:
+            if self.state is None:
+                return False
+            if not self._check_client_undeafen():
+                return False
+            self.state.undeafen()
+            return True
 
         def _check_client_undeafen(self) -> bool:
-            if self._connection is not None:
-                if self._connection.users.myself:
-                    self._connection.users.myself.undeafen()
-                    if self._connection.users.myself.get_property("self_deaf") is False:
-                        return True
-            return False
+            if self._connection is None:
+                return False
+            if self._connection.users.myself is None:
+                return False
+            self._connection.users.myself.undeafen()
+            return self._connection.users.myself.get_property("self_deaf") is False
+        # endregion Undeafen
 
     class ServerProperties:
         class ServerState:
             _users: Dict[str, "User"]
+            _channels: Dict[str, "Channel"]
 
             def __init__(self) -> None:
                 self._users = {}
 
+            # region Channel
+            def add_channel(self, channel: Union["Channel", str]) -> bool:
+                if isinstance(channel, str):
+                    _channel = mumble_utils.get_channel_by_name(channel)
+                else:
+                    _channel = channel
+                if not _channel:
+                    return False
+                self._channels[_channel["name"]] = _channel
+                return True
+
+            def remove_channel(self, channel: Union["Channel", str]) -> bool:
+                if isinstance(channel, str):
+                    marked = None
+                    for _name, _channel in self._channels.items():
+                        if _name == channel:
+                            marked = _name
+                    if marked:
+                        del self._channels[marked]
+                        return True
+                else:
+                    _channel: "Channel" = channel
+                    if not _channel:
+                        return False
+                    del self._channels[_channel["name"]]
+                    return True
+                return False
+            # endregion
+
+            # region User
             def add_user(self, user: Union["User", str, int]) -> bool:
                 if isinstance(user, str):
                     _user = mumble_utils.get_user_by_name(user)
@@ -170,6 +210,7 @@ class ClientState:
                     del self._users[_user["name"]]
                     return True
                 return False
+            # endregion
 
         _state: ServerState
         _connection: Optional["Mumble"]
@@ -182,21 +223,54 @@ class ClientState:
         def state(self) -> ServerState:
             return self._state
 
+        # region CLBK: MUMBLE_ON_CONNECT
         def on_server_connect(self, data) -> None:
-            print(data)
+            logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_CONNECT}]: {data}")
 
+        def on_server_disconnect(self, data) -> None:
+            logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_DISCONNECT}]: {data}")
+        # endregion
+
+        # region # region CLBK: MUMBLE_ON_USER_CREATED
         def on_user_created(self, data: Dict[str, Any]) -> None:
-            asyncio.run(mumble_utils.Management.UserManagement.add_user(data))
-            logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_CONNECT}]: '{data['name']}' connected: added user '{data['name']}' to the server state.")
+            # When a new user connected is detected, attempt to add the user to the database first
+            # If the user is already in the database, just add it to the active client state.
+            asyncio.run(mumble_utils.Management.User.add_user(data))
 
         def on_user_removed(self, data: Dict[str, Any], message: str) -> None:
+            # When a user disconnection is detected, just remove it from the active client state.
+            # We don't remove it from the database because that would remove user information everytime
+            # the user disconnects from the server.
             if self.state.remove_user(user=data["name"]):
                 logger.debug(
-                    f"[{LogOutputIdentifiers.MUMBLE_ON_DISCONNECT}]: '{data['name']}' disconnected: "
-                    f"removed user '{data['name']}' from the server state."
+                    f"[{LogOutputIdentifiers.MUMBLE_ON_DISCONNECT}]: user '{data['name']}' disconnected: "
+                    f"removed user '{data['name']}' from the server state: "
+                    f"user removal message: '{message}'."
                 )
                 return
-            logger.error(f"Unable to remove user '{data['name']}' from the server state: {data}")
+            logger.error(f"Unable to remove user '{data['name']}' from the server state: {data}.")
+        # endregion
+
+        # region CLBK: MUMBLE_ON_CHANNEL_CREATED
+        def on_channel_created(self, data: Dict[str, Any]) -> None:
+            # When channel creation is detected, just add it to the client state.
+            # We don't add it to the database because channels contain no information
+            # that should be persistently stored.
+            if self.state.add_channel(channel=data["name"]):
+                logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_CHANNEL_CREATED}]: channel '{data['name']}' created: "
+                             f"added channel '{data['name']}' to the server state.")
+                return
+            logger.error(f"Unable to add new channel '{data['name']}' to the server state.")
+
+        def on_channel_removed(self, data: Dict[str, Any]) -> None:
+            # When channel removal is detected, just remove it from the client state.
+            # There is nothing to remove from the database related to channels.
+            if self.state.remove_channel(channel=data["name"]):
+                logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_CHANNEL_REMOVED}]: channel '{data['name']}' removed: "
+                             f"removed channel '{data['name']}' from the server state.")
+                return
+            logger.error(f"Unable to remove channel '{data['name']}' from the server state.")
+        # endregion
 
     _audio_properties: AudioProperties
     _server_properties: ServerProperties

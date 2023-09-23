@@ -163,7 +163,7 @@ def get_channel_by_name(channel_name: str) -> Optional["Channel"]:
 
 
 class Management:
-    class UserManagement:
+    class User:
         @staticmethod
         async def add_user(actor: Dict[str, Any]) -> None:
             _db_service: Optional["DatabaseService"] = settings.database.get_database_instance()
@@ -197,7 +197,8 @@ class Management:
                 raise ServiceError("Unable to add new user: the client state could not be retrieved.")
             _server_state = _client_state.server_properties.state
             if _server_state.add_user(_actor):
-                logger.debug(f"Added new user '{_actor['name']}' to the server state.")
+                logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_USER_CREATED}]: user '{_actor['name']}' connected: \
+                             added user '{_actor['name']}' to the server state.")
             else:
                 logger.error(f"Unable to add new user '{_actor['name']}' to the server state.")
                 await session.rollback()
@@ -244,25 +245,26 @@ class Management:
                 return _inst
         return None
 
-    @staticmethod
-    async def exit_server():
-        import sys
+    class Client:
+        @staticmethod
+        async def exit_server():
+            import sys
 
-        logger.info("Gracefully exiting Mumimo client...")
-        all_plugins: Dict[str, Any] = settings.plugins.get_registered_plugins()
-        logger.info("Gracefully exiting plugins...")
-        for _, plugin in all_plugins.items():
-            plugin.quit()
-        _murmur_instance = settings.connection.get_murmur_connection()
-        if _murmur_instance is not None:
-            logger.info("Disconnecting from Murmur server...")
-            if _murmur_instance.stop():
-                logger.info("Disconnected from Murmur server.")
-            _db_service = settings.database.get_database_instance()
-            if _db_service:
-                await _db_service.close(clean=True)
-        _async_runners = await asyncio.gather()
-        for runner in _async_runners:
-            runner.cancel("Mumimo shutting down.")
-        logger.info("Mumimo client closed.")
-        sys.exit(0)
+            logger.info("Gracefully exiting Mumimo client...")
+            all_plugins: Dict[str, Any] = settings.plugins.get_registered_plugins()
+            logger.info("Gracefully exiting plugins...")
+            for _, plugin in all_plugins.items():
+                plugin.quit()
+            _murmur_instance = settings.connection.get_murmur_connection()
+            if _murmur_instance is not None:
+                logger.info("Disconnecting from Murmur server...")
+                if _murmur_instance.stop():
+                    logger.info("Disconnected from Murmur server.")
+                _db_service = settings.database.get_database_instance()
+                if _db_service:
+                    await _db_service.close(clean=True)
+            _async_runners = await asyncio.gather()
+            for runner in _async_runners:
+                runner.cancel("Mumimo shutting down.")
+            logger.info("Mumimo client closed.")
+            sys.exit(0)

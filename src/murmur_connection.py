@@ -6,7 +6,8 @@ from typing import Dict, Optional, Union, List
 
 import pymumble_py3 as pymumble
 from pymumble_py3.users import User
-from pymumble_py3.constants import PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, PYMUMBLE_CLBK_CONNECTED, PYMUMBLE_CLBK_USERCREATED, PYMUMBLE_CLBK_USERREMOVED
+from pymumble_py3.constants import PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, PYMUMBLE_CLBK_CONNECTED, \
+    PYMUMBLE_CLBK_USERCREATED, PYMUMBLE_CLBK_USERREMOVED, PYMUMBLE_CLBK_DISCONNECTED
 from pymumble_py3.errors import ConnectionRejectedError
 
 from .client_state import ClientState
@@ -142,6 +143,9 @@ class MurmurConnection:
         # Set on_server_connect callback in client state.
         self._connection_instance.callbacks.set_callback(PYMUMBLE_CLBK_CONNECTED, _client_state.server_properties.on_server_connect)
         logger.debug(f"Added murmur callback: {PYMUMBLE_CLBK_CONNECTED}-{_client_state.server_properties.on_server_connect.__name__}")
+        # Set on_server_disconnect callback in client state.
+        self._connection_instance.callbacks.set_callback(PYMUMBLE_CLBK_DISCONNECTED, _client_state.server_properties.on_server_disconnect)
+        logger.debug(f"Added murmur callback: {PYMUMBLE_CLBK_DISCONNECTED}-{_client_state.server_properties.on_server_disconnect.__name__}")
         # Set on_user_created callback in client state.
         self._connection_instance.callbacks.set_callback(PYMUMBLE_CLBK_USERCREATED, _client_state.server_properties.on_user_created)
         logger.debug(f"Added murmur callback: {PYMUMBLE_CLBK_USERCREATED}-{_client_state.server_properties.on_user_created.__name__}")
@@ -190,7 +194,7 @@ class MurmurConnection:
 
         _all_users: List["User"] = [user for id, user in _inst.users.items() if user["name"] != _bot_name]
         for _user in _all_users:
-            await mumble_utils.Management.UserManagement.add_user(_user)
+            await mumble_utils.Management.User.add_user(_user)
 
         logger.debug("Asynchronous post connection actions complete.")
 
