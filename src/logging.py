@@ -36,7 +36,7 @@ class LogFormatter(logging.Formatter):
         logging.CRITICAL: LogColors.EMPTY,
     }
 
-    def __init(
+    def __init__(
         self,
         fmt: Union[str, None] = None,
         datefmt: Union[str, None] = None,
