@@ -180,13 +180,9 @@ class PluginBase(ABC):
             _results[param_split[0]] = func(data, param)
 
         # Display all messages in the output queue.
-        print(data.parameters)
         params = [param.split("=")[0] for param in data.parameters if param.split("=")[0] in MessageRelayDefinitions.get_definitions()]
-        print(params)
         if not params:
             params = [MessageRelayDefinitions.ME]
-        print(params)
-        print(self.output_message_queue.queue)
         output = self.output_message_queue.dequeue()
         while output is not None:
             for param in params:

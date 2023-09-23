@@ -178,7 +178,6 @@ def output_channels(messages: Union[str, List[str]], data: "Command") -> None:
 
 
 def _get_parameter(data: "Command", parameter: str) -> Optional[str]:
-    print(data.parameters)
     for param in data.parameters:
         param = param.strip()
         if param.startswith(parameter):
