@@ -225,8 +225,8 @@ class ClientState:
         def on_server_connect(self, data) -> None:
             logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_CONNECT}]: {data}")
 
-        def on_server_disconnect(self, data) -> None:
-            logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_DISCONNECT}]: {data}")
+        def on_server_disconnect(self) -> None:
+            logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_DISCONNECT}]: disconnected from server.")
         # endregion
 
         # region CLBK: MUMBLE_ON_USER_CREATED
