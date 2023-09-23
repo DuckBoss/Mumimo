@@ -1,5 +1,6 @@
-# pymumble==1.7 - pymumble 1.7 was unreleased, so use the git commit for now.
-git+https://github.com/azlux/pymumble/@7d203c5a9d0f1a628b6272699bf4c4a0a69fe44b
+# pymumble==1.7 - pymumble 1.7 was unreleased, and pymumble 1.6.1 is lacking a lot of fixes.
+# so use the git commit for now.
+git+https://github.com/azlux/pymumble/@6aa2085157bee5db66d85a059dfc9ac9f770d4dd
 
 
 python-dotenv==1.0.0
@@ -8,6 +9,13 @@ toml==0.10.2
 aiosqlite==0.18.0
 SqlAlchemy==2.0.8
 SQLAlchemy-Utils==0.40.0
+
+# These are the last functional versions of grpcio/grpcio-tools
+# with the pymumble requirement of protobuf 3.20.3
+# This also prevents upgrading python versions beyond 3.9.18
+grpcio-tools==1.48.2
+grpcio==1.58.0
+protobuf==3.20.3
 
 thefuzz==0.19.0
 python-Levenshtein==0.20.9
