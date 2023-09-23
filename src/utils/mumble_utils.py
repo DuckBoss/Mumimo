@@ -172,7 +172,7 @@ class Management:
 
             _actor: Optional["User"] = get_user_by_name(actor["name"])
             if not _actor:
-                raise ServiceError("Unable to add new user: the user could not be retrieved from the actor name.")
+                raise ServiceError("Unable to add new user: the user could not be retrieved from the actor name.", logger=logger)
 
             async with _db_service.session() as session:
                 _user_query = await session.execute(select(UserTable).filter_by(name=_actor["name"]))
@@ -185,7 +185,8 @@ class Management:
                     _permission_info: Optional[PermissionGroupTable] = _permission_query.scalar()
                     if not _permission_info:
                         raise ServiceError(
-                            f"Unable to add new user: the default permission '{DefaultPermissionGroups.DEFAULT_GUEST}' is not in the database."
+                            f"Unable to add new user: the default permission '{DefaultPermissionGroups.DEFAULT_GUEST}' is not in the database.",
+                            logger=logger
                         )
                     _user_info.permission_groups.append(_permission_info)
                     session.add(_user_info)

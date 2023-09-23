@@ -7,7 +7,8 @@ from typing import Dict, Optional, Union, List
 import pymumble_py3 as pymumble
 from pymumble_py3.users import User
 from pymumble_py3.constants import PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, PYMUMBLE_CLBK_CONNECTED, \
-    PYMUMBLE_CLBK_USERCREATED, PYMUMBLE_CLBK_USERREMOVED, PYMUMBLE_CLBK_DISCONNECTED
+    PYMUMBLE_CLBK_USERCREATED, PYMUMBLE_CLBK_USERREMOVED, PYMUMBLE_CLBK_DISCONNECTED, \
+    PYMUMBLE_CLBK_CHANNELCREATED, PYMUMBLE_CLBK_CHANNELREMOVED
 from pymumble_py3.errors import ConnectionRejectedError
 
 from .client_state import ClientState
@@ -152,6 +153,12 @@ class MurmurConnection:
         # Set on_user_removed callback in client state.
         self._connection_instance.callbacks.set_callback(PYMUMBLE_CLBK_USERREMOVED, _client_state.server_properties.on_user_removed)
         logger.debug(f"Added murmur callback: {PYMUMBLE_CLBK_USERREMOVED}-{_client_state.server_properties.on_user_removed.__name__}")
+        # Set on_channel_created callback in client state.
+        self._connection_instance.callbacks.set_callback(PYMUMBLE_CLBK_CHANNELCREATED, _client_state.server_properties.on_channel_created)
+        logger.debug(f"Added murmur callback: {PYMUMBLE_CLBK_CHANNELCREATED}-{_client_state.server_properties.on_channel_created.__name__}")
+        # Set on_channel_removed callback in client state.
+        self._connection_instance.callbacks.set_callback(PYMUMBLE_CLBK_CHANNELREMOVED, _client_state.server_properties.on_channel_removed)
+        logger.debug(f"Added murmur callback: {PYMUMBLE_CLBK_CHANNELREMOVED}-{_client_state.server_properties.on_channel_removed.__name__}")
 
         # Save the command processing service to the settings and set command processing mumble callbacks.
         _cmd_service: Optional[CommandProcessingService] = settings.commands.services.get_cmd_processing_service()
@@ -161,19 +168,19 @@ class MurmurConnection:
         self._connection_instance.callbacks.set_callback(PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, _cmd_service.process_cmd)
         logger.debug(f"Added murmur callback: {PYMUMBLE_CLBK_TEXTMESSAGERECEIVED}-{_cmd_service.process_cmd.__name__}")
 
-        # Listen to all channels:
+        # Listen to all channels when connecting to the server.
         _user: Optional["User"] = self._connection_instance.users.myself
         if _user:
-            _channels = []
-            for _, channel in enumerate(self._connection_instance.channels.items()):
-                _channels.append(channel[1]["channel_id"])
-            _user.add_listening_channels(_channels)
             # Set bot client comment
             _user.comment(f"Mumimo - v{version()}")
             # Mute the bot on server join
             _client_state.audio_properties.mute()
-
             # _user.myself.register() - don't implement yet
+            _channels = []
+            for _, channel in enumerate(self._connection_instance.channels.items()):
+                _channels.append(channel[1]["channel_id"])
+                logger.debug(f"Added listening channel: '{channel[1]['name']}-{channel[1]['channel_id']}'")
+            _user.add_listening_channels(_channels)
 
     async def _async_post_connection_actions(self) -> None:
         logger.debug("Running asynchronous post connection actions.")
