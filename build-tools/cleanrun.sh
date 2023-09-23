@@ -50,4 +50,4 @@ fi
 
 echo "Running Mumimo with arguments: '$@'"
 echo "==================================="
-./mumimo.py "-vv" "--env-file=$ENV_FILE" "--config-file=.config/config.toml" "--log-config-file=.config/logging.toml" $@
+python3.9 ./mumimo.py "-vv" "--env-file=$ENV_FILE" "--config-file=.config/config.toml" "--log-config-file=.config/logging.toml" $@
