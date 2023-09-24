@@ -165,7 +165,7 @@ def get_channel_by_name(channel_name: str) -> Optional["Channel"]:
 class Management:
     class User:
         @staticmethod
-        async def add_user(actor: Dict[str, Any]) -> None:
+        async def add_user(actor: "User") -> None:
             _db_service: Optional["DatabaseService"] = settings.database.get_database_instance()
             if not _db_service:
                 raise ServiceError("Unable to add new user: the database service could not retrieve the database instance.", logger=logger)

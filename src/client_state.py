@@ -230,22 +230,22 @@ class ClientState:
         # endregion
 
         # region CLBK: MUMBLE_ON_USER_CREATED
-        def on_user_created(self, data: Dict[str, Any]) -> None:
+        def on_user_created(self, user: "User") -> None:
             # When a new user connected is detected, attempt to add the user to the database first
             # If the user is already in the database, just add it to the active client state.
-            asyncio.run(mumble_utils.Management.User.add_user(data))
+            asyncio.run(mumble_utils.Management.User.add_user(user))
 
-        def on_user_removed(self, data: Dict[str, Any], message: str) -> None:
+        def on_user_removed(self, user: "User", session: Dict[str, Any]) -> None:
             # When a user disconnection is detected, just remove it from the active client state.
             # We don't remove it from the database because that would remove user information everytime
             # the user disconnects from the server.
-            if self.state.remove_user(user=data["name"]):
+            if self.state.remove_user(user=user["name"]):
                 logger.debug(
-                    f"[{LogOutputIdentifiers.MUMBLE_ON_DISCONNECT}]: user '{data['name']}' disconnected: \
-                        removed user '{data['name']}' from the server state: user removal message: '{message}'."
+                    f"[{LogOutputIdentifiers.MUMBLE_ON_DISCONNECT}]: user '{user['name']}' disconnected: \
+                        removed user '{user['name']}' from the server state: {session}."
                 )
                 return
-            logger.error(f"Unable to remove user '{data['name']}' from the server state: {data}.")
+            logger.error(f"Unable to remove user '{user['name']}' from the server state: {user}.")
         # endregion
 
         # region CLBK: MUMBLE_ON_CHANNEL_CREATED
