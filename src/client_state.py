@@ -80,6 +80,7 @@ class ClientState:
                 return False
             self._connection.users.myself.mute()
             return self._connection.users.myself.get_property("self_mute") is True
+
         # endregion
 
         # region Unmute
@@ -98,6 +99,7 @@ class ClientState:
                 return False
             self._connection.users.myself.unmute()
             return self._connection.users.myself.get_property("self_mute") is False
+
         # endregion Unmute
 
         # region Deafen
@@ -116,6 +118,7 @@ class ClientState:
                 return False
             self._connection.users.myself.deafen()
             return self._connection.users.myself.get_property("self_deaf") is True
+
         # endregion Deafen
 
         # region Undeafen
@@ -134,6 +137,7 @@ class ClientState:
                 return False
             self._connection.users.myself.undeafen()
             return self._connection.users.myself.get_property("self_deaf") is False
+
         # endregion Undeafen
 
     class ServerProperties:
@@ -169,6 +173,7 @@ class ClientState:
                 _myself.remove_listening_channels([channel["channel_id"]])
                 self._listening_channels[channel["channel_id"]] = channel
                 return True
+
             # endregion
 
             # region User
@@ -208,6 +213,7 @@ class ClientState:
                     del self._users[_user["name"]]
                     return True
                 return False
+
             # endregion
 
         _state: ServerState
@@ -227,6 +233,7 @@ class ClientState:
 
         def on_server_disconnect(self) -> None:
             logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_DISCONNECT}]: disconnected from server.")
+
         # endregion
 
         # region CLBK: MUMBLE_ON_USER_CREATED
@@ -246,6 +253,7 @@ class ClientState:
                 )
                 return
             logger.error(f"Unable to remove user '{user['name']}' from the server state: {user}.")
+
         # endregion
 
         # region CLBK: MUMBLE_ON_CHANNEL_CREATED
@@ -254,14 +262,18 @@ class ClientState:
             # We don't add it to the database because channels contain no information
             # that should be persistently stored.
             if not self._connection:
-                logger.error(f"Unable to add new channel '{channel['name']}-{channel['channel_id']}' to the server state: "
-                             f"mumble instance not found.")
+                logger.error(
+                    f"Unable to add new channel '{channel['name']}-{channel['channel_id']}' to the server state: " f"mumble instance not found."
+                )
                 return
             if self.state.add_channel(self._connection, channel=channel):
-                logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_CHANNEL_CREATED}]: channel '{channel['name']}-{channel['channel_id']}' created: "
-                             f"added channel '{channel['name']}-{channel['channel_id']}' to the server state.")
+                logger.debug(
+                    f"[{LogOutputIdentifiers.MUMBLE_ON_CHANNEL_CREATED}]: channel '{channel['name']}-{channel['channel_id']}' created: "
+                    f"added channel '{channel['name']}-{channel['channel_id']}' to the server state."
+                )
                 return
             logger.error(f"Unable to add new channel '{channel['name']}-{channel['channel_id']}' to the server state.")
+
         # endregion
 
         # region CLBK: MUMBLE_ON_CHANNEL_REMOVED
@@ -269,14 +281,18 @@ class ClientState:
             # When channel removal is detected, just remove it from the client state.
             # There is nothing to remove from the database related to channels.
             if not self._connection:
-                logger.error(f"Unable to remove channel '{channel['name']}-{channel['channel_id']}' from the server state: "
-                             f"mumble instance not found.")
+                logger.error(
+                    f"Unable to remove channel '{channel['name']}-{channel['channel_id']}' from the server state: " f"mumble instance not found."
+                )
                 return
             if self.state.remove_channel(self._connection, channel=channel):
-                logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_CHANNEL_REMOVED}]: channel '{channel['name']}-{channel['channel_id']}' removed: "
-                             f"removed channel '{channel['name']}-{channel['channel_id']}' from the server state.")
+                logger.debug(
+                    f"[{LogOutputIdentifiers.MUMBLE_ON_CHANNEL_REMOVED}]: channel '{channel['name']}-{channel['channel_id']}' removed: "
+                    f"removed channel '{channel['name']}-{channel['channel_id']}' from the server state."
+                )
                 return
             logger.error(f"Unable to remove channel '{channel['name']}-{channel['channel_id']}' from the server state.")
+
         # endregion
 
     _audio_properties: AudioProperties

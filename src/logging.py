@@ -59,6 +59,20 @@ class LogFormatter(logging.Formatter):
         return formatter.format(record)
 
 
+class LogFilter(logging.Filter):
+    def __init__(self, name: str = "", prepend_text: Optional[str] = None, postpend_text: Optional[str] = None) -> None:
+        super().__init__(name)
+        self._prepend = prepend_text
+        self._postpend = postpend_text
+
+    def filter(self, record: logging.LogRecord):
+        record.msg = \
+            f"{'['+self._prepend+']: ' if self._prepend is not None else ''}" + \
+            record.msg + \
+            f"{'::['+self._postpend+']' if self._postpend is not None else ''}"
+        return True
+
+
 def init_logger(sys_args: Optional[Dict[str, str]] = None) -> bool:
     global _IS_INITIALIZED, _log_file_handler, _log_console_handler
     if _IS_INITIALIZED:

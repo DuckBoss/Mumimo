@@ -45,10 +45,10 @@ class Plugin(PluginBase):
         # !image.contrast=50 "image.jpg"  -> Posts the specified image with a brightness filter applied with the specified contrast amount.
         #
         # Display types:
-        # !image.channel="channel_name" "image.jpg"  -> Posts the specified image in the specified channel.
-        # !image.channels="channel1,channel2" "image.jpg"  -> Posts the specified image in the specified channels.
-        # !image.user="user_name" "image.jpg"  -> Posts the specified image to the specified user.
-        # !image.users="user1,user2" "image.jpg"  -> Posts the specified image to the specified users.
+        # !image.to_channel="channel_name" "image.jpg"  -> Posts the specified image in the specified channel.
+        # !image.to_channels="channel1,channel2" "image.jpg"  -> Posts the specified image in the specified channels.
+        # !image.to_user="user_name" "image.jpg"  -> Posts the specified image to the specified user.
+        # !image.to_users="user1,user2" "image.jpg"  -> Posts the specified image to the specified users.
         # !image.broadcast "image.jpg"  -> Posts the specified image to all channels.
 
         _parameters = self.verify_parameters(self.image.__name__, data)

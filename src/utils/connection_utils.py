@@ -12,5 +12,4 @@ def parse_channel_tokens(tokens: str) -> Optional[List[str]]:
     tokens = tokens.strip()
     if not tokens:
         return None
-    tokens = " ".join(tokens.split())
     return [token.strip() for token in tokens.split()]

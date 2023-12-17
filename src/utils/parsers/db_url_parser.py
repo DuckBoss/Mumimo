@@ -24,7 +24,7 @@ def get_url(connection_params: DatabaseConnectionParameters, create_url: bool = 
             if connection_params.local_database_dialect is None:
                 connection_params.local_database_dialect = "sqlite"  # Set a default dialect if none is set.
             if connection_params.local_database_driver is None:
-                connection_params.local_database_driver = "aiosqlite"
+                connection_params.local_database_driver = "aiosqlite"  # Set a default database driver if none is set.
             _drivername = f"{connection_params.local_database_dialect}+{connection_params.local_database_driver}"
             _database = connection_params.local_database_path
 

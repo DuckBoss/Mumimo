@@ -9,12 +9,12 @@ from src.lib.frameworks.plugins.plugin import PluginBase
 from src.settings import settings
 from src.utils import mumble_utils
 from src.lib.frameworks.gui.gui import GUIFramework
+from src.logging import LogFilter
 
 from .utility.constants import ParameterDefinitions
 from .utility import theme_utils
 
 logger = logging.getLogger(__name__)
-
 
 if TYPE_CHECKING:
     from src.lib.command import Command
@@ -25,11 +25,12 @@ class Plugin(PluginBase):
 
     def __init__(self, plugin_name: str) -> None:
         self._plugin_name = plugin_name
-        logger.debug(f"[{LogOutputIdentifiers.PLUGINS}]: Initializing plugin: '{self._plugin_name}'")
+        logger.addFilter(LogFilter(prepend_text=f"Plugins.{self._plugin_name}"))
+        logger.debug(f"Initializing plugin: '{self._plugin_name}'")
         super().__init__(self._plugin_name)
 
         self.initialize_parameters(settings.commands.callbacks.get_callbacks(self._plugin_name))
-        logger.debug(f"[{LogOutputIdentifiers.PLUGINS}]: Plugin '{self._plugin_name}' ready.")
+        logger.debug(f"Plugin '{self._plugin_name}' ready.")
 
     def process(self, data: "Command"):
         logger.debug(data.to_dict())

@@ -3,7 +3,7 @@ from typing import List
 
 class ParameterDefinitions:
     class Plugin:
-        ACTIVE: str = "active"
+        STATUS: str = "status"
         STOP: str = "stop"
         START: str = "start"
         RESTART: str = "restart"
@@ -11,7 +11,7 @@ class ParameterDefinitions:
         @staticmethod
         def get_definitions() -> List[str]:
             return [
-                ParameterDefinitions.Plugin.ACTIVE,
+                ParameterDefinitions.Plugin.STATUS,
                 ParameterDefinitions.Plugin.STOP,
                 ParameterDefinitions.Plugin.START,
                 ParameterDefinitions.Plugin.RESTART,

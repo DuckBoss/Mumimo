@@ -22,7 +22,7 @@ class MumimoService:
 
     async def _setup(self, sys_args: Dict[str, str]) -> None:
         if not connection_utils.is_supported_platform():
-            logger.warning("Mumimo is only supported for Linux and MacOS systems. You may run into unexpected issues on Windows and other systems.")
+            logger.warning("Mumimo is only supported on Linux and MacOS systems. You may run into unexpected issues on Windows and other systems.")
         logger.info("Initializing Mumimo client...")
         _mumimo_init_service: MumimoInitService = MumimoInitService(sys_args)
         await _mumimo_init_service.initialize()

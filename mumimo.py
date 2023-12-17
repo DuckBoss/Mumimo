@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 from src.logging import init_logger
 from src.system_arguments import args_parser
+from src.mumimo import MumimoService
 
-if __name__ == "__main__":
+def run():
     sys_args = vars(args_parser.parse_args())
     init_logger(sys_args)
-    from src.mumimo import MumimoService
+    MumimoService(sys_args)
 
-    mumimo = MumimoService(sys_args)
+if __name__ == "__main__":
+    run()

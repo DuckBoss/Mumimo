@@ -37,7 +37,7 @@ class Plugin(PluginBase):
     )
     def plugin(self, data: "Command"):
         # Example:
-        # !plugin.active "plugin1"  -> Displays a message showing the status of the specified plugin.
+        # !plugin.status "plugin1"  -> Displays a message showing the status of the specified plugin.
         # !plugin.stop "plugin1"  -> Stops the specified plugin if it is running.
         # !plugin.start "plugin1"  -> Starts the specified plugin if it is not running.
         # !plugin.restart "plugin1"  -> Restarts the specified plugin.

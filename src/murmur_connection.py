@@ -6,9 +6,15 @@ from typing import Dict, Optional, Union, List
 
 import pymumble_py3 as pymumble
 from pymumble_py3.users import User
-from pymumble_py3.constants import PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, PYMUMBLE_CLBK_CONNECTED, \
-    PYMUMBLE_CLBK_USERCREATED, PYMUMBLE_CLBK_USERREMOVED, PYMUMBLE_CLBK_DISCONNECTED, \
-    PYMUMBLE_CLBK_CHANNELCREATED, PYMUMBLE_CLBK_CHANNELREMOVED
+from pymumble_py3.constants import (
+    PYMUMBLE_CLBK_TEXTMESSAGERECEIVED,
+    PYMUMBLE_CLBK_CONNECTED,
+    PYMUMBLE_CLBK_USERCREATED,
+    PYMUMBLE_CLBK_USERREMOVED,
+    PYMUMBLE_CLBK_DISCONNECTED,
+    PYMUMBLE_CLBK_CHANNELCREATED,
+    PYMUMBLE_CLBK_CHANNELREMOVED,
+)
 from pymumble_py3.errors import ConnectionRejectedError
 
 from .client_state import ClientState

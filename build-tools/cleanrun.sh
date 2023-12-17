@@ -1,4 +1,6 @@
-#!/usr/bin/env bash -e
+#!/usr/bin/env bash
+
+set -e
 
 clear
 cd "${0%/*}"
@@ -50,4 +52,4 @@ fi
 
 echo "Running Mumimo with arguments: '$@'"
 echo "==================================="
-python3.9 ./mumimo.py "-vv" "--env-file=$ENV_FILE" "--config-file=.config/config.toml" "--log-config-file=.config/logging.toml" $@
+python ./mumimo.py "-vv" "--env-file=$ENV_FILE" "--config-file=.config/config.toml" "--log-config-file=.config/logging.toml" $@

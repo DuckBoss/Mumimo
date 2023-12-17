@@ -1,10 +1,45 @@
-[tool.black]
-line-length = 150
-target_version = ['py38', 'py39', 'py310', 'py311']
+[project]
+name = "mumimo"
+dynamic = ["version"]
+description = "A plugin-based all-in-one mumble bot solution with extensive features and support for custom plugins. Successor of the 'JJMumbleBot' project."
+authors = [
+    {name = "Jason Jerome"}
+]
+requires-python = ">=3.8"
+readme = {file = "README.md", content-type = "text/markdown"}
+keywords = ["plugin", "mumble", "jjmumblebot", "bot", "murmur"]
+classifiers = [
+    # Development stage
+    "Development Status :: 2 - Pre-Alpha",
+    # License
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    # Supported python versions
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 
-[tool.isort]
-profile = "black"
-line_length = 150
+[project.urls]
+Homepage = "https://github.com/DuckBoss/Mumimo"
+Documentation = "https://github.com/DuckBoss/Mumimo"
+Repository = "https://github.com/DuckBoss/Mumimo.git"
+Issues = "https://github.com/DuckBoss/Mumimo/issues"
+Changelog = "https://github.com/DuckBoss/Mumimo/blob/master/CHANGELOG.md"
+
+[project.scripts]
+mumimo = "mumimo:run"
+
+[tool.ruff]
+line-length = 150
+exclude = ["**/__pycache__", "venv/", "build-tools/", "config/", "logs/", ".*"]
+cache-dir = "~/.cache/ruff"
+
+[tool.ruff.lint]
+extend-ignore = ["E203"]
+extend-select = ["E501"]
 
 [tool.pytest.ini_options]
 addopts = "-s -vv --cov=."
@@ -20,9 +55,3 @@ include = ["src"]
 exclude = ["**/__pycache__", "**/.sh", ".coveragerc"]
 pythonVersion = "3.10"
 pythonPlatform = "Linux"
-
-[tool.flake8]
-exclude = ["**/__pycache__", "venv/", "build-tools/", "config/", "logs/", ".*"]
-extend-ignore = ["E203"]
-max-line-length = 150
-count = true

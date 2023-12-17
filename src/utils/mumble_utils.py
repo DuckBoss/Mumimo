@@ -186,7 +186,7 @@ class Management:
                     if not _permission_info:
                         raise ServiceError(
                             f"Unable to add new user: the default permission '{DefaultPermissionGroups.DEFAULT_GUEST}' is not in the database.",
-                            logger=logger
+                            logger=logger,
                         )
                     _user_info.permission_groups.append(_permission_info)
                     session.add(_user_info)
@@ -198,8 +198,10 @@ class Management:
                 raise ServiceError("Unable to add new user: the client state could not be retrieved.")
             _server_state = _client_state.server_properties.state
             if _server_state.add_user(_actor):
-                logger.debug(f"[{LogOutputIdentifiers.MUMBLE_ON_USER_CREATED}]: user '{_actor['name']}' connected: \
-                             added user '{_actor['name']}' to the server state.")
+                logger.debug(
+                    f"[{LogOutputIdentifiers.MUMBLE_ON_USER_CREATED}]: user '{_actor['name']}'" \
+                    f"connected: added user '{_actor['name']}' to the server state."
+                )
             else:
                 logger.error(f"Unable to add new user '{_actor['name']}' to the server state.")
                 await session.rollback()
